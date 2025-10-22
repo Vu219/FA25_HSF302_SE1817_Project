@@ -37,11 +37,15 @@ public class User {
     private String role;
 
     @Column(name = "CreateAt", nullable = false)
-    private LocalDateTime createAt;
-
-    @Column(name = "Status", nullable = false, columnDefinition = "nvarchar(50)")
-    private String status;
+    private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Booking> bookings = new ArrayList<>();
+
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
 }

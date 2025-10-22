@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Page</title>
+</head>
+<body>
+<h1>Đăng nhập</h1>
+<form th:action="@{/login}" method="post">
+    <div>
+        <label for="phone">Số điện thoại:</label>
+        <input type="text" id="phone" name="phone" required>
+    </div>
+    <div>
+        <label for="password">Mật khẩu:</label>
+        <input type="password" id="password" name="password" required>
+    </div>
+
+    <div th:if="${errorMessage}" class="error-message" style="color: red; margin-top: 10px;">
+        <p th:text="${errorMessage}"></p>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <button type="submit">Login</button>
+    </div>
+</form>
+</body>
+</html>
