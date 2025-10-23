@@ -17,7 +17,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserAccount(String phone, String password) {
-        return userRepository.findByPhoneAndPassword(phone, password);
+    public User getUserAccount(String email, String password) {
+        return userRepository.findByEmailAndPassword(email, password);
     }
 }

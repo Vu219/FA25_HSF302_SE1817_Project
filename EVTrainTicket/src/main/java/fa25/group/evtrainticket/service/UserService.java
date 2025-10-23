@@ -6,5 +6,5 @@ import org.springframework.stereotype.Service;
 @Service
 public interface UserService {
     public boolean addUserAccount(User user);
-    public User getUserAccount(String phone, String password);
+    public User getUserAccount(String email, String password);
 }

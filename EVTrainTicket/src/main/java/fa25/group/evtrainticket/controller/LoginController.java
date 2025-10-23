@@ -26,17 +26,17 @@ public class LoginController {
         }
 
         if (error != null) {
-            model.addAttribute("errorMessage", "Số điện thoại hoặc mật khẩu không đúng");
+            model.addAttribute("errorMessage", "Email hoặc mật khẩu không đúng");
         }
         return "login";
     }
 
     @PostMapping("/login")
-    public String login(HttpSession session, @RequestParam("phone") String phone, @RequestParam("password") String password, Model model) {
-        User user = userService.getUserAccount(phone, password);
+    public String login(HttpSession session, @RequestParam("email") String email, @RequestParam("password") String password, Model model) {
+        User user = userService.getUserAccount(email, password);
         if (user == null) {
-            model.addAttribute("errorMessage", "Số điện thoại hoặc mật khẩu không đúng");
-            return "redirect:/login";
+            model.addAttribute("errorMessage", "Email hoặc mật khẩu không đúng");
+            return "login";
         }
         session.setAttribute("user", user);
         return "redirect:/home";
