@@ -1,0 +1,222 @@
+/* --- General Auth Page Styles --- */
+:root {
+    --primary-color: #0056b3;
+    --secondary-color: #007bff;
+    --accent-color: #ffc107;
+}
+
+body.auth-body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0; /* Fixes the white border issue */
+}
+
+/* Wrapper for the entire auth page */
+.auth-page-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('/images/train.jpg');
+    background-size: cover;
+    background-position: center;
+}
+
+.auth-container {
+    display: flex;
+    width: 100%;
+    max-width: 950px;
+    min-height: 550px;
+    background: rgba(10, 20, 30, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Left Panel with Branding */
+.auth-left {
+    flex-basis: 45%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 50px;
+    color: white;
+    /* BACKGROUND IMAGE FOR AUTH-LEFT */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/train.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.auth-left h2 {
+    font-size: 2.8em;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+}
+
+.auth-left p {
+    font-size: 1.1em;
+    line-height: 1.6;
+    color: #e0e0e0;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+}
+
+/* Right Panel with the Form */
+.auth-right {
+    flex-basis: 55%;
+    padding: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.auth-form {
+    width: 100%;
+}
+
+.auth-form h1 {
+    text-align: center;
+    font-size: 2.5em;
+    color: white;
+    margin-bottom: 40px;
+}
+
+/* --- FLOATING LABEL STYLES --- */
+.auth-form .form-group {
+    position: relative;
+    margin-bottom: 35px;
+}
+
+.auth-form .form-group input {
+    width: 100%;
+    padding: 10px 0;
+    font-size: 1em;
+    color: white;
+    background-color: transparent;
+    border: none;
+    border-bottom: 2px solid #666;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.auth-form .form-group label {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    font-size: 1em;
+    color: #999;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.auth-form .form-group input:focus ~ label,
+.auth-form .form-group input:valid ~ label {
+    top: -20px;
+    left: 0;
+    font-size: 0.85em;
+    color: var(--secondary-color);
+}
+
+.auth-form .form-group input:focus {
+    border-bottom-color: var(--secondary-color);
+}
+
+/* --- Show/Hide Password Icon Style --- */
+.toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: color 0.3s;
+    z-index: 10;
+}
+
+.toggle-password:hover {
+    color: var(--secondary-color);
+}
+
+/* --- General Form Elements --- */
+.auth-form .form-options {
+    text-align: right;
+    margin-top: -15px;
+    margin-bottom: 25px;
+}
+
+.auth-form .form-options a {
+    color: #ccc;
+    text-decoration: none;
+    font-size: 0.9em;
+}
+
+.auth-form .form-options a:hover {
+    color: var(--secondary-color);
+    text-decoration: underline;
+}
+
+.auth-form button {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.auth-form button:hover {
+    background-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.auth-form .extra-link {
+    margin-top: 25px;
+    text-align: center;
+    color: #ccc;
+}
+
+.auth-form .extra-link a {
+    color: #FFFFFF; /* Đổi thành màu trắng để nổi bật hơn */
+    font-weight: bold;
+    text-decoration: none;
+    transition: color 0.3s ease; /* Thêm hiệu ứng chuyển màu mượt mà */
+}
+
+.auth-form .extra-link a {
+    color: var(--accent-color);
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.auth-form .extra-link a:hover {
+    color: var(--secondary-color); /* Đổi sang màu xanh khi di chuột qua */
+    text-decoration: underline;
+}
+
+/* --- FIX FOR BROWSER AUTOFILL WHITE BACKGROUND --- */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-text-fill-color: #fff !important;
+    -webkit-box-shadow: 0 0 0px 1000px rgba(10, 20, 30, 0.8) inset !important;
+    caret-color: white;
+}
+
+/* --- Error Message Style --- */
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+}

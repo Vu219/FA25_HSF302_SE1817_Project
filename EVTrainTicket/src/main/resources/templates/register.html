@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Đăng nhập - EVTrainTicket</title>
+    <title>Đăng ký - EVTrainTicket</title>
     <link rel="stylesheet" th:href="@{/css/auth.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
@@ -12,35 +12,42 @@
     <div class="auth-container">
         <div class="auth-left">
             <h2>EVTrainTicket</h2>
-            <p>Trải nghiệm hành trình an toàn, tiện lợi và đáng nhớ cùng đường sắt Việt Nam. Đặt vé ngay hôm nay!</p>
+            <p>Tạo tài khoản để quản lý vé, theo dõi hành trình và nhận những ưu đãi đặc biệt chỉ dành cho thành viên.</p>
         </div>
 
         <div class="auth-right">
             <div class="auth-form">
-                <h1>Đăng nhập</h1>
+                <h1>Tạo tài khoản</h1>
+
                 <div th:if="${errorMessage}" class="error-message">
                     <p th:text="${errorMessage}"></p>
                 </div>
-                <form th:action="@{/login}" method="post">
+
+                <form th:action="@{/register}" method="post">
+                    <div class="form-group">
+                        <input type="text" id="fullName" name="fullName" required>
+                        <label for="fullName">Họ và tên</label>
+                    </div>
                     <div class="form-group">
                         <input type="email" id="email" name="email" required>
                         <label for="email">Email</label>
                     </div>
-
                     <div class="form-group">
                         <input type="password" id="password" name="password" required>
                         <label for="password">Mật khẩu</label>
                         <i class="fa-solid fa-eye toggle-password" data-target="password"></i>
                     </div>
-
-                    <div class="form-options">
-                        <a th:href="@{/forgot-password}">Quên mật khẩu?</a>
+                    <div class="form-group">
+                        <input type="password" id="confirmPassword" name="confirmPassword" required>
+                        <label for="confirmPassword">Xác nhận mật khẩu</label>
+                        <i class="fa-solid fa-eye toggle-password" data-target="confirmPassword"></i>
                     </div>
-                    <button type="submit">Đăng nhập</button>
+
+                    <button type="submit">Đăng ký</button>
                 </form>
 
                 <div class="extra-link">
-                    <p>Chưa có tài khoản? <a th:href="@{/register}">Đăng ký ngay</a></p>
+                    <p>Đã có tài khoản? <a th:href="@{/login}">Đăng nhập</a></p>
                 </div>
             </div>
         </div>
@@ -58,7 +65,7 @@
             const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordField.setAttribute('type', type);
 
-            // Chuyển đổi icon con mắt
+            // Chuyển đổi icon con mắt (fa-eye <-> fa-eye-slash)
             this.classList.toggle('fa-eye-slash');
         });
     });
