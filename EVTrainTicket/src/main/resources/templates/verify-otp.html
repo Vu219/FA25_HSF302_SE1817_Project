@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Xác thực OTP - EVTrainTicket</title>
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
+</head>
+<body class="auth-body">
+
+<div class="auth-page-wrapper">
+    <div class="auth-container">
+        <div class="auth-left">
+            <h2>EVTrainTicket</h2>
+            <p>Vui lòng kiểm tra email của bạn và nhập mã OTP 6 chữ số để tiếp tục quá trình khôi phục mật khẩu.</p>
+            <p class="small-info">Mã OTP có hiệu lực trong 90 giây</p>
+        </div>
+
+        <div class="auth-right">
+            <div class="auth-form">
+                <h1>Xác thực OTP</h1>
+
+                <div class="otp-info">
+                    <p>Mã OTP đã được gửi đến: <strong class="highlight-email" th:text="${session.resetEmail}"></strong></p>
+                    <p class="countdown" id="timer">01:30</p>
+                </div>
+
+                <div th:if="${message}" class="success-message">
+                    <p th:text="${message}"></p>
+                </div>
+
+                <div th:if="${errorMessage}" class="error-message">
+                    <p th:text="${errorMessage}"></p>
+                </div>
+
+                <form th:action="@{/verify-otp}" method="post">
+                    <div class="form-group">
+                        <input type="text" id="otp" name="otp" maxlength="6" placeholder=" " required
+                               pattern="[0-9]{6}" title="Mã OTP phải là 6 chữ số">
+                        <label for="otp">Mã OTP</label>
+                    </div>
+                    <button type="submit">Xác thực OTP</button>
+                </form>
+
+                <div class="extra-link">
+                    <p>Không nhận được mã? <a th:href="@{/forgot-password}">Gửi lại OTP</a></p>
+                    <p><a th:href="@{/login}">Quay lại Đăng nhập</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Timer đếm ngược 90 giây
+    let timeLeft = 90;
+    const timerElement = document.getElementById('timer');
+
+    function updateTimer() {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+        if (timeLeft > 0) {
+            timeLeft--;
+            setTimeout(updateTimer, 1000);
+        } else {
+            timerElement.textContent = "00:00";
+            timerElement.style.color = "#dc3545";
+            timerElement.innerHTML += " - Mã OTP đã hết hạn";
+        }
+    }
+
+    updateTimer();
+
+    // Tự động chuyển focus đến ô OTP
+    document.getElementById('otp').focus();
+
+
+</script>
+
+</body>
+</html>

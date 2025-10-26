@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Mã OTP Khôi Phục Mật Khẩu</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; }
+        .container { width: 90%; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        .header { font-size: 24px; color: #0056b3; }
+        .otp-code { font-size: 36px; font-weight: bold; color: #dc3545; margin: 20px 0; letter-spacing: 2px; }
+        .note { color: #555; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="header">Khôi Phục Mật Khẩu EVTrainTicket</h1>
+    <p>Xin chào,</p>
+    <p>Bạn đã yêu cầu khôi phục mật khẩu. Vui lòng sử dụng mã OTP dưới đây để xác thực:</p>
+
+    <div class="otp-code" th:text="${otpCode}">123456</div>
+
+    <p class="note">Mã OTP này sẽ hết hạn sau
+        <strong th:text="${expiryMinutes}">1</strong> phút
+        <strong th:text="${expirySeconds}">30</strong> giây.
+    </p>
+
+    <p class="note">Nếu bạn không yêu cầu điều này, vui lòng bỏ qua email này.</p>
+    <p>Trân trọng,<br>Đội ngũ EVTrainTicket</p>
+</div>
+</body>
+</html>

@@ -23,22 +23,35 @@
                     <p th:text="${errorMessage}"></p>
                 </div>
 
-                <form th:action="@{/register}" method="post">
+                <form th:action="@{/register}" method="post" th:object="${user}">
+
                     <div class="form-group">
-                        <input type="text" id="fullName" name="fullName" required>
+                        <input type="text" id="fullName" th:field="*{fullName}" placeholder=" " required>
                         <label for="fullName">Họ và tên</label>
+                        <span class="field-error" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></span>
                     </div>
+
                     <div class="form-group">
-                        <input type="email" id="email" name="email" required>
+                        <input type="email" id="email" th:field="*{email}" placeholder=" " required>
                         <label for="email">Email</label>
+                        <span class="field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
                     </div>
+
                     <div class="form-group">
-                        <input type="password" id="password" name="password" required>
+                        <input type="text" id="phone" th:field="*{phone}" placeholder=" " required>
+                        <label for="phone">Số điện thoại</label>
+                        <span class="field-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="password" id="password" th:field="*{password}" placeholder=" " required>
                         <label for="password">Mật khẩu</label>
                         <i class="fa-solid fa-eye toggle-password" data-target="password"></i>
+                        <span class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
                     </div>
+
                     <div class="form-group">
-                        <input type="password" id="confirmPassword" name="confirmPassword" required>
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder=" " required>
                         <label for="confirmPassword">Xác nhận mật khẩu</label>
                         <i class="fa-solid fa-eye toggle-password" data-target="confirmPassword"></i>
                     </div>
@@ -65,7 +78,7 @@
             const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordField.setAttribute('type', type);
 
-            // Chuyển đổi icon con mắt (fa-eye <-> fa-eye-slash)
+            this.classList.toggle('fa-eye');
             this.classList.toggle('fa-eye-slash');
         });
     });

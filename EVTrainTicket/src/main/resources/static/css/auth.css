@@ -86,7 +86,8 @@ body.auth-body {
 /* --- FLOATING LABEL STYLES --- */
 .auth-form .form-group {
     position: relative;
-    margin-bottom: 35px;
+    /* Điều chỉnh margin-bottom để chừa không gian cho lỗi */
+    margin-bottom: 40px;
 }
 
 .auth-form .form-group input {
@@ -111,8 +112,12 @@ body.auth-body {
     transition: all 0.3s ease;
 }
 
+/* * (ĐÃ THAY ĐỔI)
+ * Dùng :not(:placeholder-shown) thay vì :valid
+ * Label sẽ nổi lên khi input được focus HOẶC khi có nội dung (placeholder không còn hiển thị)
+*/
 .auth-form .form-group input:focus ~ label,
-.auth-form .form-group input:valid ~ label {
+.auth-form .form-group input:not(:placeholder-shown) ~ label {
     top: -20px;
     left: 0;
     font-size: 0.85em;
@@ -210,11 +215,76 @@ input:-webkit-autofill:active {
     caret-color: white;
 }
 
-/* --- Error Message Style --- */
+/* --- Error Message Style (Chung) --- */
 .error-message {
     background-color: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* --- (MỚI) Field-specific Error Style --- */
+.field-error {
+    color: #f8d7da; /* Màu đỏ nhạt, dễ thấy trên nền tối */
+    font-size: 0.85em;
+    position: absolute; /* Định vị ngay dưới đường kẻ của input */
+    bottom: -22px; /* Điều chỉnh để nằm dưới input */
+    left: 0;
+}
+
+/* --- Styles for Verify OTP Page --- */
+
+.otp-info {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #e0e0e0; /* Màu chữ sáng */
+}
+
+.otp-info p {
+    margin: 5px 0;
+    font-size: 1em;
+}
+
+.otp-info .highlight-email {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: var(--accent-color); /* Màu nhấn, ví dụ: vàng */
+    margin-top: 10px;
+}
+
+.otp-info .countdown {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: var(--secondary-color); /* Màu xanh chính */
+    margin-top: 15px;
+}
+
+/* Kiểu cho link "Gửi lại OTP" */
+.extra-link #resendOtpLink {
+    color: var(--accent-color); /* Màu vàng */
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.extra-link #resendOtpLink:hover {
+    color: var(--secondary-color); /* Màu xanh khi hover */
+}
+
+/* Thêm vào phần auth-left cho verify-otp nếu bạn muốn có thông tin riêng */
+.auth-left .small-info {
+    font-size: 0.9em;
+    color: #bbb;
+    margin-top: 20px;
+}
+
+/* --- Success Message Style (Dùng cho Login) --- */
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
     padding: 10px;
     border-radius: 5px;
     margin-bottom: 20px;
