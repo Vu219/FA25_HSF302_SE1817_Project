@@ -8,6 +8,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class HomeController {
+    @GetMapping("/")
+    public String rootRedirect() {
+        return "redirect:/home";
+    }
+
     @GetMapping("/home")
     public String showHomePage(HttpSession session, Model model) {
         User user = (User) session.getAttribute("user");

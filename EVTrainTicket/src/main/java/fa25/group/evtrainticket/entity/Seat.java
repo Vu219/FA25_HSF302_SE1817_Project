@@ -34,9 +34,6 @@ public class Seat {
     @JoinColumn(name = "SeatTypeID", nullable = false)
     private SeatType seatType;
 
-//    @Column(name = "Position", nullable = false)
-//    private String position;
-
     @Column(name = "RowNum", nullable = false)
     private Integer rowNum;
 

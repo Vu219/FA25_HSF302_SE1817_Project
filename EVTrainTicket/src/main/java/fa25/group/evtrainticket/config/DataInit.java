@@ -2,6 +2,7 @@ package fa25.group.evtrainticket.config;
 
 
 import fa25.group.evtrainticket.entity.User;
+import fa25.group.evtrainticket.repository.OTPRepository;
 import fa25.group.evtrainticket.repository.UserRepository;
 import fa25.group.evtrainticket.entity.Train;
 import fa25.group.evtrainticket.entity.CarriageType;
@@ -29,6 +30,7 @@ public class DataInit implements CommandLineRunner {
     TrainService trainService;
     CarriageTypeService carriageTypeService;
     CarriageService carriageService;
+    OTPRepository otpRepository;
 
     @Override
     public void run(String... args) throws Exception {
@@ -36,6 +38,17 @@ public class DataInit implements CommandLineRunner {
         initTrains();
         initCarriageTypes();
         initCarriages();
+        cleanupOTPs();
+    }
+
+    private void cleanupOTPs() {
+        long count = otpRepository.count();
+        if (count > 0) {
+            otpRepository.deleteAll();
+            System.out.println("Đã xóa " + count + " OTP cũ khỏi cơ sở dữ liệu!");
+        } else {
+            System.out.println("Không có OTP nào trong CSDL để xóa.");
+        }
     }
 
     private void initUsers() {
