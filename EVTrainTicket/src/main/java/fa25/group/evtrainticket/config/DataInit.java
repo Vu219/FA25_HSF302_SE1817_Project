@@ -56,7 +56,7 @@ public class DataInit implements CommandLineRunner {
             User user = new User();
             user.setFullName("Quản trị viên");
             user.setPhone("0905111111");
-            user.setPassword("12345");
+            user.setPassword("123456");
             user.setEmail("admin@gmail.com");
             user.setRole("ADMIN");
             user.setCreatedAt(LocalDateTime.now());
