@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="https://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMS - Quản lý loại ghế tàu</title>
+</head>
+
+<body>
+    <h2>Quản lý loại ghế tàu</h2>
+    <div class="message-container">
+        <div th:if="${successMessage}" class="alert alert-success">
+            <span style="color: green;" th:text="${successMessage}"></span>
+        </div>
+    </div>
+    <a th:href="@{/admin/seatTypes/create}">Thêm loại ghế mới</a>
+    <br>
+    <br>
+    <div class="seatTypes-list">
+        <h3>Danh sách các loại ghế hiện có:</h3>
+        <br>
+        <table th:if="${not #lists.isEmpty(seatTypeList)}">
+            <thead>
+                <tr>
+                    <th>Mã loại ghế</th>
+                    <th>Tên loại ghế</th>
+                    <th>Hệ số giá</th>
+                    <th>Mô tả</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="seatType : ${seatTypeList}">
+                    <td th:text="${seatType.seatTypeID}"></td>
+                    <td th:text="${seatType.typeName}"></td>
+                    <td th:text="${seatType.priceMultiplier}"></td>
+                    <td th:text="${seatType.description}"></td>
+                    <td>
+                        <a th:href="@{'/admin/seatTypes/edit/' + ${seatType.seatTypeID}}">Sửa</a>
+                        <a th:href="@{'/admin/seatTypes/delete/' + ${seatType.seatTypeID}}"
+                            onclick="return confirm('Bạn có chắc chắn muốn xóa loại ghế này không?');">Xóa</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div th:if="${#lists.isEmpty(seatTypeList)}">
+            <p>Không có loại ghế nào được quản lý.</p>
+        </div>
+    </div>
+    </div>
+</body>
+
+</html>

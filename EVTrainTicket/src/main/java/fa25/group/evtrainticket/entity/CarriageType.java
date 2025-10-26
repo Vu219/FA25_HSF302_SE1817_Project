@@ -2,15 +2,19 @@ package fa25.group.evtrainticket.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "CarriageTypes")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class CarriageType {
@@ -32,5 +36,6 @@ public class CarriageType {
     private Double priceMultiplier;
 
     @OneToMany(mappedBy = "carriageType", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Carriage> carriages = new ArrayList<>();
 }

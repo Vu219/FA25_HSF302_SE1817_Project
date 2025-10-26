@@ -33,14 +33,13 @@ public class LoginController {
 
     @PostMapping("/login")
     public String login(HttpSession session, @RequestParam("email") String email, @RequestParam("password") String password, Model model) {
-        try {
-            User user = userService.getUserAccount(email, password);
-            session.setAttribute("user", user);
-            return "redirect:/home";
-        } catch (Exception e) {
-            model.addAttribute("errorMessage", e.getMessage());
+        User user = userService.getUserAccount(email, password);
+        if (user == null) {
+            model.addAttribute("errorMessage", "Email hoặc mật khẩu không đúng");
             return "login";
         }
+        session.setAttribute("user", user);
+        return "redirect:/home";
     }
 
     @GetMapping("/logout")

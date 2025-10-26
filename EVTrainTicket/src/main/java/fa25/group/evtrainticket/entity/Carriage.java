@@ -2,15 +2,19 @@ package fa25.group.evtrainticket.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "Carriages")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Carriage {
@@ -37,5 +41,16 @@ public class Carriage {
     private String status;
 
     @OneToMany(mappedBy = "carriage", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Seat> seats = new ArrayList<>();
+
+    // @Override
+    // public String toString() {
+    //     return "Carriage{" +
+    //             "carriageID=" + carriageID +
+    //             ", carriageNumber='" + carriageNumber + '\'' +
+    //             ", position=" + position +
+    //             ", status='" + status + '\'' +
+    //             '}';
+    // }
 }

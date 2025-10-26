@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="https://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMS - Quản lí ga tàu</title>
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        .btn-primary {
+            background: #2c3e50;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+<div th:fragment="create-train">
+    <div class="form-container">
+        <h2>Thêm ga tàu mới</h2>
+
+        <div th:if="${errorMessage}" class="alert alert-error">
+            <span style="color: red;" th:text="${errorMessage}"></span>
+        </div>
+
+        <form th:action="@{/admin/stations/create}" th:object="${station}" method="post">
+            <div class="form-group">
+                <label for="name">Tên ga:</label>
+                <input type="text" id="name" th:field="*{name}">
+            </div>
+
+            <div class="form-group">
+                <label for="code">Mã hiệu ga:</label>
+                <input type="text" id="code" th:field="*{code}" placeholder="SGS (Sai Gon Station), DNS (Da Nang Stion), ...">
+            </div>
+
+            <div class="form-group">
+                <label for="address">Địa chỉ:</label>
+                <input type="text" id="address" th:field="*{address}">
+            </div>
+
+            <div class="form-group">
+                <label for="city">Thành phố:</label>
+                <input type="text" id="city" th:field="*{city}">
+            </div>
+
+            <div class="form-group">
+                <label for="province">Tỉnh:</label>
+                <input type="text" id="province" th:field="*{province}">
+            </div>
+
+            <div class="form-group">
+                <label for="status">Trạng thái:</label>
+                <select id="status" th:field="*{status}" class="form-control">
+                    <option value="Hoạt động">Hoạt động</option>
+                    <option value="Tạm dừng phục vụ">Tạm dừng phục vụ</option>
+                    <option value="Ngưng hoạt động">Ngưng hoạt động</option>
+                </select>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Thêm ga tàu</button>
+                <a th:href="@{/admin/stations}" class="btn btn-secondary">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+
+</html>

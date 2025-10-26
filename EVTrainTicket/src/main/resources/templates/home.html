@@ -2,106 +2,22 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Trang chủ - Đặt vé tàu</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Home Page</title>
 </head>
 <body>
 
-<header>
-    <nav class="navbar container">
-        <a th:href="@{/home}" class="logo">EVTrainTicket</a>
-        <div class="nav-links" th:if="${user == null}">
-            <a th:href="@{/login}">Đăng nhập</a>
-            <a th:href="@{/register}">Đăng ký</a>
-        </div>
-        <div class="user-info" th:if="${user != null}">
-            <p>Xin chào, <strong th:text="${user.fullName}"></strong>!</p>
-            <form th:action="@{/logout}" method="get">
-                <button type="submit">Đăng xuất</button>
-            </form>
-        </div>
-    </nav>
-</header>
+<div class="auth-buttons" th:if="${user == null}">
+    <a th:href="@{/login}">Đăng nhập</a>
+    <a th:href="@{/register}">Đăng ký</a>
+</div>
 
-<main>
-    <section class="hero-section">
-        <h1>Vi vu khắp Việt Nam</h1>
-        <p>Trải nghiệm hành trình an toàn, tiện lợi và đáng nhớ cùng đường sắt Việt Nam.</p>
+<div class="user-info" th:if="${user != null}">
+    <p>Xin chào, <strong th:text="${user.fullName}"></strong>!</p>
+    <form th:action="@{/logout}" method="get" style="display: inline;">
+        <button type="submit">Đăng xuất</button>
+    </form>
+</div>
 
-        <div class="search-form-container">
-            <form class="search-form" action="/search-results" method="get">
-                <div class="input-group">
-                    <label for="departure">Điểm đi</label>
-                    <input type="text" id="departure" name="departure" placeholder="VD: Hà Nội" required>
-                </div>
-                <div class="input-group">
-                    <label for="arrival">Điểm đến</label>
-                    <input type="text" id="arrival" name="arrival" placeholder="VD: Sài Gòn" required>
-                </div>
-                <div class="input-group">
-                    <label for="departure-date">Ngày đi</label>
-                    <input type="date" id="departure-date" name="departureDate" required>
-                </div>
-                <button type="submit">Tìm kiếm</button>
-            </form>
-        </div>
-    </section>
-
-    <section id="features" class="content-section container">
-        <h2 class="section-title">Tại sao chọn EVTrainTicket?</h2>
-        <p class="section-subtitle">Chúng tôi mang đến những trải nghiệm tốt nhất cho hành trình của bạn.</p>
-        <div class="features-grid">
-            <div class="feature-item">
-                <div class="icon"><i class="fas fa-ticket-alt"></i></div>
-                <h3>Đặt vé nhanh chóng</h3>
-                <p>Giao diện thân thiện, quy trình đơn giản chỉ trong vài cú nhấp chuột.</p>
-            </div>
-            <div class="feature-item">
-                <div class="icon"><i class="fas fa-shield-alt"></i></div>
-                <h3>Thanh toán an toàn</h3>
-                <p>Hỗ trợ nhiều phương thức thanh toán phổ biến và bảo mật tuyệt đối.</p>
-            </div>
-            <div class="feature-item">
-                <div class="icon"><i class="fas fa-headset"></i></div>
-                <h3>Hỗ trợ 24/7</h3>
-                <p>Đội ngũ chăm sóc khách hàng luôn sẵn sàng giải đáp mọi thắc mắc của bạn.</p>
-            </div>
-        </div>
-    </section>
-
-    <section id="destinations" class="content-section">
-        <div class="container">
-            <h2 class="section-title">Điểm đến nổi bật</h2>
-            <p class="section-subtitle">Khám phá vẻ đẹp đất nước qua những cung đường sắt.</p>
-            <div class="destinations-grid">
-                <div class="destination-card">
-                    <img src="https://images.unsplash.com/photo-1559592413-716d4b5a8e7a?q=80&w=1974&auto=format&fit=crop" alt="Hội An">
-                    <div class="card-content">
-                        <h3>Đà Nẵng - Hội An</h3>
-                    </div>
-                </div>
-                <div class="destination-card">
-                    <img src="https://images.unsplash.com/photo-1595825224329-57b129993e17?q=80&w=1964&auto=format&fit=crop" alt="Sa Pa">
-                    <div class="card-content">
-                        <h3>Sa Pa</h3>
-                    </div>
-                </div>
-                <div class="destination-card">
-                    <img src="https://images.unsplash.com/photo-1583417319070-a3e723b40dc3?q=80&w=1974&auto=format&fit=crop" alt="Nha Trang">
-                    <div class="card-content">
-                        <h3>Nha Trang</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-</main>
-
-<footer>
-    <p>&copy; 2025 EVTrainTicket. All rights reserved.</p>
-</footer>
-
+<h1>Welcome to Home Page</h1>
 </body>
 </html>

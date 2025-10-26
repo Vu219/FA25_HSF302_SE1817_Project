@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="https://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMS - Quản lý ghế tàu</title>
+</head>
+
+<body>
+    <h2>Quản lý ghế tàu</h2>
+    <div class="message-container">
+        <div th:if="${successMessage}" class="alert alert-success">
+            <span style="color: green;" th:text="${successMessage}"></span>
+        </div>
+    </div>
+    <a th:href="@{/admin/seats/create}">Thêm ghế mới</a>
+    <br>
+    <br>
+    <div class="seatTypes-list">
+        <h3>Danh sách các ghế đang được phục vụ:</h3>
+        <br>
+        <table th:if="${not #lists.isEmpty(seatList)}">
+            <thead>
+                <tr>
+                    <th>Mã ghế</th>
+                    <th>Số ghế</th>
+                    <th>Loại ghế</th>
+                    <th>Dãy</th>
+                    <th>Cột</th>
+                    <th>Thuộc toa</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="seat : ${seatList}">
+                    <td th:text="${seat.seatID}"></td>
+                    <td th:text="${seat.seatNumber}"></td>
+                    <td th:text="${seat.seatType.typeName}"></td>
+                    <td th:text="${seat.rowNum}"></td>
+                    <td th:text="${seat.columnNum}"></td>
+                    <td th:text="${seat.carriage.carriageNumber} + ' - ' + ${seat.carriage.train.trainName}"></td>
+                    <td>
+                        <a th:href="@{'/admin/seats/edit/' + ${seat.seatID}}">Sửa</a>
+                        <a th:href="@{'/admin/seats/delete/' + ${seat.seatID}}"
+                            onclick="return confirm('Bạn có chắc chắn muốn xóa ghế này không?');">Xóa</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div th:if="${#lists.isEmpty(seatList)}">
+            <p>Không có ghế nào được quản lý.</p>
+        </div>
+    </div>
+    </div>
+</body>
+
+</html>

@@ -2,15 +2,19 @@ package fa25.group.evtrainticket.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "Seats")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Seat {
@@ -30,6 +34,9 @@ public class Seat {
     @JoinColumn(name = "SeatTypeID", nullable = false)
     private SeatType seatType;
 
+//    @Column(name = "Position", nullable = false)
+//    private String position;
+
     @Column(name = "RowNum", nullable = false)
     private Integer rowNum;
 
@@ -37,5 +44,6 @@ public class Seat {
     private Integer columnNum;
 
     @OneToMany(mappedBy = "seat", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore 
     private List<Ticket> tickets = new ArrayList<>();
 }

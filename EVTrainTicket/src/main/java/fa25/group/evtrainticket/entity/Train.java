@@ -2,15 +2,19 @@ package fa25.group.evtrainticket.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "Trains")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Train {
@@ -35,8 +39,21 @@ public class Train {
     private String notes;
 
     @OneToMany(mappedBy = "train", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Carriage> carriages = new ArrayList<>();
 
     @OneToMany(mappedBy = "train", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Schedule> schedules = new ArrayList<>();
+
+    // @Override
+    // public String toString() {
+    //     return "Train{" +
+    //             "trainID=" + trainID +
+    //             ", trainNumber='" + trainNumber + '\'' +
+    //             ", trainName='" + trainName + '\'' +
+    //             ", capacity=" + capacity +
+    //             ", status='" + status + '\'' +
+    //             '}';
+    // }
 }
