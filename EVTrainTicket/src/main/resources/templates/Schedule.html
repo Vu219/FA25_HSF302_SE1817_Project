@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Train Schedule Search</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .schedule-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #f8f9fa;
+        }
+        .seat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin: 10px 0;
+        }
+        .seat {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .seat.available {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .seat.occupied {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .loading {
+            display: none;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .success {
+            color: #198754;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Train Schedule Search System</h1>
+
+        <!-- Search Form -->
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Search Train Schedules</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="searchForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="departureStation" class="form-label">From Station</label>
+                                    <select class="form-select" id="departureStation" required>
+                                        <option value="">Select departure station</option>
+                                        <option value="1">Hanoi Station (HN)</option>
+                                        <option value="2">Ho Chi Minh Station (HCM)</option>
+                                        <option value="3">Da Nang Station (DN)</option>
+                                        <option value="4">Hue Station (HUE)</option>
+                                        <option value="5">Nha Trang Station (NT)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="arrivalStation" class="form-label">To Station</label>
+                                    <select class="form-select" id="arrivalStation" required>
+                                        <option value="">Select arrival station</option>
+                                        <option value="1">Hanoi Station (HN)</option>
+                                        <option value="2">Ho Chi Minh Station (HCM)</option>
+                                        <option value="3">Da Nang Station (DN)</option>
+                                        <option value="4">Hue Station (HUE)</option>
+                                        <option value="5">Nha Trang Station (NT)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="departureDate" class="form-label">Departure Date</label>
+                                    <input type="date" class="form-control" id="departureDate" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-check mt-4">
+                                        <input class="form-check-input" type="checkbox" id="isRoundTrip">
+                                        <label class="form-check-label" for="isRoundTrip">
+                                            Round Trip
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row" id="returnDateRow" style="display: none;">
+                                <div class="col-md-6 mb-3">
+                                    <label for="returnDate" class="form-label">Return Date</label>
+                                    <input type="date" class="form-control" id="returnDate">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Search Schedules</button>
+                            <button type="button" class="btn btn-secondary" onclick="clearResults()">Clear Results</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading and Messages -->
+        <div class="row mt-3">
+            <div class="col-12">
+                <div id="loading" class="text-center loading">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Searching for schedules...</p>
+                </div>
+                <div id="message" class="text-center"></div>
+            </div>
+        </div>
+
+        <!-- Search Results -->
+        <div id="results" class="mt-4" style="display: none;">
+            <h4>Search Results</h4>
+            <div id="outboundSchedules">
+                <h5>Outbound Schedules</h5>
+                <div id="outboundList"></div>
+            </div>
+            <div id="returnSchedules" style="display: none;">
+                <h5>Return Schedules</h5>
+                <div id="returnList"></div>
+            </div>
+        </div>
+
+        <!-- Seat Layout Modal -->
+        <div class="modal fade" id="seatModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Seat Layout</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="seatLayout"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Data Section -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Quick Test Data</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Available Test Routes (Date: 2025-10-25):</strong></p>
+                        <ul>
+                            <li><button class="btn btn-sm btn-outline-primary me-2" onclick="quickTest(1, 2, '2025-10-25')">Hanoi → Ho Chi Minh</button></li>
+                            <li><button class="btn btn-sm btn-outline-primary me-2" onclick="quickTest(2, 1, '2025-10-25')">Ho Chi Minh → Hanoi</button></li>
+                            <li><button class="btn btn-sm btn-outline-primary me-2" onclick="quickTest(1, 3, '2025-10-25')">Hanoi → Da Nang</button></li>
+                            <li><button class="btn btn-sm btn-outline-primary me-2" onclick="quickTest(3, 2, '2025-10-25')">Da Nang → Ho Chi Minh</button></li>
+                            <li><button class="btn btn-sm btn-outline-primary me-2" onclick="quickTest(1, 4, '2025-10-25')">Hanoi → Hue</button></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Set default date to tomorrow
+        document.getElementById('departureDate').value = '2025-10-25';
+
+        // Toggle return date field
+        document.getElementById('isRoundTrip').addEventListener('change', function() {
+            const returnDateRow = document.getElementById('returnDateRow');
+            if (this.checked) {
+                returnDateRow.style.display = 'block';
+                document.getElementById('returnDate').value = '2025-10-26';
+            } else {
+                returnDateRow.style.display = 'none';
+                document.getElementById('returnDate').value = '';
+            }
+        });
+
+        // Form submission
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            searchSchedules();
+        });
+
+        function searchSchedules() {
+            const departureStationId = document.getElementById('departureStation').value;
+            const arrivalStationId = document.getElementById('arrivalStation').value;
+            const departureDate = document.getElementById('departureDate').value;
+            const isRoundTrip = document.getElementById('isRoundTrip').checked;
+            const returnDate = document.getElementById('returnDate').value;
+
+            if (!departureStationId || !arrivalStationId || !departureDate) {
+                showMessage('Please fill in all required fields.', 'error');
+                return;
+            }
+
+            if (departureStationId === arrivalStationId) {
+                showMessage('Departure and arrival stations must be different.', 'error');
+                return;
+            }
+
+            showLoading(true);
+            clearMessage();
+
+            let url = `http://localhost:8080/api/schedules/search?departureStationId=${departureStationId}&arrivalStationId=${arrivalStationId}&departureDate=${departureDate}`;
+
+            if (isRoundTrip && returnDate) {
+                url += `&isRoundTrip=true&returnDate=${returnDate}`;
+            }
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    showLoading(false);
+                    console.log('API Response:', data); // Add logging to see the actual response
+                    displayResults(data, isRoundTrip);
+                })
+                .catch(error => {
+                    showLoading(false);
+                    console.error('Error:', error);
+                    showMessage('Error searching schedules: ' + error.message, 'error');
+                });
+        }
+
+        function displayResults(data, isRoundTrip) {
+            const resultsDiv = document.getElementById('results');
+            const outboundList = document.getElementById('outboundList');
+            const returnList = document.getElementById('returnList');
+            const returnSchedules = document.getElementById('returnSchedules');
+
+            outboundList.innerHTML = '';
+            returnList.innerHTML = '';
+
+            if (!data || (!data.departureSchedules || data.departureSchedules.length === 0)) {
+                showMessage('No schedules found for the selected criteria.', 'error');
+                resultsDiv.style.display = 'none';
+                return;
+            }
+
+            // Handle departure schedules
+            const departureSchedules = data.departureSchedules || [];
+            if (departureSchedules.length > 0) {
+                departureSchedules.forEach(schedule => {
+                    outboundList.appendChild(createScheduleCard(schedule));
+                });
+            } else {
+                outboundList.innerHTML = '<p>No outbound schedules found.</p>';
+            }
+
+            // Handle return schedules if round trip
+            if (isRoundTrip && data.returnSchedules && data.returnSchedules.length > 0) {
+                returnSchedules.style.display = 'block';
+                data.returnSchedules.forEach(schedule => {
+                    returnList.appendChild(createScheduleCard(schedule));
+                });
+            } else if (isRoundTrip) {
+                returnSchedules.style.display = 'block';
+                returnList.innerHTML = '<p>No return schedules found.</p>';
+            } else {
+                returnSchedules.style.display = 'none';
+            }
+
+            resultsDiv.style.display = 'block';
+            showMessage('Search completed successfully!', 'success');
+        }
+
+        function createScheduleCard(schedule) {
+            const card = document.createElement('div');
+            card.className = 'schedule-card';
+
+            const departureTime = new Date(schedule.departureTime).toLocaleString();
+            const arrivalTime = new Date(schedule.arrivalTime).toLocaleString();
+
+            card.innerHTML = `
+                <div class="row">
+                    <div class="col-md-8">
+                        <h6>Train: ${schedule.trainName}</h6>
+                        <p class="mb-1"><strong>Schedule ID:</strong> ${schedule.scheduleId}</p>
+                        <p class="mb-1"><strong>Departure:</strong> ${departureTime}</p>
+                        <p class="mb-1"><strong>Arrival:</strong> ${arrivalTime}</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <h5 class="text-primary">₫${schedule.basePrice?.toLocaleString()}</h5>
+                        <div class="btn-group-vertical" role="group">
+                            <button class="btn btn-success btn-sm mb-1" onclick="bookNow(${schedule.scheduleId})">
+                                <i class="fas fa-ticket-alt"></i> Book Now
+                            </button>
+                            <button class="btn btn-outline-primary btn-sm" onclick="viewSeatLayout(${schedule.scheduleId})">
+                                <i class="fas fa-eye"></i> View Seats
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function bookNow(scheduleId) {
+            // Redirect to booking page with schedule ID
+            window.location.href = `/booking?scheduleId=${scheduleId}`;
+        }
+
+        function viewSeatLayout(scheduleId) {
+            fetch(`http://localhost:8080/api/schedules/${scheduleId}/seats`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    displaySeatLayout(data);
+                    const modal = new bootstrap.Modal(document.getElementById('seatModal'));
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showMessage('Error loading seat layout: ' + error.message, 'error');
+                });
+        }
+
+        function displaySeatLayout(carriages) {
+            const seatLayout = document.getElementById('seatLayout');
+            seatLayout.innerHTML = '';
+
+            if (!carriages || carriages.length === 0) {
+                seatLayout.innerHTML = '<p>No seat information available.</p>';
+                return;
+            }
+
+            carriages.forEach(carriage => {
+                const carriageDiv = document.createElement('div');
+                carriageDiv.className = 'mb-4';
+
+                carriageDiv.innerHTML = `
+                    <h6>Carriage ${carriage.carriageNumber} - ${carriage.carriageTypeName}</h6>
+                    <p class="text-muted">Total Seats: ${carriage.totalSeats}</p>
+                `;
+
+                if (carriage.seats && carriage.seats.length > 0) {
+                    const seatGrid = document.createElement('div');
+                    seatGrid.className = 'seat-grid';
+
+                    carriage.seats.forEach(seat => {
+                        const seatElement = document.createElement('div');
+                        seatElement.className = `seat ${seat.isAvailable ? 'available' : 'occupied'}`;
+                        seatElement.textContent = seat.seatNumber;
+                        seatElement.title = `${seat.seatNumber} - ${seat.seatTypeName} - ${seat.isAvailable ? 'Available' : 'Occupied'}`;
+                        seatGrid.appendChild(seatElement);
+                    });
+
+                    carriageDiv.appendChild(seatGrid);
+                } else {
+                    carriageDiv.innerHTML += '<p>No seat details available for this carriage.</p>';
+                }
+
+                seatLayout.appendChild(carriageDiv);
+            });
+
+            // Add legend
+            const legend = document.createElement('div');
+            legend.className = 'mt-3';
+            legend.innerHTML = `
+                <h6>Legend:</h6>
+                <div class="d-flex gap-3">
+                    <div><span class="seat available me-1"></span> Available</div>
+                    <div><span class="seat occupied me-1"></span> Occupied</div>
+                </div>
+            `;
+            seatLayout.appendChild(legend);
+        }
+
+        function quickTest(depId, arrId, date) {
+            document.getElementById('departureStation').value = depId;
+            document.getElementById('arrivalStation').value = arrId;
+            document.getElementById('departureDate').value = date;
+            document.getElementById('isRoundTrip').checked = false;
+            document.getElementById('returnDateRow').style.display = 'none';
+            searchSchedules();
+        }
+
+        function showLoading(show) {
+            const loadingDiv = document.getElementById('loading');
+            loadingDiv.style.display = show ? 'block' : 'none';
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = `<div class="alert alert-${type === 'error' ? 'danger' : 'success'}">${message}</div>`;
+        }
+
+        function clearMessage() {
+            document.getElementById('message').innerHTML = '';
+        }
+
+        function clearResults() {
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('outboundList').innerHTML = '';
+            document.getElementById('returnList').innerHTML = '';
+            clearMessage();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Payment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .payment-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .booking-summary {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+        }
+        .booking-summary h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #666;
+        }
+        .info-value {
+            color: #333;
+        }
+        .total-amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e7f3ff;
+            border-radius: 4px;
+        }
+        .payment-button {
+            width: 100%;
+            background-color: #28a745;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 4px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .payment-button:hover {
+            background-color: #218838;
+        }
+        .payment-button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .ticket-list {
+            margin-top: 15px;
+        }
+        .ticket-item {
+            background-color: #f8f9fa;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border-left: 4px solid #28a745;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <div class="header">
+            <h1>🎫 Complete Your Payment</h1>
+            <p>Review your booking details and complete payment</p>
+        </div>
+
+        <div class="booking-summary" th:if="${booking}">
+            <h3>📋 Booking Summary</h3>
+            <div class="info-row">
+                <span class="info-label">Booking Code:</span>
+                <span class="info-value" th:text="${bookingCode}">BK12345678</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Passenger Name:</span>
+                <span class="info-value" th:text="${booking.user.fullName}">John Doe</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Email:</span>
+                <span class="info-value" th:text="${booking.user.email}">john@example.com</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Phone:</span>
+                <span class="info-value" th:text="${booking.user.phone}">1234567890</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Number of Tickets:</span>
+                <span class="info-value" th:text="${booking.tickets.size()}">2</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Status:</span>
+                <span class="info-value" th:text="${booking.status}">PENDING</span>
+            </div>
+        </div>
+
+        <div class="total-amount" th:if="${booking}">
+            Total Amount: $<span th:text="${booking.totalAmount}">350.00</span>
+        </div>
+
+        <div th:if="${booking == null}" class="error" style="display: block;">
+            <h3>❌ No Booking Found</h3>
+            <p>No booking information found in session. Please <a href="/booking">create a booking</a> first.</p>
+        </div>
+
+        <div th:if="${booking != null}">
+            <button class="payment-button" onclick="completePayment()" id="paymentBtn">
+                💳 Complete Payment
+            </button>
+        </div>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        async function completePayment() {
+            const button = document.getElementById('paymentBtn');
+            const resultDiv = document.getElementById('result');
+
+            // Disable button and show loading
+            button.disabled = true;
+            button.innerHTML = '⏳ Processing Payment...';
+
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.innerHTML = '<div class="loading">Processing your payment...</div>';
+
+            try {
+                const response = await fetch('/api/payment/complete-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ Payment Successful!</h3>
+                        <p><strong>${result.message}</strong></p>
+                        <div class="info-row">
+                            <span class="info-label">Booking Code:</span>
+                            <span class="info-value">${result.bookingCode}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Status:</span>
+                            <span class="info-value">${result.bookingStatus}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Tickets Activated:</span>
+                            <span class="info-value">${result.ticketCount}</span>
+                        </div>
+                        <div class="ticket-list">
+                            <h4>🎫 Your Tickets:</h4>
+                            ${result.tickets.map(ticket => `
+                                <div class="ticket-item">
+                                    <strong>Ticket:</strong> ${ticket.ticketCode}<br>
+                                    <strong>Seat:</strong> ${ticket.seatNumber}<br>
+                                    <strong>Status:</strong> ${ticket.status}<br>
+                                    <strong>Price:</strong> $${ticket.price}
+                                </div>
+                            `).join('')}
+                        </div>
+                        <p><em>🎉 Your tickets are now active and ready for travel!</em></p>
+                        <button onclick="window.location.href='/booking'" style="margin-top: 15px; padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Book Another Trip
+                        </button>
+                    `;
+
+                    // Hide the payment button
+                    button.style.display = 'none';
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <h3>❌ Payment Failed</h3>
+                        <p>${result.error}</p>
+                        <button onclick="retryPayment()" style="margin-top: 10px; padding: 8px 16px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Try Again
+                        </button>
+                    `;
+
+                    // Re-enable button
+                    button.disabled = false;
+                    button.innerHTML = '💳 Complete Payment';
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>❌ Error</h3>
+                    <p>An error occurred while processing payment: ${error.message}</p>
+                    <button onclick="retryPayment()" style="margin-top: 10px; padding: 8px 16px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        Try Again
+                    </button>
+                `;
+
+                // Re-enable button
+                button.disabled = false;
+                button.innerHTML = '💳 Complete Payment';
+            }
+        }
+
+        function retryPayment() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

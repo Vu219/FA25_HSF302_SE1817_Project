@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Book Your Ticket - EV Train Ticket</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/booking.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-train"></i> EV Train Ticket
+        </a>
+        <div class="navbar-nav ms-auto">
+            <a class="nav-link" href="/booking/history">My Bookings</a>
+            <a class="nav-link" href="/">Search Trains</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-ticket-alt"></i> Book Your Ticket</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Schedule Information -->
+                    <div class="mb-4" id="schedule-info" style="display: none;">
+                        <div class="alert alert-info">
+                            <h5>Selected Journey</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Train:</strong> <span id="train-name"></span><br>
+                                    <strong>From:</strong> <span id="departure-station"></span><br>
+                                    <strong>To:</strong> <span id="arrival-station"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Departure:</strong> <span id="departure-time"></span><br>
+                                    <strong>Arrival:</strong> <span id="arrival-time"></span><br>
+                                    <strong>Base Price:</strong> $<span id="base-price"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seat Selection -->
+                    <div id="seat-selection" style="display: none;">
+                        <h5><i class="fas fa-chair"></i> Select Your Seats</h5>
+                        <div class="seat-legend">
+                            <div><span class="seat available"></span> Available</div>
+                            <div><span class="seat selected"></span> Selected</div>
+                            <div><span class="seat occupied"></span> Occupied</div>
+                        </div>
+                        <div id="carriages-container"></div>
+                    </div>
+
+                    <!-- Passenger Information -->
+                    <div id="passenger-info" style="display: none;">
+                        <h5><i class="fas fa-user"></i> Passenger Information</h5>
+                        <form id="passenger-form">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Full Name *</label>
+                                        <input class="form-control" id="passenger-name" required type="text">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Email *</label>
+                                        <input class="form-control" id="passenger-email" required type="email">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Phone *</label>
+                                        <input class="form-control" id="passenger-phone" required type="tel">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Ticket Type</label>
+                                        <select class="form-control" id="ticket-type">
+                                            <option value="REGULAR">Regular</option>
+                                            <option value="PREMIUM">Premium</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Payment Information -->
+                    <div id="payment-info" style="display: none;">
+                        <h5><i class="fas fa-credit-card"></i> Payment Information</h5>
+                        <form id="payment-form">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Payment Method</label>
+                                        <select class="form-control" id="payment-method">
+                                            <option value="CREDIT_CARD">Credit Card</option>
+                                            <option value="DEBIT_CARD">Debit Card</option>
+                                            <option value="BANK_TRANSFER">Bank Transfer</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Card Number</label>
+                                        <input class="form-control" id="card-number" placeholder="1234 5678 9012 3456"
+                                               type="text">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Card Holder Name</label>
+                                        <input class="form-control" id="card-holder" type="text">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Expiry Date</label>
+                                        <input class="form-control" id="expiry-date" placeholder="MM/YY" type="text">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">CVV</label>
+                                        <input class="form-control" id="cvv" placeholder="123" type="text">
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <button class="btn btn-secondary" id="back-btn" style="display: none;">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <button class="btn btn-primary" id="next-btn">
+                            Next <i class="fas fa-arrow-right"></i>
+                        </button>
+                        <button class="btn btn-success" id="book-btn" style="display: none;">
+                            <i class="fas fa-check"></i> Complete Booking
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="booking-summary">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-receipt"></i> Booking Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="summary-content">
+                            <p class="text-muted">Select a schedule to see booking details</p>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <strong>Total Amount:</strong>
+                            <strong id="total-amount">$0.00</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let currentStep = 0;
+    let selectedSchedule = null;
+    let selectedSeats = [];
+    let seatLayout = [];
+    let totalAmount = 0;
+    const MAX_SEATS_PER_BOOKING = 8; // Maximum seats per booking
+
+    const steps = ['schedule-info', 'seat-selection', 'passenger-info', 'payment-info'];
+
+    // Initialize booking from URL parameters or localStorage
+    document.addEventListener('DOMContentLoaded', function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const scheduleId = urlParams.get('scheduleId');
+
+        if (scheduleId) {
+            loadScheduleInfo(scheduleId);
+        } else {
+            // Provide default schedule for testing
+            selectedSchedule = {
+                scheduleId: 1,
+                trainName: 'Express Train SE1',
+                departureStation: 'Hanoi',
+                arrivalStation: 'Ho Chi Minh City',
+                departureTime: '08:00 AM',
+                arrivalTime: '08:00 PM',
+                basePrice: 250000
+            };
+            updateScheduleDisplay();
+            loadSeatLayout(1);
+            showStep(1); // Start with seat selection
+        }
+    });
+
+    function loadScheduleInfo(scheduleId) {
+        // Fetch real schedule information from the backend
+        fetch(`/api/schedules/${scheduleId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Schedule not found');
+                }
+                return response.json();
+            })
+            .then(schedule => {
+                selectedSchedule = {
+                    scheduleId: schedule.scheduleId || scheduleId,
+                    trainName: schedule.trainName || 'Unknown Train',
+                    departureStation: schedule.departureStation || 'Unknown',
+                    arrivalStation: schedule.arrivalStation || 'Unknown',
+                    departureTime: schedule.departureTime || '',
+                    arrivalTime: schedule.arrivalTime || '',
+                    basePrice: schedule.basePrice || 0
+                };
+                updateScheduleDisplay();
+                loadSeatLayout(scheduleId);
+                showStep(1); // Start with seat selection
+            })
+            .catch(error => {
+                console.error('Error loading schedule:', error);
+                // Use URL parameters as fallback
+                const urlParams = new URLSearchParams(window.location.search);
+                selectedSchedule = {
+                    scheduleId: scheduleId,
+                    trainName: urlParams.get('trainName') || 'Express Train',
+                    departureStation: urlParams.get('departureStation') || 'Departure',
+                    arrivalStation: urlParams.get('arrivalStation') || 'Arrival',
+                    departureTime: urlParams.get('departureTime') || '',
+                    arrivalTime: urlParams.get('arrivalTime') || '',
+                    basePrice: parseFloat(urlParams.get('basePrice')) || 250000
+                };
+                updateScheduleDisplay();
+                loadSeatLayout(scheduleId);
+                showStep(1); // Start with seat selection
+            });
+    }
+
+    function updateScheduleDisplay() {
+        if (selectedSchedule) {
+            document.getElementById('train-name').textContent = selectedSchedule.trainName;
+            document.getElementById('departure-station').textContent = selectedSchedule.departureStation;
+            document.getElementById('arrival-station').textContent = selectedSchedule.arrivalStation;
+            document.getElementById('departure-time').textContent = selectedSchedule.departureTime;
+            document.getElementById('arrival-time').textContent = selectedSchedule.arrivalTime;
+            document.getElementById('base-price').textContent = selectedSchedule.basePrice.toLocaleString();
+        }
+    }
+
+    function loadSeatLayout(scheduleId) {
+        console.log('Loading seat layout for schedule ID:', scheduleId);
+
+        fetch(`/api/schedules/${scheduleId}/seats`)
+            .then(response => {
+                console.log('Seat layout response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Seat layout data received:', data);
+                seatLayout = data;
+                renderSeatLayout();
+            })
+            .catch(error => {
+                console.error('Error loading seats:', error);
+                // Show error message and provide fallback data for testing
+                const container = document.getElementById('carriages-container');
+                container.innerHTML = `
+                    <div class="alert alert-warning">
+                        <strong>API Error:</strong> ${error.message}<br>
+                        <small>Loading fallback test data...</small>
+                    </div>
+                `;
+
+                // Provide fallback test data
+                setTimeout(() => {
+                    loadTestSeatData(scheduleId);
+                }, 1000);
+            });
+    }
+
+    function renderSeatLayout() {
+        const container = document.getElementById('carriages-container');
+        container.innerHTML = '';
+
+        if (!seatLayout || seatLayout.length === 0) {
+            container.innerHTML = '<div class="alert alert-warning">No seat information available.</div>';
+            return;
+        }
+
+        seatLayout.forEach(carriage => {
+            const carriageDiv = document.createElement('div');
+            carriageDiv.className = 'carriage-section';
+            carriageDiv.innerHTML = `
+                <h6><i class="fas fa-subway"></i> ${carriage.carriageTypeName} - Carriage ${carriage.carriageNumber}</h6>
+                <div class="seat-map" id="carriage-${carriage.carriageId}"></div>
+            `;
+            container.appendChild(carriageDiv);
+
+            const seatMap = document.getElementById(`carriage-${carriage.carriageId}`);
+
+            // Determine grid layout based on available seats
+            const columns = [...new Set(carriage.seats.map(s => s.columnPosition))].sort();
+            seatMap.style.gridTemplateColumns = `repeat(${columns.length}, 1fr)`;
+
+            // Sort seats by row and column for proper display
+            carriage.seats.sort((a, b) => {
+                if (a.rowNumber !== b.rowNumber) return a.rowNumber - b.rowNumber;
+                return a.columnPosition.localeCompare(b.columnPosition);
+            }).forEach(seat => {
+                const seatDiv = document.createElement('div');
+                const isAvailable = seat.status === 'AVAILABLE';
+                const isBooked = seat.status === 'BOOKED';
+
+                seatDiv.className = `seat ${isAvailable ? 'available' : 'occupied'}`;
+                seatDiv.textContent = seat.seatNumber;
+                seatDiv.dataset.seatId = seat.seatID;
+                seatDiv.dataset.price = seat.price;
+                seatDiv.dataset.seatType = seat.seatTypeName;
+                seatDiv.title = `${seat.seatTypeName} - $${parseFloat(seat.price).toLocaleString()}`;
+
+                if (isAvailable) {
+                    seatDiv.addEventListener('click', () => toggleSeat(seat));
+                }
+
+                seatMap.appendChild(seatDiv);
+            });
+        });
+    }
+
+    function toggleSeat(seat) {
+        const seatDiv = document.querySelector(`[data-seat-id="${seat.seatID}"]`);
+        const index = selectedSeats.findIndex(s => s.seatID === seat.seatID);
+
+        if (index > -1) {
+            // Remove seat selection
+            selectedSeats.splice(index, 1);
+            seatDiv.classList.remove('selected');
+            seatDiv.classList.add('available');
+        } else {
+            // Check if we've reached the maximum number of seats
+            if (selectedSeats.length >= MAX_SEATS_PER_BOOKING) {
+                alert(`You can select a maximum of ${MAX_SEATS_PER_BOOKING} seats per booking.`);
+                return;
+            }
+
+            // Add seat selection
+            selectedSeats.push(seat);
+            seatDiv.classList.remove('available');
+            seatDiv.classList.add('selected');
+
+            // Show selection feedback
+            seatDiv.style.animation = 'none';
+            setTimeout(() => {
+                seatDiv.style.animation = 'pulse 1s ease-in-out';
+            }, 10);
+        }
+
+        updateBookingSummary();
+    }
+
+    function updateBookingSummary() {
+        const summaryContent = document.getElementById('summary-content');
+
+        if (selectedSeats.length === 0) {
+            summaryContent.innerHTML = '<p class="text-muted">Select seats to see booking details</p>';
+            totalAmount = 0;
+        } else {
+            let content = '<div><strong>Selected Seats:</strong><br>';
+            totalAmount = 0;
+
+            selectedSeats.forEach(seat => {
+                const seatPrice = parseFloat(seat.price);
+                content += `<div class="d-flex justify-content-between mb-1">
+                    <span>${seat.seatNumber} (${seat.seatTypeName})</span>
+                    <span>$${seatPrice.toLocaleString()}</span>
+                </div>`;
+                totalAmount += seatPrice;
+            });
+
+            content += '</div>';
+            summaryContent.innerHTML = content;
+        }
+
+        document.getElementById('total-amount').textContent = '$' + totalAmount.toLocaleString();
+
+        // Update next button state
+        const nextBtn = document.getElementById('next-btn');
+        if (currentStep === 1) { // Seat selection step
+            nextBtn.disabled = selectedSeats.length === 0;
+            nextBtn.textContent = selectedSeats.length === 0 ? 'Select Seats' : `Next (${selectedSeats.length} seat${selectedSeats.length > 1 ? 's' : ''})`;
+        }
+    }
+
+    function showStep(step) {
+        steps.forEach((stepId, index) => {
+            const stepDiv = document.getElementById(stepId);
+            if (stepDiv) {
+                stepDiv.style.display = index === step ? 'block' : 'none';
+            }
+        });
+
+        document.getElementById('back-btn').style.display = step > 0 ? 'inline-block' : 'none';
+        document.getElementById('next-btn').style.display = step < steps.length - 1 ? 'inline-block' : 'none';
+        document.getElementById('book-btn').style.display = step === steps.length - 1 ? 'inline-block' : 'none';
+
+        currentStep = step;
+    }
+
+    document.getElementById('next-btn').addEventListener('click', function () {
+        const result = validateCurrentStep();
+
+        if (result instanceof Promise) {
+            // Handle async validation (seat validation)
+            result.then(isValid => {
+                if (isValid) {
+                    showStep(currentStep + 1);
+                }
+            });
+        } else if (result) {
+            // Handle sync validation
+            showStep(currentStep + 1);
+        }
+    });
+
+    document.getElementById('back-btn').addEventListener('click', function () {
+        showStep(currentStep - 1);
+    });
+
+    document.getElementById('book-btn').addEventListener('click', function () {
+        completeBooking();
+    });
+
+    function validateCurrentStep() {
+        switch (currentStep) {
+            case 1: // Seat selection
+                if (selectedSeats.length === 0) {
+                    alert('Please select at least one seat');
+                    return false;
+                }
+                // Validate seat availability in real-time
+                return validateSeatsBeforeNext();
+
+            case 2: // Passenger info
+                const name = document.getElementById('passenger-name').value.trim();
+                const email = document.getElementById('passenger-email').value.trim();
+                const phone = document.getElementById('passenger-phone').value.trim();
+
+                if (!name || !email || !phone) {
+                    alert('Please fill in all required passenger information');
+                    return false;
+                }
+
+                // Basic email validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    alert('Please enter a valid email address');
+                    return false;
+                }
+
+                break;
+
+            case 3: // Payment info
+                const paymentMethod = document.getElementById('payment-method').value;
+                const cardNumber = document.getElementById('card-number').value.trim();
+                const cardHolder = document.getElementById('card-holder').value.trim();
+                const expiryDate = document.getElementById('expiry-date').value.trim();
+                const cvv = document.getElementById('cvv').value.trim();
+
+                if (paymentMethod.includes('CARD')) {
+                    if (!cardNumber || !cardHolder || !expiryDate || !cvv) {
+                        alert('Please fill in all card information');
+                        return false;
+                    }
+
+                    // Basic card number validation (should be 16 digits)
+                    const cleanCardNumber = cardNumber.replace(/\s/g, '');
+                    if (!/^\d{16}$/.test(cleanCardNumber)) {
+                        alert('Please enter a valid 16-digit card number');
+                        return false;
+                    }
+
+                    // Basic CVV validation
+                    if (!/^\d{3,4}$/.test(cvv)) {
+                        alert('Please enter a valid CVV (3-4 digits)');
+                        return false;
+                    }
+                }
+                break;
+        }
+        return true;
+    }
+
+    function validateSeatsBeforeNext() {
+        if (selectedSeats.length === 0) return false;
+
+        const seatIds = selectedSeats.map(s => s.seatID);
+        const scheduleId = parseInt(selectedSchedule.scheduleId);
+
+        // Show loading state
+        const nextBtn = document.getElementById('next-btn');
+        const originalText = nextBtn.textContent;
+        nextBtn.disabled = true;
+        nextBtn.textContent = 'Validating seats...';
+
+        return fetch(`/api/booking/validate-seats?scheduleId=${scheduleId}&seatIds=${seatIds.join(',')}`)
+            .then(response => response.json())
+            .then(isValid => {
+                if (!isValid) {
+                    alert('Some selected seats are no longer available. Please select different seats.');
+                    // Refresh seat layout
+                    loadSeatLayout(scheduleId);
+                    selectedSeats = [];
+                    updateBookingSummary();
+                }
+                return isValid;
+            })
+            .catch(error => {
+                console.error('Seat validation error:', error);
+                alert('Unable to validate seat availability. Please try again.');
+                return false;
+            })
+            .finally(() => {
+                nextBtn.disabled = false;
+                nextBtn.textContent = originalText;
+            });
+    }
+
+    function completeBooking() {
+        if (selectedSeats.length === 0) {
+            alert('Please select at least one seat');
+            return;
+        }
+
+        const bookingData = {
+            userId: null, // Anonymous booking
+            userFullName: document.getElementById('passenger-name').value,
+            userEmail: document.getElementById('passenger-email').value,
+            userPhone: document.getElementById('passenger-phone').value,
+            scheduleId: parseInt(selectedSchedule.scheduleId),
+            selectedSeatIds: selectedSeats.map(s => s.seatID),
+            ticketType: document.getElementById('ticket-type').value,
+            paymentMethod: document.getElementById('payment-method').value,
+            cardNumber: document.getElementById('card-number').value,
+            cardHolderName: document.getElementById('card-holder').value,
+            expiryDate: document.getElementById('expiry-date').value,
+            cvv: document.getElementById('cvv').value,
+            notes: `Booking for ${selectedSeats.length} seat(s): ${selectedSeats.map(s => s.seatNumber).join(', ')}`
+        };
+
+        // Show loading state
+        const bookBtn = document.getElementById('book-btn');
+        const originalText = bookBtn.textContent;
+        bookBtn.disabled = true;
+        bookBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+        // Create booking and automatically complete it
+        fetch('/api/booking/create-pending', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(bookingData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.bookingCode) {
+                // Automatically complete the payment
+                return fetch(`/api/payment/complete/${data.bookingCode}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+            } else {
+                throw new Error(data.message || data || 'Booking creation failed');
+            }
+        })
+        .then(response => response.json())
+        .then(paymentData => {
+            if (paymentData.success) {
+                // Success - redirect to confirmation
+                window.location.href = `/booking/confirmation?bookingCode=${paymentData.bookingCode}&status=success`;
+            } else {
+                throw new Error(paymentData.error || 'Payment completion failed');
+            }
+        })
+        .catch(error => {
+            console.error('Booking error:', error);
+            alert('Booking failed: ' + error.message);
+            // Reset button
+            bookBtn.disabled = false;
+            bookBtn.innerHTML = originalText;
+        });
+    }
+
+    function loadTestSeatData(scheduleId) {
+        console.log('Loading test seat data for schedule:', scheduleId);
+
+        // Generate test seat layout data
+        seatLayout = [
+            {
+                carriageId: 1,
+                carriageNumber: 1,
+                carriageTypeName: "Economy Class",
+                totalSeats: 32,
+                seats: generateTestSeats(1, "Economy", 8, 4, 150000)
+            },
+            {
+                carriageId: 2,
+                carriageNumber: 2,
+                carriageTypeName: "Business Class",
+                totalSeats: 16,
+                seats: generateTestSeats(2, "Business", 4, 4, 250000)
+            }
+        ];
+
+        console.log('Test seat layout generated:', seatLayout);
+        renderSeatLayout();
+    }
+
+    function generateTestSeats(carriageId, seatType, rows, seatsPerRow, basePrice) {
+        const seats = [];
+        const columns = ['A', 'B', 'C', 'D'];
+
+        for (let row = 1; row <= rows; row++) {
+            for (let col = 0; col < Math.min(seatsPerRow, columns.length); col++) {
+                const seatNumber = `${row}${columns[col]}`;
+                const isOccupied = Math.random() < 0.3; // 30% occupied for testing
+
+                seats.push({
+                    seatID: (carriageId * 100) + (row * 10) + col,
+                    seatNumber: seatNumber,
+                    rowNumber: row,
+                    columnPosition: columns[col],
+                    seatTypeName: seatType,
+                    price: basePrice * (1 + (row - 1) * 0.1), // Slight price variation
+                    status: isOccupied ? 'BOOKED' : 'AVAILABLE',
+                    isAvailable: !isOccupied
+                });
+            }
+        }
+
+        return seats;
+    }
+</script>
+</body>
+</html>
+

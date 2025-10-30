@@ -48,6 +48,12 @@ public class Schedule {
     @Column(name = "BasePrice", nullable = false)
     private BigDecimal basePrice;
 
+    @Column(name = "Origin", nullable = false)
+    private String origin;
+
+    @Column(name = "Destination", nullable = false)
+    private String destination;
+
     @Column(name = "Status", nullable = false, columnDefinition = "nvarchar(50)")
     private String status;
 
@@ -61,5 +67,13 @@ public class Schedule {
     private List<Ticket> tickets = new ArrayList<>();
 
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ScheduleStop> scheduleStops = new ArrayList<>();
+    private List<ScheduleStop> stops = new ArrayList<>();
+
+    public String getOrigin() {
+        return origin != null ? origin : departureStation.getName();
+    }
+
+    public String getDestination() {
+        return destination != null ? destination : arrivalStation.getName();
+    }
 }

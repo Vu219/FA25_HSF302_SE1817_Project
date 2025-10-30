@@ -10,8 +10,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CarriageLayoutDto {
-    private int carriageId;
-    private String carriageNumber;
+    private Integer carriageId;
+    private Integer carriageNumber;
     private String carriageTypeName;
+    private Integer totalSeats;
     private List<seatDto> seats;
 }

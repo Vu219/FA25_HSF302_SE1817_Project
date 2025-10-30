@@ -1,4 +1,4 @@
-package fa25.group.evtrainticket.Repository;
+package fa25.group.evtrainticket.repository;
 
 import fa25.group.evtrainticket.entity.Carriage;
 import org.springframework.data.jpa.repository.JpaRepository;

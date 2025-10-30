@@ -1,6 +1,6 @@
-package fa25.group.evtrainticket.Service;
+package fa25.group.evtrainticket.service;
 
-import fa25.group.evtrainticket.Repository.ScheduleRepository;
+import fa25.group.evtrainticket.repository.ScheduleRepository;
 import fa25.group.evtrainticket.dto.RoundTripSearchDto;
 import fa25.group.evtrainticket.dto.ScheduleSearchDto;
 import fa25.group.evtrainticket.entity.Schedule;
@@ -9,15 +9,13 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class ScheduleServiceImpl implements  ScheduleService {
     @Autowired
     private ScheduleRepository scheduleRepository;
-    private static final String STATUS_SCHEDULED = "scheduled";
+    private static final String STATUS_SCHEDULED = "Active";
 
     @Override
     public List<ScheduleSearchDto> findAndMapSchedules(int depId, int arrId, LocalDate date) {
@@ -33,7 +31,7 @@ public class ScheduleServiceImpl implements  ScheduleService {
         );
         return schedules.stream()
                 .map(ScheduleSearchDto::new)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -44,6 +42,11 @@ public class ScheduleServiceImpl implements  ScheduleService {
             returnSchedules = findAndMapSchedules(arrId, depId, returnDate);
         }
         RoundTripSearchDto search = new RoundTripSearchDto(departureSchedules,returnSchedules);
-        return Arrays.asList(search);
+        return List.of(search);
+    }
+
+    @Override
+    public Schedule getScheduleById(int scheduleId) {
+        return scheduleRepository.findById(scheduleId).orElse(null);
     }
 }

@@ -19,5 +19,10 @@ public class ScheduleSearchDto {
     private BigDecimal basePrice;
 
     public ScheduleSearchDto(Schedule schedule) {
+        this.scheduleId = schedule.getScheduleID();
+        this.trainName = schedule.getTrain().getTrainName();
+        this.departureTime = schedule.getDepartureTime();
+        this.arrivalTime = schedule.getArrivalTime();
+        this.basePrice = schedule.getBasePrice();
     }
 }

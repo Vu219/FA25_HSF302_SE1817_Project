@@ -6,7 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CarriageTypeRepository extends JpaRepository<CarriageType, Integer> {
-    boolean existsByTypeName(String typeName);
-
-    boolean existsByTypeNameAndCarriageTypeId(String typeName, Integer carriageTypeId);
 }
