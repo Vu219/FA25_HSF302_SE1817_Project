@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${schedule.scheduleID == null ? 'Create Schedule' : 'Edit Schedule'}">Schedule Form</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="admin-page">
+
+<!-- Header -->
+<header>
+    <nav class="navbar container">
+        <a th:href="@{/home}" class="logo">
+            <i class="fas fa-train"></i> EVTrainTicket
+        </a>
+        <div class="user-info" th:if="${user != null}">
+            <p>Xin chào, <strong th:text="${user.fullName}"></strong>!</p>
+            <form th:action="@{/logout}" method="get">
+                <button type="submit">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </button>
+            </form>
+        </div>
+    </nav>
+</header>
+
+<!-- Main Content -->
+<main class="admin-container">
+    
+    <!-- Admin Header -->
+    <div class="admin-header">
+        <h1>
+            <i th:class="${schedule.scheduleID == null ? 'fas fa-plus-circle' : 'fas fa-edit'}"></i>
+            <span th:text="${schedule.scheduleID == null ? 'Create New Schedule' : 'Edit Schedule'}"></span>
+        </h1>
+        <p class="breadcrumb">
+            <a th:href="@{/home}" style="color: white; text-decoration: none;">
+                <i class="fas fa-home"></i> Home
+            </a> 
+            <i class="fas fa-chevron-right" style="font-size: 0.8em; margin: 0 10px;"></i> 
+            <a th:href="@{/admin/schedules}" style="color: white; text-decoration: none;">Schedules</a>
+            <i class="fas fa-chevron-right" style="font-size: 0.8em; margin: 0 10px;"></i> 
+            <span th:text="${schedule.scheduleID == null ? 'Create' : 'Edit'}"></span>
+        </p>
+    </div>
+
+    <!-- Alerts -->
+    <div th:if="${param.error}" class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+            <p th:if="${param.error == 'stationOrTrainNotFound'}">⚠️ Station or Train not found. Please try again.</p>
+            <p th:if="${param.error == 'sameStation'}">⚠️ Departure and Arrival stations cannot be the same!</p>
+            <p th:if="${param.error == 'invalidTime'}">⚠️ Arrival time must be after departure time!</p>
+            <p th:unless="${param.error == 'stationOrTrainNotFound' or param.error == 'sameStation' or param.error == 'invalidTime'}" 
+               th:text="${param.error}">Error occurred!</p>
+        </div>
+    </div>
+
+    <!-- Form Container -->
+    <div class="admin-form-container">
+        <form th:action="${schedule.scheduleID == null ? '/admin/schedules' : '/admin/schedules/' + schedule.scheduleID}" 
+              method="post">
+            <input type="hidden" name="_method" th:value="${schedule.scheduleID != null ? 'put' : 'post'}" />
+
+            <!-- Section: Basic Information -->
+            <h2 style="color: var(--admin-primary); margin-bottom: 25px; border-bottom: 3px solid var(--admin-secondary); padding-bottom: 10px;">
+                <i class="fas fa-info-circle"></i> Basic Information
+            </h2>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="train">
+                        <i class="fas fa-train"></i> Train <span>*</span>
+                    </label>
+                    <select id="train" name="train.id" class="form-control" required>
+                        <option value="" disabled th:selected="${schedule.train == null}">Select Train</option>
+                        <option th:each="train : ${trains}" 
+                                th:value="${train.trainID}" 
+                                th:text="${train.trainName}" 
+                                th:selected="${schedule.train != null and schedule.train.trainID == train.trainID}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="status">
+                        <i class="fas fa-toggle-on"></i> Status <span>*</span>
+                    </label>
+                    <select id="status" name="status" class="form-control" required>
+                        <option value="">Select Status</option>
+                        <option value="ACTIVE" th:selected="${schedule.status == 'ACTIVE'}">✅ ACTIVE</option>
+                        <option value="INACTIVE" th:selected="${schedule.status == 'INACTIVE'}">⏸️ INACTIVE</option>
+                        <option value="CANCELLED" th:selected="${schedule.status == 'CANCELLED'}">❌ CANCELLED</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Section: Route Information -->
+            <h2 style="color: var(--admin-primary); margin: 40px 0 25px 0; border-bottom: 3px solid var(--admin-secondary); padding-bottom: 10px;">
+                <i class="fas fa-map-marked-alt"></i> Route Information
+            </h2>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="departureStation">
+                        <i class="fas fa-map-marker-alt" style="color: #28a745;"></i> Departure Station <span>*</span>
+                    </label>
+                    <select id="departureStation" name="departureStationId" class="form-control" required>
+                        <option value="" disabled th:selected="${schedule.departureStation == null}">Select Departure Station</option>
+                        <option th:each="station : ${stations}" 
+                                th:value="${station.stationID}" 
+                                th:text="${station.name}" 
+                                th:selected="${schedule.departureStation != null and schedule.departureStation.stationID == station.stationID}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="arrivalStation">
+                        <i class="fas fa-map-marker-alt" style="color: #dc3545;"></i> Arrival Station <span>*</span>
+                    </label>
+                    <select id="arrivalStation" name="arrivalStationId" class="form-control" required>
+                        <option value="" disabled th:selected="${schedule.arrivalStation == null}">Select Arrival Station</option>
+                        <option th:each="station : ${stations}" 
+                                th:value="${station.stationID}" 
+                                th:text="${station.name}" 
+                                th:selected="${schedule.arrivalStation != null and schedule.arrivalStation.stationID == station.stationID}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="distanceKm">
+                        <i class="fas fa-road"></i> Distance (km) <span>*</span>
+                    </label>
+                    <input type="number" 
+                           id="distanceKm" 
+                           name="distanceKm" 
+                           th:value="${schedule.distanceKm}"
+                           class="form-control" 
+                           step="0.1" 
+                           min="0"
+                           placeholder="Enter distance in kilometers"
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label for="estimatedTime">
+                        <i class="fas fa-hourglass-half"></i> Estimated Time (minutes) <span>*</span>
+                    </label>
+                    <input type="number" 
+                           id="estimatedTime" 
+                           name="estimatedTime" 
+                           th:value="${schedule.estimatedTime}"
+                           class="form-control"
+                           min="0"
+                           placeholder="Enter time in minutes"
+                           required>
+                </div>
+            </div>
+
+            <!-- Section: Schedule Times -->
+            <h2 style="color: var(--admin-primary); margin: 40px 0 25px 0; border-bottom: 3px solid var(--admin-secondary); padding-bottom: 10px;">
+                <i class="fas fa-clock"></i> Schedule Times
+            </h2>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="departureDate">
+                        <i class="fas fa-calendar-day"></i> Departure Date <span>*</span>
+                    </label>
+                    <input type="date" 
+                           id="departureDate" 
+                           name="departureDate" 
+                           th:value="${schedule.departureTime != null ? #temporals.format(schedule.departureTime, 'yyyy-MM-dd') : ''}" 
+                           class="form-control" 
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label for="departureTime">
+                        <i class="fas fa-clock"></i> Departure Time <span>*</span>
+                    </label>
+                    <input type="time" 
+                           id="departureTime" 
+                           name="departureTime" 
+                           th:value="${schedule.departureTime != null ? #temporals.format(schedule.departureTime, 'HH:mm') : ''}" 
+                           class="form-control" 
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label for="arrivalDate">
+                        <i class="fas fa-calendar-check"></i> Arrival Date <span>*</span>
+                    </label>
+                    <input type="date" 
+                           id="arrivalDate" 
+                           name="arrivalDate" 
+                           th:value="${schedule.arrivalTime != null ? #temporals.format(schedule.arrivalTime, 'yyyy-MM-dd') : ''}" 
+                           class="form-control" 
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label for="arrivalTime">
+                        <i class="fas fa-clock"></i> Arrival Time <span>*</span>
+                    </label>
+                    <input type="time" 
+                           id="arrivalTime" 
+                           name="arrivalTime" 
+                           th:value="${schedule.arrivalTime != null ? #temporals.format(schedule.arrivalTime, 'HH:mm') : ''}" 
+                           class="form-control" 
+                           required>
+                </div>
+            </div>
+
+            <!-- Section: Pricing -->
+            <h2 style="color: var(--admin-primary); margin: 40px 0 25px 0; border-bottom: 3px solid var(--admin-secondary); padding-bottom: 10px;">
+                <i class="fas fa-dollar-sign"></i> Pricing
+            </h2>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="basePrice">
+                        <i class="fas fa-money-bill-wave"></i> Base Price (VNĐ) <span>*</span>
+                    </label>
+                    <input type="number" 
+                           id="basePrice" 
+                           name="basePrice" 
+                           th:value="${schedule.basePrice}"
+                           class="form-control" 
+                           step="1000"
+                           min="0"
+                           placeholder="Enter base price"
+                           required>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> Save Schedule
+                </button>
+                <a th:href="@{/admin/schedules}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+
+</main>
+
+<!-- Footer -->
+<footer>
+    <p>&copy; 2025 EVTrainTicket. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

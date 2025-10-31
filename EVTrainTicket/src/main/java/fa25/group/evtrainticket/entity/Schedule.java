@@ -48,10 +48,11 @@ public class Schedule {
     private Double basePrice;
 
     @Column(name = "Status", nullable = false, columnDefinition = "nvarchar(50)")
-    private String status;
+    private String status = "ACTIVE";
+
 
     @Column(name = "CreatedAt", nullable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "Notes", length = 500, columnDefinition = "nvarchar(500)")
     private String notes;

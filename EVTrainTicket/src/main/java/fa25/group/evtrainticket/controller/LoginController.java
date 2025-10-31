@@ -39,6 +39,9 @@ public class LoginController {
             return "login";
         }
         session.setAttribute("user", user);
+        if ("ADMIN".equals(user.getRole())) {
+            return "redirect:/admin/schedules";
+        }
         return "redirect:/home";
     }
 
