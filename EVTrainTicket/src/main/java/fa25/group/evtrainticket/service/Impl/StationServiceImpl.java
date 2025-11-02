@@ -13,7 +13,6 @@ import java.util.List;
 public class StationServiceImpl implements StationService {
     private final StationRepository stationRepository;
 
-
     @Override
     public List<Station> getAllStations() {
         return stationRepository.findAll();

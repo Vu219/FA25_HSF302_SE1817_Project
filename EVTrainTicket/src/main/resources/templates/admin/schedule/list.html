@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Schedule Management</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="admin-page">
+
+<!-- Header -->
+<header>
+    <nav class="navbar container">
+        <a th:href="@{/home}" class="logo">
+            <i class="fas fa-train"></i> EVTrainTicket
+        </a>
+        <div class="nav-links" th:if="${user == null}">
+            <a th:href="@{/login}">Đăng nhập</a>
+            <a th:href="@{/register}">Đăng ký</a>
+        </div>
+        <div class="user-info" th:if="${user != null}">
+            <p>Xin chào, <strong th:text="${user.fullName}"></strong>!</p>
+            <form th:action="@{/logout}" method="get">
+                <button type="submit">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </button>
+            </form>
+        </div>
+    </nav>
+</header>
+
+<!-- Main Content -->
+<main class="admin-container">
+    
+    <!-- Admin Header -->
+    <div class="admin-header">
+        <h1><i class="fas fa-calendar-alt"></i> Schedule Management</h1>
+        <p class="breadcrumb">
+            <a th:href="@{/home}" style="color: white; text-decoration: none;">
+                <i class="fas fa-home"></i> Home
+            </a> 
+            <i class="fas fa-chevron-right" style="font-size: 0.8em; margin: 0 10px;"></i> 
+            Admin 
+            <i class="fas fa-chevron-right" style="font-size: 0.8em; margin: 0 10px;"></i> 
+            Schedules
+        </p>
+    </div>
+
+    <!-- Alerts -->
+    <div th:if="${param.success}" class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        <div>
+            <p th:if="${param.success == 'scheduleCreated'}">Schedule created successfully!</p>
+            <p th:if="${param.success == 'scheduleUpdated'}">Schedule updated successfully!</p>
+            <p th:if="${param.success == 'scheduleDeleted'}">Schedule deleted successfully!</p>
+        </div>
+    </div>
+
+    <div th:if="${param.error}" class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+            <p th:if="${param.error == 'unauthorized'}">You are not authorized to access this page!</p>
+            <p th:if="${param.error == 'scheduleNotFound'}">Schedule not found!</p>
+            <p th:if="${param.error == 'deleteFailed'}">Failed to delete schedule. It may be linked to bookings.</p>
+            <p th:unless="${param.error == 'unauthorized' or param.error == 'scheduleNotFound' or param.error == 'deleteFailed'}" 
+               th:text="${param.error}">Error occurred!</p>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="icon" style="background: linear-gradient(135deg, #28a745 0%, #218838 100%);">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="info">
+                <h3 th:text="${schedules.size()}">0</h3>
+                <p>Total Schedules</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="icon" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);">
+                <i class="fas fa-train"></i>
+            </div>
+            <div class="info">
+                <h3>Active</h3>
+                <p>Running Today</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="icon" style="background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="info">
+                <h3>Upcoming</h3>
+                <p>This Week</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+        <h2><i class="fas fa-list"></i> All Schedules</h2>
+        <a th:href="@{/admin/schedules/new}" class="btn btn-primary">
+            <i class="fas fa-plus-circle"></i> Add New Schedule
+        </a>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th><i class="fas fa-train"></i> Train</th>
+                        <th><i class="fas fa-map-marker-alt"></i> Route</th>
+                        <th><i class="fas fa-calendar"></i> Departure</th>
+                        <th><i class="fas fa-calendar-check"></i> Arrival</th>
+                        <th><i class="fas fa-road"></i> Distance</th>
+                        <th><i class="fas fa-dollar-sign"></i> Price</th>
+                        <th><i class="fas fa-info-circle"></i> Status</th>
+                        <th><i class="fas fa-cog"></i> Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="schedule : ${schedules}">
+                        <td data-label="ID">
+                            <strong>#<span th:text="${schedule.scheduleID}"></span></strong>
+                        </td>
+                        <td data-label="Train">
+                            <i class="fas fa-train" style="color: var(--admin-secondary);"></i>
+                            <span th:text="${schedule.train.trainName}"></span>
+                        </td>
+                        <td data-label="Route">
+                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                <span>
+                                    <i class="fas fa-circle" style="color: #28a745; font-size: 0.6em;"></i>
+                                    <strong th:text="${schedule.departureStation.name}"></strong>
+                                </span>
+                                <span style="color: #6c757d; font-size: 0.9em;">
+                                    <i class="fas fa-arrow-down"></i>
+                                </span>
+                                <span>
+                                    <i class="fas fa-circle" style="color: #dc3545; font-size: 0.6em;"></i>
+                                    <strong th:text="${schedule.arrivalStation.name}"></strong>
+                                </span>
+                            </div>
+                        </td>
+                        <td data-label="Departure">
+                            <i class="fas fa-calendar-day" style="color: #28a745;"></i>
+                            <span th:text="${#temporals.format(schedule.departureTime, 'dd/MM/yyyy')}"></span>
+                            <br>
+                            <i class="fas fa-clock" style="color: #17a2b8;"></i>
+                            <span th:text="${#temporals.format(schedule.departureTime, 'HH:mm')}"></span>
+                        </td>
+                        <td data-label="Arrival">
+                            <i class="fas fa-calendar-day" style="color: #dc3545;"></i>
+                            <span th:text="${#temporals.format(schedule.arrivalTime, 'dd/MM/yyyy')}"></span>
+                            <br>
+                            <i class="fas fa-clock" style="color: #17a2b8;"></i>
+                            <span th:text="${#temporals.format(schedule.arrivalTime, 'HH:mm')}"></span>
+                        </td>
+                        <td data-label="Distance">
+                            <i class="fas fa-road"></i>
+                            <span th:text="${schedule.distanceKm} + ' km'"></span>
+                        </td>
+                        <td data-label="Price">
+                            <strong style="color: var(--admin-success);">
+                                <span th:text="${#numbers.formatDecimal(schedule.basePrice, 0, 'COMMA', 0, 'POINT')}"></span> VNĐ
+                            </strong>
+                        </td>
+                        <td data-label="Status">
+                            <span th:class="${schedule.status == 'ACTIVE' ? 'badge badge-success' : 
+                                           (schedule.status == 'INACTIVE' ? 'badge badge-warning' : 'badge badge-danger')}" 
+                                  th:text="${schedule.status}">
+                            </span>
+                        </td>
+                        <td data-label="Actions">
+                            <div class="action-buttons">
+                                <a th:href="@{/admin/schedules/{id}/edit(id=${schedule.scheduleID})}" 
+                                   class="btn btn-info btn-sm">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <form th:action="@{/admin/schedules/{id}(id=${schedule.scheduleID})}" 
+                                      method="post" 
+                                      style="display:inline;">
+                                    <input type="hidden" name="_method" value="delete">
+                                    <button type="submit" 
+                                            class="btn btn-danger btn-sm" 
+                                            onclick="return confirm('⚠️ Are you sure you want to delete this schedule?\n\nThis action cannot be undone!');">
+                                        <i class="fas fa-trash-alt"></i> Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <!-- Empty State -->
+            <div th:if="${#lists.isEmpty(schedules)}" class="empty-state">
+                <i class="fas fa-calendar-times"></i>
+                <h3>No Schedules Found</h3>
+                <p>Click "Add New Schedule" button to create your first schedule.</p>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- Footer -->
+<footer>
+    <p>&copy; 2025 EVTrainTicket. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

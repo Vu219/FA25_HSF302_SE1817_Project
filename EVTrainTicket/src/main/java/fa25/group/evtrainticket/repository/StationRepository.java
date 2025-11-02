@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface StationRepository extends JpaRepository<Station,Integer> {
     boolean existsByCodeAndName(String code, String name);
+    Station findByCode(String code);
 }

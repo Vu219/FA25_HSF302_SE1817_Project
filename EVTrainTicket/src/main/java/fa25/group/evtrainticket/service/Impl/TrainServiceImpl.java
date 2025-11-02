@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -47,5 +46,10 @@ public class TrainServiceImpl implements TrainService {
     @Override
     public void deleteTrain(Integer id) {
         trainRepository.deleteById(id);
+    }
+
+    @Override
+    public Train findByTrainName(String trainName) {
+        return trainRepository.findByTrainName(trainName);
     }
 }

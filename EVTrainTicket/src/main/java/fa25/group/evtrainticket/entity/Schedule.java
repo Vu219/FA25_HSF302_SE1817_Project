@@ -3,9 +3,8 @@ package fa25.group.evtrainticket.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,8 +12,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "Schedules")
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class Schedule {
@@ -51,10 +49,11 @@ public class Schedule {
     private Double basePrice;
 
     @Column(name = "Status", nullable = false, columnDefinition = "nvarchar(50)")
-    private String status;
+    private String status = "ACTIVE";
+
 
     @Column(name = "CreatedAt", nullable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "Notes", length = 500, columnDefinition = "nvarchar(500)")
     private String notes;
