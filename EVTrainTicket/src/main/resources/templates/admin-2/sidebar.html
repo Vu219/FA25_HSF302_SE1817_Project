@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside th:fragment="sidebar" class="sidebar">
+    <div class="logo">
+        <img th:src="@{/images/train-admin.jpg}" alt="EVTrain Logo">
+        <h2>EVTrain Dashboard</h2>
+    </div>
+    <nav>
+        <ul>
+            <li><a th:href="@{/admin/dashboard}" class="active">Dashboard</a></li>
+            <li><a th:href="@{/admin/users}">Quản lý người dùng</a></li>
+            <li><a th:href="@{/admin/stations}">Quản lý nhà ga</a></li>
+            <li><a th:href="@{/admin/trains}">Quản lý tàu</a></li>
+
+            <li class="dropdown">
+                <a href="#">Quản lý ghế </a>
+                <ul class="dropdown-content">
+                    <li><a th:href="@{/admin/seats}">Danh sách ghế</a></li>
+                    <li><a th:href="@{/admin/seat-types}">Loại ghế</a></li>
+                </ul>
+            </li>
+
+            <li class="dropdown">
+                <a href="#">Quản lý toa tàu </a>
+                <ul class="dropdown-content">
+                    <li><a th:href="@{/admin/carriages}">Danh sách toa tàu</a></li>
+                    <li><a th:href="@{/admin/carriage-types}">Loại toa tàu</a></li>
+                </ul>
+            </li>
+
+            <li><a th:href="@{/logout}" class="logout">Đăng xuất</a></li>
+        </ul>
+    </nav>
+</aside>
+</body>
+</html>

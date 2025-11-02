@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lí người dùng</title>
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        .btn-primary {
+            background: #2c3e50;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+<div th:fragment="create-user">
+    <div class="form-container">
+        <h2>Thêm người dùng mới</h2>
+
+        <div th:if="${errorMessage}" class="alert alert-error">
+            <span style="color: red;" th:text="${errorMessage}"></span>
+        </div>
+
+        <form th:action="@{/admin/user/create}" th:object="${formUser}" method="post">
+            <div class="form-group">
+                <label for="name">Họ tên:</label>
+                <input type="text" id="name" th:field="*{fullName}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="text" id="email" th:field="*{email}" required>
+            </div>
+
+            <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" th:field="*{password}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone:</label>
+                <input type="number" id="phone" th:field="*{phone}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="role">Vai trò:</label>
+                <input type="text" id="role" th:field="*{role}" required>
+            </div>
+
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Thêm người dùng</button>
+                <a th:href="@{/admin/user}" class="btn btn-secondary">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+
+</html>

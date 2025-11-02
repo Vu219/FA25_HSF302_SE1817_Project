@@ -3,12 +3,14 @@ package fa25.group.evtrainticket.controller.admin;
 import fa25.group.evtrainticket.entity.*;
 import fa25.group.evtrainticket.service.*;
 
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +18,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
@@ -28,11 +33,17 @@ public class AdminController {
     private final SeatTypeService seatTypeService;
     private final SeatService seatService;
     private final StationService stationService;
+    private final UserService userService;
 
     @GetMapping("")
     public ModelAndView showAdminPage(HttpSession session) {
         ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "admin");
         return modelAndView;
+    }
+
+    @GetMapping("/dashboard")
+    public String showAdminPage() {
+        return "admin-2/dashboard";
     }
 
     @GetMapping("/train")
@@ -514,7 +525,7 @@ public class AdminController {
 
     @GetMapping("/stations")
     public ModelAndView showStationManagementPage(HttpSession session) {
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "stations");
+        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "station");
         modelAndView.addObject("stationList", stationService.getAllStations());
         modelAndView.addObject("contentFragment", "admin/stations");
         return modelAndView;
@@ -533,8 +544,8 @@ public class AdminController {
             stationService.deleteStation(stationID);
             modelAndView.addObject("stationList", stationService.getAllStations());
             modelAndView.addObject("successMessage", "Xóa ga tàu thành công");
-        }catch (Exception e) {
-            modelAndView.addObject("errorMessage",  "Lỗi khi xóa ga tàu: "+e.getMessage());
+        } catch (Exception e) {
+            modelAndView.addObject("errorMessage", "Lỗi khi xóa ga tàu: " + e.getMessage());
         }
 
         return modelAndView;
@@ -562,9 +573,9 @@ public class AdminController {
             modelAndView.addObject("stationList", stationService.getAllStations());
             modelAndView.addObject("successMessage", "Thêm ga tàu mới thành công");
             modelAndView.addObject("contentFragment", "admin/stations");
-        }catch (Exception e) {
+        } catch (Exception e) {
             modelAndView.addObject("station", station);
-            modelAndView.addObject("errorMessage", "Lỗi khi xảy ra khi thêm ga tàu: "+e.getMessage());
+            modelAndView.addObject("errorMessage", "Lỗi khi xảy ra khi thêm ga tàu: " + e.getMessage());
         }
 
         return modelAndView;
@@ -579,7 +590,7 @@ public class AdminController {
     }
 
     @PostMapping("/stations/edit")
-    public ModelAndView editStation(@ModelAttribute("station") Station station, HttpSession session){
+    public ModelAndView editStation(@ModelAttribute("station") Station station, HttpSession session) {
         if (!isAdmin(session)) {
             return new ModelAndView("redirect:/error");
         }
@@ -592,11 +603,94 @@ public class AdminController {
             modelAndView.addObject("stationList", stationService.getAllStations());
             modelAndView.addObject("successMessage", "Cập nhật ga tàu thành công");
             modelAndView.addObject("contentFragment", "admin/stations");
-        }catch (Exception e) {
+        } catch (Exception e) {
             modelAndView.addObject("station", station);
-            modelAndView.addObject("errorMessage", "Lỗi xảy ra khi cập nhật ga tàu: "+e.getMessage());
+            modelAndView.addObject("errorMessage", "Lỗi xảy ra khi cập nhật ga tàu: " + e.getMessage());
         }
 
+        return modelAndView;
+    }
+
+    @GetMapping("/user")
+    public ModelAndView showUser(HttpSession session) {
+        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "user");
+        modelAndView.addObject("contentFragment", "admin/user");
+        modelAndView.addObject("userList", userService.getAllUsers());
+        return modelAndView;
+    }
+
+    @GetMapping("/user/create")
+    public ModelAndView showCreateUser(HttpSession session) {
+        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "user");
+        modelAndView.addObject("contentFragment", "admin/create-user");
+        modelAndView.addObject("formUser", new User());
+        return modelAndView;
+    }
+
+    @PostMapping("/user/create")
+    public ModelAndView createUser(@ModelAttribute("formUser") User user, HttpSession session) {
+        if (!isAdmin(session)){
+            return new ModelAndView("redirect:/error");
+        }
+
+        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "user");
+        modelAndView.addObject("contentFragment", "admin/create-user");
+        try {
+            userService.saveUser(user);
+            modelAndView.addObject("successMessage", "Người dùng thêm thành công");
+            modelAndView.addObject("contentFragment", "admin/user");
+            modelAndView.addObject("userList", userService.getAllUsers());
+        } catch (Exception e) {
+            modelAndView.addObject("user", user);
+            modelAndView.addObject("errorMessage", "Lỗi khi thêm người dùng: " + e.getMessage());
+        }
+        return modelAndView;
+    }
+
+    @GetMapping("/user/edit/{userID}")
+    public ModelAndView editUser(HttpSession session, @PathVariable("userID") Integer userID) {
+        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "user");
+        modelAndView.addObject("contentFragment", "admin/edit-user");
+        User editUser = userService.getUserById(userID);
+        modelAndView.addObject("formUser", editUser);
+        return modelAndView;
+    }
+
+    @PostMapping("/user/edit")
+    public ModelAndView editUser(@ModelAttribute("formUser") User user, HttpSession session) {
+        if (!isAdmin(session)) {
+            return new ModelAndView("redirect:/error");
+        }
+
+        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "user");
+        modelAndView.addObject("contentFragment", "admin/edit-user");
+        try {
+            userService.updateUser(user.getUserID(), user);
+            modelAndView.addObject("successMessage", "Người dùng cập nhật thành công");
+            modelAndView.addObject("contentFragment", "admin/user");
+            modelAndView.addObject("userList", userService.getAllUsers());
+        } catch (Exception e) {
+            modelAndView.addObject("user", user);
+            modelAndView.addObject("errorMessage", "Lỗi khi cập nhật người dùng: " + e.getMessage());
+        }
+        return modelAndView;
+    }
+
+    @GetMapping("/user/delete/{userID}")
+    public ModelAndView deleteUser(@PathVariable("userID") Integer userID, HttpSession session) {
+        if (!isAdmin(session)) {
+            return new ModelAndView("redirect:/error");
+        }
+        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "user");
+        modelAndView.addObject("contentFragment", "admin/user");
+
+        try {
+            userService.deleteUserById(userID);
+            modelAndView.addObject("userList", userService.getAllUsers());
+            modelAndView.addObject("successMessage", "Người dùng đã được xóa thành công");
+        } catch (Exception e) {
+            modelAndView.addObject("errorMessage", "Lỗi khi xóa người dùng: " + e.getMessage());
+        }
         return modelAndView;
     }
 
@@ -626,4 +720,6 @@ public class AdminController {
         return user != null && "ADMIN".equalsIgnoreCase(user.getRole());
     }
 
+
 }
+

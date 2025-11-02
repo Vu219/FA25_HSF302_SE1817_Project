@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="https://www.thymeleaf.org">
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
 <body>
     <header th:if="${isAdmin}" th:fragment="pageHeader">
         <div class="info">
@@ -10,7 +10,7 @@
         <div class="admin-header-links">
             <a th:href="@{/admin}" th:classappend="${currentPage == 'admin'} ? 'active'">Bảng điều khiển</a>
             <a th:href="@{/admin/train}" th:classappend="${currentPage == 'train'} ? 'active'">Quản lý tàu</a>
-            
+
             <div class="dropdown" th:classappend="${currentPage == 'carriageTypes' or currentPage == 'carriages'} ? 'active'">
                 <a class="dropdown-toggle" th:classappend="${currentPage == 'carriageTypes' or currentPage == 'carriages'} ? 'active'">
                     Quản lý toa
@@ -44,6 +44,8 @@
             </div>
             
             <a th:href="@{/admin/stations}" th:classappend="${currentPage == 'stations'} ? 'active'">Quản lý ga</a>
+            <a th:href="@{/admin/user}" th:classappend="${currentPage == 'user'} ? 'active'">Quản lý người dùng</a>
+
         </div>
     </header>
 </body>

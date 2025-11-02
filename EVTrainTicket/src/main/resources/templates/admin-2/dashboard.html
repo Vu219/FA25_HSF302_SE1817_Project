@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVTrain Admin Dashboard</title>
+    <link th:href="@{/css/styleadmin.css}" rel="stylesheet">
+
+</head>
+<body>
+<div class="container">
+    <aside class="sidebar" th:replace="~{admin-2/sidebar :: sidebar}"></aside>
+
+    <main class="main-content">
+        <section class="stats-cards">
+            <div class="card">
+                <h3>Tổng khách hàng</h3>
+                <p class="value" th:text="${totalCustomers}">0</p>
+                <span class="change up">+11%</span>
+            </div>
+            <div class="card">
+                <h3>Tổng vé đặt</h3>
+                <p class="value" th:text="${totalTickets}">0</p>
+                <span class="change up">+40%</span>
+            </div>
+            <div class="card">
+                <h3>Doanh thu tháng</h3>
+                <p class="value" th:text="${monthlyRevenue}">0</p>
+                <span class="change up">+25%</span>
+            </div>
+        </section>
+
+        <section class="chart-section">
+            <h3>Thống kê tăng trưởng theo tuần (%)</h3>
+            <canvas id="growthChart"></canvas>
+        </section>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

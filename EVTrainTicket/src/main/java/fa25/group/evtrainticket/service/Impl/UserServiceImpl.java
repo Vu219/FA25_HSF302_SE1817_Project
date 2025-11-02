@@ -1,11 +1,13 @@
 package fa25.group.evtrainticket.service.Impl;
 
+import fa25.group.evtrainticket.entity.Station;
 import fa25.group.evtrainticket.entity.User;
 import fa25.group.evtrainticket.repository.UserRepository;
 import fa25.group.evtrainticket.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -54,5 +56,36 @@ public class UserServiceImpl implements UserService {
             throw new Exception("Người dùng với email " + email + " không tồn tại");
         }
         return userOptional.get();
+    }
+
+    @Override
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    @Override
+    public void deleteUserById(Integer userId) {
+        userRepository.deleteById(userId);
+    }
+
+    @Override
+    public User saveUser(User user) {
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User getUserById(Integer userId) {
+        return userRepository.findById(userId).get();
+    }
+
+    @Override
+    public User updateUser(Integer userId, User newUser) {
+        User updateUser = getUserById(userId);
+        updateUser.setFullName(newUser.getFullName());
+        updateUser.setEmail(newUser.getEmail());
+        updateUser.setPassword(newUser.getPassword());
+        updateUser.setPhone(newUser.getPhone());
+        updateUser.setRole(newUser.getRole());
+        return userRepository.save(updateUser);
     }
 }

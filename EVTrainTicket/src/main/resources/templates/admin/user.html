@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý người dùng</title>
+</head>
+
+<body>
+<h2>Quản lý người dùng</h2>
+<div class="message-container">
+    <div th:if="${successMessage}" class="alert alert-success">
+        <span style="color: green;" th:text="${successMessage}"></span>
+    </div>
+</div>
+<a th:href="@{/admin/user/create}">Thêm người dùng mới</a>
+<br>
+<br>
+<div class="user-list">
+    <h3>Danh sách người dùng</h3>
+    <br>
+    <table th:if="${not #lists.isEmpty(userList)}">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Họ tên</th>
+            <th>Email</th>
+            <th>Điện thoại</th>
+            <th>Vai trò</th>
+            <th>Hành động</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${not #lists.isEmpty(userList)}">
+
+        <tr th:each="user : ${userList}">
+            <td th:text="${user.userID}"></td>
+            <td th:text="${user.fullName}"></td>
+            <td th:text="${user.email}"></td>
+            <td th:text="${user.phone}"></td>
+            <td th:text="${user.role}"></td>
+            <td>
+                <a th:href="@{'/admin/user/edit/' + ${user.userID}}">Sửa</a>
+                <a th:href="@{'/admin/user/delete/' + ${user.userID}}"
+                   onclick="return confirm('Bạn có chắc chắn muốn xóa người dùng này không?');">Xóa</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div th:if="${#lists.isEmpty(userList)}">
+        <p>Không có người dùng nào được quản lý.</p>
+    </div>
+</div>
+
+</body>
+
+</html>
