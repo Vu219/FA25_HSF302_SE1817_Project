@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<nav class="admin-sidebar" th:fragment="sidebar">
+    <div class="sidebar-header">
+        <a th:href="@{/admin}" class="sidebar-logo">
+            <i class="fas fa-train"></i>
+            <span class="sidebar-logo-text">EVTrainTicket</span>
+        </a>
+        <button type="button" id="sidebarToggle" class="sidebar-toggle-btn">
+        <i class="fas fa-bars"></i>
+        </button>
+    </div>
+
+    <div class="admin-user-info">
+        <i class="fas fa-user-circle"></i>
+        <div class="user-details">
+            <span class="user-greeting">Chào mừng,</span>
+            <span class="user-name" th:text="${user.fullName}">Quản trị viên</span>
+        </div>
+    </div>
+
+    <ul class="admin-nav-list">
+        <li th:classappend="${currentPage == 'admin'} ? 'active'">
+            <a th:href="@{/admin}">
+                <i class="fas fa-tachometer-alt"></i>
+                <span class="nav-text">Bảng điều khiển</span>
+            </a>
+        </li>
+
+        <li th:classappend="${currentPage == 'schedules'} ? 'active'">
+            <a th:href="@{/admin/schedules}">
+                <i class="fas fa-calendar-alt"></i>
+                <span class="nav-text">Quản lý Lịch trình</span>
+            </a>
+        </li>
+
+        <li th:classappend="${currentPage == 'train'} ? 'active'">
+            <a th:href="@{/admin/train}">
+                <i class="fas fa-train-subway"></i>
+                <span class="nav-text">Quản lý Tàu</span>
+            </a>
+        </li>
+
+        <li th:classappend="${currentPage == 'stations'} ? 'active'">
+            <a th:href="@{/admin/stations}">
+                <i class="fas fa-building-columns"></i> <span class="nav-text">Quản lý Ga</span>
+            </a>
+        </li>
+
+        <li class="nav-dropdown" th:classappend="${currentPage == 'carriages' or currentPage == 'carriageTypes'} ? 'open active'">
+            <a href="#">
+                <i class="fas fa-door-closed"></i>
+                <span class="nav-text">Quản lý Toa</span>
+                <i class="fas fa-chevron-down dropdown-icon"></i>
+            </a>
+            <ul class="dropdown-menu">
+                <li th:classappend="${currentPage == 'carriages'} ? 'active'"><a th:href="@{/admin/carriages}">Quản lý Toa</a></li>
+                <li th:classappend="${currentPage == 'carriageTypes'} ? 'active'"><a th:href="@{/admin/carriageTypes}">Quản lý Loại Toa</a></li>
+            </ul>
+        </li>
+
+        <li class="nav-dropdown" th:classappend="${currentPage == 'seats' or currentPage == 'seatTypes'} ? 'open active'">
+            <a href="#">
+                <i class="fas fa-chair"></i>
+                <span class="nav-text">Quản lý Ghế</span>
+                <i class="fas fa-chevron-down dropdown-icon"></i>
+            </a>
+            <ul class="dropdown-menu">
+                <li th:classappend="${currentPage == 'seats'} ? 'active'"><a th:href="@{/admin/seats}">Quản lý Ghế</a></li>
+                <li th:classappend="${currentPage == 'seatTypes'} ? 'active'"><a th:href="@{/admin/seatTypes}">Quản lý Loại Ghế</a></li>
+            </ul>
+        </li>
+    </ul>
+
+    <div class="sidebar-footer">
+        <a th:href="@{/home}">
+            <i class="fas fa-home"></i>
+            <span class="nav-text">Về trang chủ</span>
+        </a>
+        <a th:href="@{/logout}">
+            <i class="fas fa-sign-out-alt"></i>
+            <span class="nav-text">Đăng xuất</span>
+        </a>
+    </div>
+</nav>
+
+</body>
+</html>

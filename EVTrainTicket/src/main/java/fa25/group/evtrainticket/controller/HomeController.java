@@ -23,6 +23,13 @@ public class HomeController {
     public String showHomePage(HttpSession session, Model model) {
         User user = (User) session.getAttribute("user");
         model.addAttribute("user", user);
+
+        if (user != null && "ADMIN".equals(user.getRole())) {
+            model.addAttribute("isAdmin", true);
+        } else {
+            model.addAttribute("isAdmin", false);
+        }
+
         model.addAttribute("stations", stationService.getAllStations());
         return "home";
     }

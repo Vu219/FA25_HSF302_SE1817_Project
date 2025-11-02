@@ -1,60 +1,42 @@
-<!DOCTYPE html>
-<html lang="en" xmlns="https://www.thymeleaf.org">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TMS - Quản lý tàu</title>
-</head>
-
-<body>
-    <h2>Quản lý tàu</h2>
-    <div class="message-container">
-        <div th:if="${successMessage}" class="alert alert-success">
-            <span style="color: green;" th:text="${successMessage}"></span>
-        </div>
+<section>
+    <div class="action-bar">
+        <h2>Quản lý tàu</h2>
+        <a th:href="@{/admin/train/create}" class="btn btn-primary"><i class="fas fa-plus"></i> Thêm tàu mới</a>
     </div>
-    <a th:href="@{/admin/train/create}">Thêm tàu mới</a>
-    <br>
-    <br>
-    <div class="train-list">
-        <h3>Danh sách tàu</h3>
-        <br>
+
+    <div class="table-container">
         <table th:if="${not #lists.isEmpty(trainList)}">
             <thead>
-                <tr>
-                    <th>Mã tàu</th>
-                    <th>Số hiệu tàu</th>
-                    <th>Tên tàu</th>
-                    <th>Sức chứa</th>
-                    <th>Trạng thái</th>
-                    <th>Ghi chú</th>
-                    <th>Hành động</th>
-                </tr>
+            <tr>
+                <th>Mã tàu</th>
+                <th>Số hiệu tàu</th>
+                <th>Tên tàu</th>
+                <th>Sức chứa</th>
+                <th>Trạng thái</th>
+                <th>Ghi chú</th>
+                <th>Hành động</th>
+            </tr>
             </thead>
             <tbody>
-                <tr th:if="${not #lists.isEmpty(trainList)}">
-
-                <tr th:each="train : ${trainList}">
-                    <td th:text="${train.trainID}"></td>
-                    <td th:text="${train.trainNumber}"></td>
-                    <td th:text="${train.trainName}"></td>
-                    <td th:text="${train.capacity}"></td>
-                    <td th:text="${train.status}"></td>
-                    <td th:text="${train.notes}"></td>
-                    <td>
-                        <a th:href="@{'/admin/train/edit/' + ${train.trainID}}">Sửa</a>
-                        <a th:href="@{'/admin/train/delete/' + ${train.trainID}}"
-                            onclick="return confirm('Bạn có chắc chắn muốn xóa tàu này không?');">Xóa</a>
-                    </td>
-                </tr>
+            <tr th:each="train : ${trainList}">
+                <td th:text="${train.trainID}"></td>
+                <td th:text="${train.trainNumber}"></td>
+                <td th:text="${train.trainName}"></td>
+                <td th:text="${train.capacity}"></td>
+                <td th:text="${train.status}"></td>
+                <td th:text="${train.notes}"></td>
+                <td>
+                    <div class="action-links">
+                        <a th:href="@{'/admin/train/edit/' + ${train.trainID}}" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Sửa</a>
+                        <a th:href="@{'/admin/train/delete/' + ${train.trainID}}" class="btn btn-danger btn-sm"
+                           onclick="return confirm('Bạn có chắc chắn muốn xóa tàu này không?');"><i class="fas fa-trash"></i> Xóa</a>
+                    </div>
+                </td>
+            </tr>
             </tbody>
         </table>
         <div th:if="${#lists.isEmpty(trainList)}">
             <p>Không có tàu nào được quản lý.</p>
         </div>
     </div>
-
-</body>
-
-</html>
+</section>

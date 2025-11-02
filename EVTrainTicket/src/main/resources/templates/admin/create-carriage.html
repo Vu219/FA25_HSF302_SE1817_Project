@@ -1,122 +1,46 @@
-<!DOCTYPE html>
-<html lang="en" xmlns="https://www.thymeleaf.org">
+<section>
+    <div class="form-container">
+        <h2><i class="fas fa-plus-circle"></i> Thêm toa tàu mới</h2>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TMS - Quản lí toa tàu</title>
-    <style>
-        .form-container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-        }
-
-        input,
-        textarea,
-        select {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 1rem;
-        }
-
-        .btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            margin-right: 0.5rem;
-        }
-
-        .btn-primary {
-            background: #2c3e50;
-            color: white;
-        }
-
-        .btn-secondary {
-            background: #95a5a6;
-            color: white;
-        }
-    </style>
-</head>
-
-<body>
-    <div th:fragment="create-train">
-        <div class="form-container">
-            <h2>Thêm toa tàu mới</h2>
-
-            <div th:if="${errorMessage}" class="alert alert-error">
-                <span style="color: red;" th:text="${errorMessage}"></span>
+        <form th:action="@{/admin/carriages/create}" th:object="${carriage}" method="post" style="margin-top: 20px;">
+            <div class="form-group">
+                <label for="carriageNumber">Số hiệu toa:</label>
+                <input type="text" id="carriageNumber" th:field="*{carriageNumber}" placeholder="VD: A01">
             </div>
-
-            <form th:action="@{/admin/carriages/create}" th:object="${carriage}" method="post">
-                <div class="form-group">
-                    <label for="carriageNumber">Số hiệu toa:</label>
-                    <input type="text" id="carriageNumber" th:field="*{carriageNumber}" placeholder="VD: A01">
-                </div>
-
-                <div class="form-group">
-                    <label for="carriageType">Loại toa:</label>
-                    <select id="carriageType" name="carriageTypeId" class="form-control">
-                        <option th:each="type : ${carriageTypeList}" th:value="${type.carriageTypeId}"
+            <div class="form-group">
+                <label for="carriageType">Loại toa:</label>
+                <select id="carriageType" name="carriageTypeId" class="form-control" required>
+                    <option value="">-- Chọn loại toa --</option>
+                    <option th:each="type : ${carriageTypeList}" th:value="${type.carriageTypeId}"
                             th:text="${type.typeName}"
                             th:selected="${carriage.carriageType != null && type.carriageTypeId == carriage.carriageType.carriageTypeId}">
-                        </option>
-                    </select>
-                </div>
-
-                <!-- <div class="form-group">
-                    <label for="carriageType">Loại toa:</label>
-                    <select id="carriageType" name="carriageTypeId" class="form-control">
-                        <option th:each="type : ${carriageTypeList}" th:value="${type.carriageTypeId}"
-                            th:text="${type.typeName}"
-                            th:selected="${carriage?.carriageType != null && type.carriageTypeId == carriage.carriageType.carriageTypeId}">
-                        </option>
-                    </select>
-                </div> -->
-
-                <div class="form-group">
-                    <label for="position">Vị trí toa:</label>
-                    <input type="number" id="position" th:field="*{position}" placeholder="VD: 1,2,...">
-                </div>
-
-                <div class="form-group">
-                    <label for="status">Trạng thái:</label>
-                    <select id="status" th:field="*{status}">
-                        <option value="Còn trống">Còn trống</option>
-                        <option value="Kín chỗ">Kín chỗ</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="belongToTrain">Thuộc tàu:</label>
-                    <select id="belongToTrain" name="trainID" class="form-control">
-                        <option th:each="train : ${trainList}" th:value="${train.trainID}" th:text="${train.trainName}"
+                    </option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="position">Vị trí toa:</label>
+                <input type="number" id="position" th:field="*{position}" placeholder="VD: 1,2,...">
+            </div>
+            <div class="form-group">
+                <label for="status">Trạng thái:</label>
+                <select id="status" th:field="*{status}">
+                    <option value="Còn trống">Còn trống</option>
+                    <option value="Kín chỗ">Kín chỗ</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="belongToTrain">Thuộc tàu:</label>
+                <select id="belongToTrain" name="trainID" class="form-control" required>
+                    <option value="">-- Chọn tàu --</option>
+                    <option th:each="train : ${trainList}" th:value="${train.trainID}" th:text="${train.trainName}"
                             th:selected="${carriage.train != null && train.trainID == carriage.train.trainID}">
-                        </option>
-                    </select>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Thêm toa tàu</button>
-                    <a th:href="@{/admin/carriages}" class="btn btn-secondary">Hủy</a>
-                </div>
-            </form>
-        </div>
+                    </option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Thêm toa tàu</button>
+                <a th:href="@{/admin/carriages}" class="btn btn-secondary"><i class="fas fa-times"></i> Hủy</a>
+            </div>
+        </form>
     </div>
-</body>
-
-</html>
+</section>

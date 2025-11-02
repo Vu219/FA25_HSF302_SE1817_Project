@@ -1,104 +1,40 @@
-<!DOCTYPE html>
-<html lang="en" xmlns="https://www.thymeleaf.org">
+<section>
+    <div class="form-container">
+        <h2><i class="fas fa-edit"></i> Cập nhật tàu</h2>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TMS - Quản lí tàu</title>
-    <style>
-        .form-container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-        }
-
-        input,
-        textarea,
-        select {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 1rem;
-        }
-
-        .btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            margin-right: 0.5rem;
-        }
-
-        .btn-primary {
-            background: #2c3e50;
-            color: white;
-        }
-
-        .btn-secondary {
-            background: #95a5a6;
-            color: white;
-        }
-    </style>
-</head>
-
-<body>
-    <div th:fragment="create-train">
-        <div class="form-container">
-            <h2>Thêm tàu mới</h2>
-
-            <div th:if="${errorMessage}" class="alert alert-error">
-                <span style="color: red;" th:text="${errorMessage}"></span>
+        <form th:action="@{/admin/train/edit}" th:object="${train}" method="post" style="margin-top: 20px;">
+            <div class="form-group">
+                <label for="trainID">Mã tàu:</label>
+                <input type="text" id="trainID" th:field="*{trainID}" readonly>
             </div>
-
-            <form th:action="@{/admin/train/create}" th:object="${train}" method="post">
-                <div class="form-group">
-                    <label for="trainNumber">Số tàu:</label>
-                    <input type="text" id="trainNumber" th:field="*{trainNumber}" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="trainName">Tên tàu:</label>
-                    <input type="text" id="trainName" th:field="*{trainName}" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="capacity">Sức chứa:</label>
-                    <input type="number" id="capacity" th:field="*{capacity}" required min="1">
-                </div>
-
-                <div class="form-group">
-                    <label for="status">Trạng thái:</label>
-                    <select id="status" th:field="*{status}">
-                        <option value="Hoạt động">Hoạt động</option>
-                        <option value="Không hoạt động">Ngừng hoạt động</option>
-                        <option value="Bảo trì">Bảo trì</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="notes">Ghi chú:</label>
-                    <textarea id="notes" th:field="*{notes}" rows="3"></textarea>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Thêm tàu</button>
-                    <a th:href="@{/admin/train}" class="btn btn-secondary">Hủy</a>
-                </div>
-            </form>
-        </div>
+            <div class="form-group">
+                <label for="trainNumber">Số tàu:</label>
+                <input type="text" id="trainNumber" th:field="*{trainNumber}" required>
+            </div>
+            <div class="form-group">
+                <label for="trainName">Tên tàu:</label>
+                <input type="text" id="trainName" th:field="*{trainName}" required>
+            </div>
+            <div class="form-group">
+                <label for="capacity">Sức chứa:</label>
+                <input type="number" id="capacity" th:field="*{capacity}" required min="1">
+            </div>
+            <div class="form-group">
+                <label for="status">Trạng thái:</label>
+                <select id="status" th:field="*{status}">
+                    <option value="Hoạt động">Hoạt động</option>
+                    <option value="Không hoạt động">Không hoạt động</option>
+                    <option value="Bảo trì">Bảo trì</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="notes">Ghi chú:</label>
+                <textarea id="notes" th:field="*{notes}" rows="3"></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Cập nhật tàu</button>
+                <a th:href="@{/admin/train}" class="btn btn-secondary"><i class="fas fa-times"></i> Hủy</a>
+            </div>
+        </form>
     </div>
-</body>
-
-</html>
+</section>

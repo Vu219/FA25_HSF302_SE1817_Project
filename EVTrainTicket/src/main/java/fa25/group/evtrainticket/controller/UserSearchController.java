@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import fa25.group.evtrainticket.entity.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +33,14 @@ public class UserSearchController {
     public String showSearchForm(Model model, HttpSession session) {
         model.addAttribute("stations", stationService.getAllStations());
         model.addAttribute("user", session.getAttribute("user"));
+
+        User user = (User) session.getAttribute("user");
+        if (user != null && "ADMIN".equals(user.getRole())) {
+            model.addAttribute("isAdmin", true);
+        } else {
+            model.addAttribute("isAdmin", false);
+        }
+
         return "user/search/form";
     }
 
@@ -42,14 +51,21 @@ public class UserSearchController {
             @RequestParam("departureDate") String departureDate,
             Model model,
             HttpSession session) {
-        try {
-            // Always add stations and user for the form
-            model.addAttribute("stations", stationService.getAllStations());
-            model.addAttribute("user", session.getAttribute("user"));
 
+        User user = (User) session.getAttribute("user");
+        model.addAttribute("user", user);
+        model.addAttribute("stations", stationService.getAllStations());
+
+        if (user != null && "ADMIN".equals(user.getRole())) {
+            model.addAttribute("isAdmin", true);
+        } else {
+            model.addAttribute("isAdmin", false);
+        }
+
+        try {
             // Validate stations
-            Station departureStation = stationService.getStationById(departureStationId);
-            Station arrivalStation = stationService.getStationById(arrivalStationId);
+            Station departureStation = stationService.getStationsByID(departureStationId);
+            Station arrivalStation = stationService.getStationsByID(arrivalStationId);
 
             if (departureStation == null || arrivalStation == null) {
                 model.addAttribute("error", "❌ Ga đi hoặc ga đến không tồn tại. Vui lòng chọn lại.");
@@ -100,8 +116,6 @@ public class UserSearchController {
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("error", "⚠️ Lỗi khi tìm kiếm: " + e.getMessage());
-            model.addAttribute("stations", stationService.getAllStations());
-            model.addAttribute("user", session.getAttribute("user"));
             return "home";
         }
     }
@@ -112,9 +126,18 @@ public class UserSearchController {
         if (schedule == null) {
             return "redirect:/home?error=scheduleNotFound";
         }
+
+        User user = (User) session.getAttribute("user");
+        model.addAttribute("user", user);
+        if (user != null && "ADMIN".equals(user.getRole())) {
+            model.addAttribute("isAdmin", true);
+        } else {
+            model.addAttribute("isAdmin", false);
+        }
+
         model.addAttribute("schedule", schedule);
         model.addAttribute("scheduleStops", scheduleStopService.getScheduleStopsBySchedule(schedule));
-        model.addAttribute("user", session.getAttribute("user"));
+
         return "user/search/details";
     }
 }

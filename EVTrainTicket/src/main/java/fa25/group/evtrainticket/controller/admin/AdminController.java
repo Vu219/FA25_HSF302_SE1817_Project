@@ -4,18 +4,15 @@ import fa25.group.evtrainticket.entity.*;
 import fa25.group.evtrainticket.service.*;
 
 import org.springframework.stereotype.Controller;
-
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
@@ -28,290 +25,463 @@ public class AdminController {
     private final SeatTypeService seatTypeService;
     private final SeatService seatService;
     private final StationService stationService;
+    // Thêm ScheduleService
+    private final ScheduleService scheduleService;
+
+    // Helper kiểm tra quyền
+    private boolean isAdmin(HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        return user != null && "ADMIN".equalsIgnoreCase(user.getRole());
+    }
+
+    // Helper tạo view chung
+    private ModelAndView createAdminView(String contentFragment, String currentPage, HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return new ModelAndView("redirect:/login");
+        }
+        if (!"ADMIN".equalsIgnoreCase(user.getRole())) {
+            return new ModelAndView("redirect:/error"); // Trang lỗi 403
+        }
+
+        ModelAndView mav = new ModelAndView("admin/admin-layout");
+        mav.addObject("user", user);
+        mav.addObject("isAdmin", true);
+        mav.addObject("currentPage", currentPage);
+        mav.addObject("contentFragment", contentFragment);
+        return mav;
+    }
 
     @GetMapping("")
     public ModelAndView showAdminPage(HttpSession session) {
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "admin");
-        return modelAndView;
+        ModelAndView mav = createAdminView("admin/dashboard", "admin", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        // Thêm thống kê cho dashboard
+        mav.addObject("scheduleCount", scheduleService.getAllSchedules().size());
+        mav.addObject("trainCount", trainService.getAllTrains().size());
+        mav.addObject("stationCount", stationService.getAllStations().size());
+        return mav;
     }
 
+    // ================================== SCHEDULE (ĐÃ GỘP) =====================================
+
+    @GetMapping("/schedules")
+    public ModelAndView listSchedules(HttpSession session, Model model) {
+        ModelAndView mav = createAdminView("admin/schedule/list", "schedules", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("schedules", scheduleService.getAllSchedules());
+        mav.addObject("successMessage", model.asMap().get("successMessage"));
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
+    }
+
+    @GetMapping("/schedules/new")
+    public ModelAndView showCreateScheduleForm(HttpSession session, Model model) {
+        ModelAndView mav = createAdminView("admin/schedule/form", "schedules", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("schedule", new Schedule());
+        mav.addObject("stations", stationService.getAllStations());
+        mav.addObject("trains", trainService.getAllTrains());
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
+    }
+
+    @GetMapping("/schedules/{id}/edit")
+    public ModelAndView showEditScheduleForm(@PathVariable("id") Integer id, HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+        Schedule schedule = scheduleService.getScheduleById(id);
+        if (schedule == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy lịch trình với ID: " + id);
+            return new ModelAndView("redirect:/admin/schedules");
+        }
+
+        ModelAndView mav = createAdminView("admin/schedule/form", "schedules", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("schedule", schedule);
+        mav.addObject("stations", stationService.getAllStations());
+        mav.addObject("trains", trainService.getAllTrains());
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
+    }
+
+    @PostMapping("/schedules/create")
+    public String createSchedule(@RequestParam("departureStationId") Integer departureStationId,
+                                 @RequestParam("arrivalStationId") Integer arrivalStationId,
+                                 @RequestParam("departureDate") String departureDate,
+                                 @RequestParam("departureTime") String departureTime,
+                                 @RequestParam("arrivalDate") String arrivalDate,
+                                 @RequestParam("arrivalTime") String arrivalTime,
+                                 @RequestParam("train.id") Integer trainId,
+                                 @RequestParam("distanceKm") Double distanceKm,
+                                 @RequestParam("estimatedTime") Integer estimatedTime,
+                                 @RequestParam("basePrice") Double basePrice,
+                                 @RequestParam("status") String status,
+                                 HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
+
+        try {
+            Station departureStation = stationService.getStationsByID(departureStationId);
+            Station arrivalStation = stationService.getStationsByID(arrivalStationId);
+            Train train = trainService.getTrainById(trainId);
+
+            if (departureStation == null || arrivalStation == null || train == null) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Ga hoặc Tàu không tồn tại.");
+                return "redirect:/admin/schedules/new";
+            }
+            if (departureStationId.equals(arrivalStationId)) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Ga đi và ga đến không được trùng nhau.");
+                return "redirect:/admin/schedules/new";
+            }
+
+            LocalDateTime fullDepartureTime = LocalDateTime.parse(departureDate + "T" + departureTime);
+            LocalDateTime fullArrivalTime = LocalDateTime.parse(arrivalDate + "T" + arrivalTime);
+
+            if (fullArrivalTime.isBefore(fullDepartureTime) || fullArrivalTime.isEqual(fullDepartureTime)) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Giờ đến phải sau giờ đi.");
+                return "redirect:/admin/schedules/new";
+            }
+
+            Schedule schedule = new Schedule();
+            schedule.setDepartureStation(departureStation);
+            schedule.setArrivalStation(arrivalStation);
+            schedule.setTrain(train);
+            schedule.setDepartureTime(fullDepartureTime);
+            schedule.setArrivalTime(fullArrivalTime);
+            schedule.setDistanceKm(distanceKm);
+            schedule.setEstimatedTime(estimatedTime);
+            schedule.setBasePrice(basePrice);
+            schedule.setStatus(status);
+
+            scheduleService.saveSchedule(schedule);
+            redirectAttributes.addFlashAttribute("successMessage", "Tạo lịch trình thành công!");
+            return "redirect:/admin/schedules";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi tạo: " + e.getMessage());
+            return "redirect:/admin/schedules/new";
+        }
+    }
+
+    @PostMapping("/schedules/edit/{id}")
+    public String updateSchedule(@PathVariable("id") Integer id,
+                                 @RequestParam("departureStationId") Integer departureStationId,
+                                 @RequestParam("arrivalStationId") Integer arrivalStationId,
+                                 @RequestParam("departureDate") String departureDate,
+                                 @RequestParam("departureTime") String departureTime,
+                                 @RequestParam("arrivalDate") String arrivalDate,
+                                 @RequestParam("arrivalTime") String arrivalTime,
+                                 @RequestParam("train.id") Integer trainId,
+                                 @RequestParam("distanceKm") Double distanceKm,
+                                 @RequestParam("estimatedTime") Integer estimatedTime,
+                                 @RequestParam("basePrice") Double basePrice,
+                                 @RequestParam("status") String status,
+                                 HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
+
+        try {
+            Schedule existingSchedule = scheduleService.getScheduleById(id);
+            if (existingSchedule == null) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy lịch trình.");
+                return "redirect:/admin/schedules";
+            }
+
+            Station departureStation = stationService.getStationsByID(departureStationId);
+            Station arrivalStation = stationService.getStationsByID(arrivalStationId);
+            Train train = trainService.getTrainById(trainId);
+
+            if (departureStation == null || arrivalStation == null || train == null) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Ga hoặc Tàu không tồn tại.");
+                return "redirect:/admin/schedules/" + id + "/edit";
+            }
+            if (departureStationId.equals(arrivalStationId)) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Ga đi và ga đến không được trùng nhau.");
+                return "redirect:/admin/schedules/" + id + "/edit";
+            }
+
+            LocalDateTime fullDepartureTime = LocalDateTime.parse(departureDate + "T" + departureTime);
+            LocalDateTime fullArrivalTime = LocalDateTime.parse(arrivalDate + "T" + arrivalTime);
+
+            if (fullArrivalTime.isBefore(fullDepartureTime) || fullArrivalTime.isEqual(fullDepartureTime)) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Giờ đến phải sau giờ đi.");
+                return "redirect:/admin/schedules/" + id + "/edit";
+            }
+
+            existingSchedule.setDepartureStation(departureStation);
+            existingSchedule.setArrivalStation(arrivalStation);
+            existingSchedule.setTrain(train);
+            existingSchedule.setDepartureTime(fullDepartureTime);
+            existingSchedule.setArrivalTime(fullArrivalTime);
+            existingSchedule.setDistanceKm(distanceKm);
+            existingSchedule.setEstimatedTime(estimatedTime);
+            existingSchedule.setBasePrice(basePrice);
+            existingSchedule.setStatus(status);
+
+            scheduleService.saveSchedule(existingSchedule);
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật lịch trình thành công!");
+            return "redirect:/admin/schedules";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi cập nhật: " + e.getMessage());
+            return "redirect:/admin/schedules/" + id + "/edit";
+        }
+    }
+
+    @GetMapping("/schedules/delete/{id}")
+    public String deleteSchedule(@PathVariable("id") Integer id, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
+        try {
+            scheduleService.deleteSchedule(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Xóa lịch trình thành công!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Xóa thất bại! Lịch trình có thể đang được sử dụng.");
+        }
+        return "redirect:/admin/schedules";
+    }
+
+    // ================================== TRAIN =====================================
+
     @GetMapping("/train")
-    public ModelAndView showTrainManagementPage(HttpSession session) {
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "train");
-        modelAndView.addObject("contentFragment", "admin/train");
-        modelAndView.addObject("trainList", trainService.getAllTrains());
-        return modelAndView;
+    public ModelAndView showTrainManagementPage(HttpSession session, Model model) {
+        ModelAndView mav = createAdminView("admin/train", "train", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("trainList", trainService.getAllTrains());
+        mav.addObject("successMessage", model.asMap().get("successMessage"));
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
     }
 
     @GetMapping("/train/create")
-    public ModelAndView showCreateTrainPage(HttpSession session) {
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "train");
-        modelAndView.addObject("contentFragment", "admin/create-train");
-        modelAndView.addObject("train", new Train());
-        return modelAndView;
+    public ModelAndView showCreateTrainPage(HttpSession session, Model model) {
+        ModelAndView mav = createAdminView("admin/create-train", "train", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("train", new Train());
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
     }
 
     @PostMapping("/train/create")
-    public ModelAndView createTrain(@ModelAttribute("train") Train train, HttpSession session) {
-        if (!isAdmin(session)) {
-            return new ModelAndView("redirect:/error");
-        }
-
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "train");
-        modelAndView.addObject("contentFragment", "admin/create-train");
+    public String createTrain(@ModelAttribute("train") Train train, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
         try {
             trainService.createTrain(train);
-            modelAndView.addObject("successMessage", "Chuyến tàu đã được thêm thành công");
-            modelAndView.addObject("contentFragment", "admin/train");
-            modelAndView.addObject("trainList", trainService.getAllTrains());
+            redirectAttributes.addFlashAttribute("successMessage", "Chuyến tàu đã được thêm thành công");
+            return "redirect:/admin/train";
         } catch (Exception e) {
-            modelAndView.addObject("train", train);
-            modelAndView.addObject("errorMessage", "Lỗi khi thêm chuyến tàu: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi thêm: " + e.getMessage());
+            return "redirect:/admin/train/create";
         }
-        return modelAndView;
     }
 
     @GetMapping("/train/edit/{trainID}")
-    public ModelAndView editTrain(HttpSession session, @PathVariable("trainID") Integer trainID) {
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "train");
-        modelAndView.addObject("contentFragment", "admin/edit-train");
+    public ModelAndView editTrain(HttpSession session, @PathVariable("trainID") Integer trainID, Model model, RedirectAttributes redirectAttributes) {
         Train trainToEdit = trainService.getTrainById(trainID);
-        modelAndView.addObject("train", trainToEdit);
-        return modelAndView;
+        if (trainToEdit == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy tàu ID: " + trainID);
+            return new ModelAndView("redirect:/admin/train");
+        }
+
+        ModelAndView mav = createAdminView("admin/edit-train", "train", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("train", trainToEdit);
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
     }
 
     @PostMapping("/train/edit")
-    public ModelAndView editTrain(@ModelAttribute("train") Train train, HttpSession session) {
-        if (!isAdmin(session)) {
-            return new ModelAndView("redirect:/error");
-        }
-
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "train");
-        modelAndView.addObject("contentFragment", "admin/edit-train");
+    public String editTrain(@ModelAttribute("train") Train train, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
         try {
             trainService.updateTrain(train.getTrainID(), train);
-            modelAndView.addObject("successMessage", "Chuyến tàu đã được cập nhật thành công");
-            modelAndView.addObject("contentFragment", "admin/train");
-            modelAndView.addObject("trainList", trainService.getAllTrains());
+            redirectAttributes.addFlashAttribute("successMessage", "Chuyến tàu đã được cập nhật thành công");
+            return "redirect:/admin/train";
         } catch (Exception e) {
-            modelAndView.addObject("train", train);
-            modelAndView.addObject("errorMessage", "Lỗi khi cập nhật chuyến tàu: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi cập nhật: " + e.getMessage());
+            return "redirect:/admin/train/edit/" + train.getTrainID();
         }
-        return modelAndView;
     }
 
     @GetMapping("/train/delete/{trainID}")
-    public ModelAndView deleteTrain(@PathVariable("trainID") Integer trainID, HttpSession session) {
-        if (!isAdmin(session)) {
-            return new ModelAndView("redirect:/error");
-        }
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "train");
-        modelAndView.addObject("contentFragment", "admin/train");
-
+    public String deleteTrain(@PathVariable("trainID") Integer trainID, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
         try {
             trainService.deleteTrain(trainID);
-            modelAndView.addObject("trainList", trainService.getAllTrains());
-            modelAndView.addObject("successMessage", "Chuyến tàu đã được xóa thành công");
+            redirectAttributes.addFlashAttribute("successMessage", "Chuyến tàu đã được xóa thành công");
         } catch (Exception e) {
-            modelAndView.addObject("errorMessage", "Lỗi khi xóa chuyến tàu: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi xóa tàu: " + e.getMessage());
         }
-
-        return modelAndView;
+        return "redirect:/admin/train";
     }
 
     /**
-     * ================================== CARRIAGE TYPE
-     * =====================================
+     * ================================== CARRIAGE TYPE =====================================
      */
     @GetMapping("/carriageTypes")
-    public ModelAndView showCarriageManagementPage(HttpSession session) {
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "carriageTypes");
-        modelAndView.addObject("contentFragment", "admin/carriageTypes");
-        modelAndView.addObject("carriageTypeList", carriageTypeService.findAllCarriageTypes());
-        return modelAndView;
+    public ModelAndView showCarriageTypeManagementPage(HttpSession session, Model model) {
+        ModelAndView mav = createAdminView("admin/carriageTypes", "carriageTypes", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("carriageTypeList", carriageTypeService.findAllCarriageTypes());
+        mav.addObject("successMessage", model.asMap().get("successMessage"));
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
     }
 
     @GetMapping("/carriageTypes/delete/{carriageTypeID}")
-    public ModelAndView deleteCarriageType(@PathVariable("carriageTypeID") Integer carriageTypeID, HttpSession session) {
-        if (!isAdmin(session)) {
-            return new ModelAndView("redirect:/error");
-        }
-
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "carriageTypes");
-        modelAndView.addObject("contentFragment", "admin/carriageTypes");
-
+    public String deleteCarriageType(@PathVariable("carriageTypeID") Integer carriageTypeID, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
         try {
             carriageTypeService.deleteCarriageType(carriageTypeID);
-            modelAndView.addObject("carriageTypeList", carriageTypeService.findAllCarriageTypes());
-            modelAndView.addObject("successMessage", "Loại toa đã được xóa thành công");
+            redirectAttributes.addFlashAttribute("successMessage", "Loại toa đã được xóa thành công");
         } catch (Exception e) {
-            modelAndView.addObject("errorMessage", "Lỗi khi xóa loại toa: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi xóa loại toa: " + e.getMessage());
         }
-
-        return modelAndView;
+        return "redirect:/admin/carriageTypes";
     }
 
     @GetMapping("/carriageTypes/create")
-    public ModelAndView createCarriageType(HttpSession session) {
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "carriageTypes");
-        modelAndView.addObject("contentFragment", "admin/create-carriageType");
-        modelAndView.addObject("carriageType", new CarriageType());
-        return modelAndView;
+    public ModelAndView createCarriageType(HttpSession session, Model model) {
+        ModelAndView mav = createAdminView("admin/create-carriageType", "carriageTypes", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("carriageType", new CarriageType());
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
     }
 
     @PostMapping("/carriageTypes/create")
-    public ModelAndView createCarriageType(@ModelAttribute("carriageType") CarriageType carriageType, HttpSession session) {
-        if (!isAdmin(session)) {
-            return new ModelAndView("redirect:/error");
-        }
-
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "carriageTypes");
-        modelAndView.addObject("contentFragment", "admin/create-carriageType");
-
+    public String createCarriageType(@ModelAttribute("carriageType") CarriageType carriageType, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
         try {
             carriageTypeService.createCarriageType(carriageType);
-            modelAndView.addObject("successMessage", "Thêm loại toa mới thành công");
-            modelAndView.addObject("contentFragment", "admin/carriageTypes");
-            modelAndView.addObject("carriageTypeList", carriageTypeService.findAllCarriageTypes());
+            redirectAttributes.addFlashAttribute("successMessage", "Thêm loại toa mới thành công");
+            return "redirect:/admin/carriageTypes";
         } catch (Exception e) {
-            modelAndView.addObject("carriageType", carriageType);
-            modelAndView.addObject("errorMessage", "Lỗi khi thêm loại toa mới: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi thêm: " + e.getMessage());
+            return "redirect:/admin/carriageTypes/create";
         }
-
-        return modelAndView;
     }
 
     @GetMapping("/carriageTypes/edit/{carriageTypeId}")
-    public ModelAndView editCarriageType(@PathVariable("carriageTypeId") Integer carriageTypeId, HttpSession session) {
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "carriageTypes");
-        modelAndView.addObject("contentFragment", "admin/edit-carriageType");
+    public ModelAndView editCarriageType(@PathVariable("carriageTypeId") Integer carriageTypeId, HttpSession session, Model model, RedirectAttributes redirectAttributes) {
         CarriageType carriageTypeToEdit = carriageTypeService.findCarriageTypeById(carriageTypeId);
-        modelAndView.addObject("carriageType", carriageTypeToEdit);
-        return modelAndView;
+        if (carriageTypeToEdit == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy loại toa ID: " + carriageTypeId);
+            return new ModelAndView("redirect:/admin/carriageTypes");
+        }
+
+        ModelAndView mav = createAdminView("admin/edit-carriageType", "carriageTypes", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("carriageType", carriageTypeToEdit);
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
     }
 
     @PostMapping("/carriageTypes/edit")
-    public ModelAndView editCarriageType(@ModelAttribute("carriageType") CarriageType carriageType, HttpSession session) {
-        if (!isAdmin(session)) {
-            return new ModelAndView("redirect:/error");
-        }
-
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "carriageTypes");
-        modelAndView.addObject("contentFragment", "admin/edit-carriageType");
-
+    public String editCarriageType(@ModelAttribute("carriageType") CarriageType carriageType, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
         try {
             carriageTypeService.updateCarriageType(carriageType.getCarriageTypeId(), carriageType);
-            modelAndView.addObject("successMessage", "Cập nhật loại toa thành công");
-            modelAndView.addObject("contentFragment", "admin/carriageTypes");
-            modelAndView.addObject("carriageTypeList", carriageTypeService.findAllCarriageTypes());
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật loại toa thành công");
+            return "redirect:/admin/carriageTypes";
         } catch (Exception e) {
-            modelAndView.addObject("carriageType", carriageType);
-            modelAndView.addObject("errorMessage", "Lỗi khi cập nhật loại toa: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi cập nhật: " + e.getMessage());
+            return "redirect:/admin/carriageTypes/edit/" + carriageType.getCarriageTypeId();
         }
-
-        return modelAndView;
     }
 
     /**
      * ======================= CARRIAGE ==================================
      */
     @GetMapping("/carriages")
-    public ModelAndView getAllCarriage(HttpSession session) {
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "carriages");
-        modelAndView.addObject("contentFragment", "admin/carriages");
-        modelAndView.addObject("carriageList", carriageService.findAllCarriages());
-        return modelAndView;
+    public ModelAndView getAllCarriage(HttpSession session, Model model) {
+        ModelAndView mav = createAdminView("admin/carriages", "carriages", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("carriageList", carriageService.findAllCarriages());
+        mav.addObject("successMessage", model.asMap().get("successMessage"));
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
     }
 
     @GetMapping("/carriages/create")
-    public ModelAndView createCarriage(HttpSession session) {
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "carriages");
-        modelAndView.addObject("contentFragment", "admin/create-carriage");
-        modelAndView.addObject("carriage", new Carriage());
-        modelAndView.addObject("trainList", trainService.getAllTrains());
-        modelAndView.addObject("carriageTypeList", carriageTypeService.findAllCarriageTypes());
-        return modelAndView;
+    public ModelAndView createCarriage(HttpSession session, Model model) {
+        ModelAndView mav = createAdminView("admin/create-carriage", "carriages", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("carriage", new Carriage());
+        mav.addObject("trainList", trainService.getAllTrains());
+        mav.addObject("carriageTypeList", carriageTypeService.findAllCarriageTypes());
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
     }
 
     @PostMapping("/carriages/create")
-    public ModelAndView createCarriage(@ModelAttribute("carriage") Carriage carriage, @RequestParam("trainID") Integer trainId, @RequestParam("carriageTypeId") Integer carriageTypeId, HttpSession session) {
-        if (!isAdmin(session)) {
-            return new ModelAndView("redirect:/error");
-        }
-
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "carriages");
-        modelAndView.addObject("contentFragment", "admin/create-carriage");
-
+    public String createCarriage(@ModelAttribute("carriage") Carriage carriage, @RequestParam("trainID") Integer trainId, @RequestParam("carriageTypeId") Integer carriageTypeId, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
         try {
             Train trainToAdd = trainService.getTrainById(trainId);
-            carriage.setTrain(trainToAdd);
             CarriageType carriageTypeToAdd = carriageTypeService.findCarriageTypeById(carriageTypeId);
+            carriage.setTrain(trainToAdd);
             carriage.setCarriageType(carriageTypeToAdd);
             carriageService.saveCarriage(carriage);
-            modelAndView.addObject("successMessage", "Thêm toa tàu mới thành công");
-            modelAndView.addObject("contentFragment", "admin/carriages");
-            modelAndView.addObject("carriageList", carriageService.findAllCarriages());
+            redirectAttributes.addFlashAttribute("successMessage", "Thêm toa tàu mới thành công");
+            return "redirect:/admin/carriages";
         } catch (Exception e) {
-            modelAndView.addObject("carriage", carriage);
-            modelAndView.addObject("errorMessage", "Lỗi khi thêm toa tàu mới: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi thêm: " + e.getMessage());
+            return "redirect:/admin/carriages/create";
         }
-        return modelAndView;
     }
 
     @GetMapping("/carriages/edit/{carriageID}")
-    public ModelAndView editCarriage(@PathVariable("carriageID") Integer carriageID, HttpSession session) {
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "carriages");
-        modelAndView.addObject("contentFragment", "admin/edit-carriage");
-        modelAndView.addObject("carriage", carriageService.findCarriageById(carriageID));
-        modelAndView.addObject("trainList", trainService.getAllTrains());
-        modelAndView.addObject("carriageTypeList", carriageTypeService.findAllCarriageTypes());
-        return modelAndView;
+    public ModelAndView editCarriage(@PathVariable("carriageID") Integer carriageID, HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+        Carriage carriage = carriageService.findCarriageById(carriageID);
+        if (carriage == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy toa ID: " + carriageID);
+            return new ModelAndView("redirect:/admin/carriages");
+        }
+
+        ModelAndView mav = createAdminView("admin/edit-carriage", "carriages", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("carriage", carriage);
+        mav.addObject("trainList", trainService.getAllTrains());
+        mav.addObject("carriageTypeList", carriageTypeService.findAllCarriageTypes());
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
     }
 
     @PostMapping("/carriages/edit")
-    public ModelAndView editCarriage(@ModelAttribute("carriage") Carriage carriage, @RequestParam("trainID") Integer trainId, @RequestParam("carriageTypeId") Integer carriageTypeId, HttpSession session) {
-        if (!isAdmin(session)) {
-            return new ModelAndView("redirect:/error");
-        }
-
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "carriages");
-        modelAndView.addObject("contentFragment", "admin/edit-carriage");
-
+    public String editCarriage(@ModelAttribute("carriage") Carriage carriage, @RequestParam("trainID") Integer trainId, @RequestParam("carriageTypeId") Integer carriageTypeId, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
         try {
             Train trainToAdd = trainService.getTrainById(trainId);
-            carriage.setTrain(trainToAdd);
             CarriageType carriageTypeToAdd = carriageTypeService.findCarriageTypeById(carriageTypeId);
+            carriage.setTrain(trainToAdd);
             carriage.setCarriageType(carriageTypeToAdd);
             carriageService.updateCarriage(carriage.getCarriageID(), carriage);
-            modelAndView.addObject("successMessage", "Cập nhật toa tàu mới thành công");
-            modelAndView.addObject("contentFragment", "admin/carriages");
-            modelAndView.addObject("carriageList", carriageService.findAllCarriages());
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật toa tàu thành công");
+            return "redirect:/admin/carriages";
         } catch (Exception e) {
-            modelAndView.addObject("carriage", carriage);
-            modelAndView.addObject("carriageList", carriageService.findAllCarriages());
-            modelAndView.addObject("trainList", trainService.getAllTrains());
-            modelAndView.addObject("errorMessage", "Lỗi khi cập nhật toa tàu: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi cập nhật: " + e.getMessage());
+            return "redirect:/admin/carriages/edit/" + carriage.getCarriageID();
         }
-        return modelAndView;
     }
 
     @GetMapping("/carriages/delete/{carriageID}")
-    public ModelAndView deleteCarriage(@PathVariable("carriageID") Integer carriageID, HttpSession session) {
-        if (!isAdmin(session)) {
-            return new ModelAndView("redirect:/error");
-        }
-
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "carriages");
-        modelAndView.addObject("contentFragment", "admin/carriages");
-
+    public String deleteCarriage(@PathVariable("carriageID") Integer carriageID, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
         try {
             carriageService.deleteCarriage(carriageID);
-            modelAndView.addObject("carriageList", carriageService.findAllCarriages());
-            modelAndView.addObject("successMessage", "Xóa toa tàu thành công");
+            redirectAttributes.addFlashAttribute("successMessage", "Xóa toa tàu thành công");
         } catch (Exception e) {
-            modelAndView.addObject("errorMessage", "Xóa toa tàu thất bại");
+            redirectAttributes.addFlashAttribute("errorMessage", "Xóa toa tàu thất bại: " + e.getMessage());
         }
-        return modelAndView;
+        return "redirect:/admin/carriages";
     }
 
     /**
@@ -319,311 +489,248 @@ public class AdminController {
      */
 
     @GetMapping("/seatTypes")
-    public ModelAndView showSeatTypeManagementPage(HttpSession session) {
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "seatTypes");
-        modelAndView.addObject("contentFragment", "admin/seatTypes");
-        modelAndView.addObject("seatTypeList", seatTypeService.getAllSeatTypes());
-        return modelAndView;
+    public ModelAndView showSeatTypeManagementPage(HttpSession session, Model model) {
+        ModelAndView mav = createAdminView("admin/seatTypes", "seatTypes", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("seatTypeList", seatTypeService.getAllSeatTypes());
+        mav.addObject("successMessage", model.asMap().get("successMessage"));
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
     }
 
     @GetMapping("/seatTypes/delete/{seatTypeId}")
-    public ModelAndView deleteSeatType(@PathVariable("seatTypeId") Integer seatTypeIdID, HttpSession session) {
-        if (!isAdmin(session)) {
-            return new ModelAndView("redirect:/error");
-        }
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "seatTypes");
-        modelAndView.addObject("contentFragment", "admin/seatTypes");
-
+    public String deleteSeatType(@PathVariable("seatTypeId") Integer seatTypeIdID, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
         try {
             seatTypeService.deleteSeatType(seatTypeIdID);
-            modelAndView.addObject("seatTypeList", seatTypeService.getAllSeatTypes());
-            modelAndView.addObject("successMessage", "Xóa loại ghế thành công");
+            redirectAttributes.addFlashAttribute("successMessage", "Xóa loại ghế thành công");
         } catch (Exception e) {
-            modelAndView.addObject("errorMessage", "Lỗi khi xóa loại ghế: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi xóa loại ghế: " + e.getMessage());
         }
-        return modelAndView;
+        return "redirect:/admin/seatTypes";
     }
 
     @GetMapping("/seatTypes/create")
-    public ModelAndView createSeatType(HttpSession session) {
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "seatTypes");
-        modelAndView.addObject("contentFragment", "admin/create-seatType");
-        modelAndView.addObject("seatType", new SeatType());
-        return modelAndView;
+    public ModelAndView createSeatType(HttpSession session, Model model) {
+        ModelAndView mav = createAdminView("admin/create-seatType", "seatTypes", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("seatType", new SeatType());
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
     }
 
     @PostMapping("/seatTypes/create")
-    public ModelAndView createSeatType(@ModelAttribute("seatType") SeatType seatType, HttpSession session) {
-        if (!isAdmin(session)) {
-            return new ModelAndView("redirect:/error");
-        }
-
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "seatTypes");
-        modelAndView.addObject("contentFragment", "admin/create-seatType");
-
+    public String createSeatType(@ModelAttribute("seatType") SeatType seatType, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
         try {
             seatTypeService.saveSeatType(seatType);
-            modelAndView.addObject("successMessage", "Thêm loại ghế mới thành công");
-            modelAndView.addObject("contentFragment", "admin/seatTypes");
-            modelAndView.addObject("seatTypeList", seatTypeService.getAllSeatTypes());
+            redirectAttributes.addFlashAttribute("successMessage", "Thêm loại ghế mới thành công");
+            return "redirect:/admin/seatTypes";
         } catch (Exception e) {
-            modelAndView.addObject("seatType", seatType);
-            modelAndView.addObject("errorMessage", "Lỗi khi thêm loại ghế mới: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi thêm: " + e.getMessage());
+            return "redirect:/admin/seatTypes/create";
         }
-        return modelAndView;
     }
 
     @GetMapping("/seatTypes/edit/{seatTypesID}")
-    public ModelAndView editSeatType(@PathVariable("seatTypesID") Integer seatTypesID, HttpSession session) {
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "seatTypes");
-        modelAndView.addObject("contentFragment", "admin/edit-seatType");
-        modelAndView.addObject("seatType", seatTypeService.getSeatTypeById(seatTypesID));
-        return modelAndView;
+    public ModelAndView editSeatType(@PathVariable("seatTypesID") Integer seatTypesID, HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+        SeatType seatType = seatTypeService.getSeatTypeById(seatTypesID);
+        if (seatType == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy loại ghế ID: " + seatTypesID);
+            return new ModelAndView("redirect:/admin/seatTypes");
+        }
+
+        ModelAndView mav = createAdminView("admin/edit-seatType", "seatTypes", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("seatType", seatType);
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
     }
 
     @PostMapping("/seatTypes/edit")
-    public ModelAndView editSeatType(@ModelAttribute("seatType") SeatType seatType, HttpSession session) {
-        if (!isAdmin(session)) {
-            return new ModelAndView("redirect:/error");
-        }
-
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "seatTypes");
-        modelAndView.addObject("contentFragment", "admin/edit-seatType");
-
+    public String editSeatType(@ModelAttribute("seatType") SeatType seatType, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
         try {
             seatTypeService.updateSeatType(seatType.getSeatTypeID(), seatType);
-            modelAndView.addObject("successMessage", "Cập nhật loại ghế thành công");
-            modelAndView.addObject("contentFragment", "admin/seatTypes");
-            modelAndView.addObject("seatTypeList", seatTypeService.getAllSeatTypes());
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật loại ghế thành công");
+            return "redirect:/admin/seatTypes";
         } catch (Exception e) {
-            modelAndView.addObject("seatType", seatType);
-            modelAndView.addObject("errorMessage", "Lỗi khi cập nhật loại ghế: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi cập nhật: " + e.getMessage());
+            return "redirect:/admin/seatTypes/edit/" + seatType.getSeatTypeID();
         }
-        return modelAndView;
     }
 
     /*====================== SEAT ============================*/
 
     @GetMapping("/seats")
-    public ModelAndView showSeatManagementPage(HttpSession session) {
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "seats");
-        modelAndView.addObject("contentFragment", "admin/seats");
-        modelAndView.addObject("seatList", seatService.getAllSeats());
-        return modelAndView;
+    public ModelAndView showSeatManagementPage(HttpSession session, Model model) {
+        ModelAndView mav = createAdminView("admin/seats", "seats", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("seatList", seatService.getAllSeats());
+        mav.addObject("successMessage", model.asMap().get("successMessage"));
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
     }
 
     @GetMapping("/seats/delete/{seatID}")
-    public ModelAndView deleteSeat(@PathVariable("seatID") Integer seatID, HttpSession session) {
-        if (!isAdmin(session)) {
-            return new ModelAndView("redirect:/error");
-        }
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "seats");
-        modelAndView.addObject("contentFragment", "admin/seats");
-
+    public String deleteSeat(@PathVariable("seatID") Integer seatID, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
         try {
             seatService.deleteSeat(seatID);
-            modelAndView.addObject("seatList", seatService.getAllSeats());
-            modelAndView.addObject("successMessage", "Xóa ghế tàu thành công");
+            redirectAttributes.addFlashAttribute("successMessage", "Xóa ghế tàu thành công");
         } catch (Exception e) {
-            modelAndView.addObject("errorMessage", "Lỗi khi xóa ghê tàu: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi xóa ghế: " + e.getMessage());
         }
-
-        return modelAndView;
+        return "redirect:/admin/seats";
     }
 
     @GetMapping("/seats/create")
-    public ModelAndView createSeatPage(HttpSession session) {
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "seats");
-        modelAndView.addObject("contentFragment", "admin/create-seat");
-        modelAndView.addObject("seat", new Seat());
-        modelAndView.addObject("carriageList", carriageService.findAllCarriages());
-        modelAndView.addObject("seatTypeList", seatTypeService.getAllSeatTypes());
-        return modelAndView;
+    public ModelAndView createSeatPage(HttpSession session, Model model) {
+        ModelAndView mav = createAdminView("admin/create-seat", "seats", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("seat", new Seat());
+        mav.addObject("carriageList", carriageService.findAllCarriages());
+        mav.addObject("seatTypeList", seatTypeService.getAllSeatTypes());
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
     }
 
     @PostMapping("/seats/create")
-    public ModelAndView createSeat(@ModelAttribute("seat") Seat seat,
-                                   @RequestParam("carriage.carriageID") Integer carriageID,
-                                   @RequestParam("seatType.seatTypeID") Integer seatTypeID,
-                                   HttpSession session) {
-        if (!isAdmin(session)) {
-            return new ModelAndView("redirect:/error");
-        }
-
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "seats");
-        modelAndView.addObject("contentFragment", "admin/create-seat");
-
+    public String createSeat(@ModelAttribute("seat") Seat seat,
+                             @RequestParam("carriage.carriageID") Integer carriageID,
+                             @RequestParam("seatType.seatTypeID") Integer seatTypeID,
+                             HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
         try {
             Carriage carriage = carriageService.findCarriageById(carriageID);
             SeatType seatType = seatTypeService.getSeatTypeById(seatTypeID);
             seat.setCarriage(carriage);
             seat.setSeatType(seatType);
             seatService.saveSeat(seat);
-            modelAndView.addObject("successMessage", "Tạo ghế mới thành công");
-            return new ModelAndView("redirect:/admin/seats");
-
+            redirectAttributes.addFlashAttribute("successMessage", "Tạo ghế mới thành công");
+            return "redirect:/admin/seats";
         } catch (Exception e) {
-            modelAndView.addObject("seat", seat);
-            modelAndView.addObject("carriageList", carriageService.findAllCarriages());
-            modelAndView.addObject("seatTypeList", seatTypeService.getAllSeatTypes());
-            modelAndView.addObject("errorMessage", "Lỗi khi tạo ghế mới: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi tạo ghế: " + e.getMessage());
+            return "redirect:/admin/seats/create";
         }
-
-        return modelAndView;
     }
 
     @GetMapping("/seats/edit/{seatID}")
-    public ModelAndView editSeat(@PathVariable("seatID") Integer seatID, HttpSession session) {
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "seats");
-        modelAndView.addObject("contentFragment", "admin/edit-seat");
-        modelAndView.addObject("seat", seatService.getSeatById(seatID));
-        modelAndView.addObject("carriageList", carriageService.findAllCarriages());
-        modelAndView.addObject("seatTypeList", seatTypeService.getAllSeatTypes());
-        return modelAndView;
+    public ModelAndView editSeat(@PathVariable("seatID") Integer seatID, HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+        Seat seat = seatService.getSeatById(seatID);
+        if (seat == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy ghế ID: " + seatID);
+            return new ModelAndView("redirect:/admin/seats");
+        }
+
+        ModelAndView mav = createAdminView("admin/edit-seat", "seats", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("seat", seat);
+        mav.addObject("carriageList", carriageService.findAllCarriages());
+        mav.addObject("seatTypeList", seatTypeService.getAllSeatTypes());
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
     }
 
     @PostMapping("/seats/edit")
-    public ModelAndView editSeat(@ModelAttribute("seat") Seat seat,
-                                 @RequestParam("carriage.carriageID") Integer carriageID,
-                                 @RequestParam("seatType.seatTypeID") Integer seatTypeID, HttpSession session) {
-        if (!isAdmin(session)) {
-            return new ModelAndView("redirect:/error");
-        }
-
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "seats");
-        modelAndView.addObject("contentFragment", "admin/edit-seat");
-
+    public String editSeat(@ModelAttribute("seat") Seat seat,
+                           @RequestParam("carriage.carriageID") Integer carriageID,
+                           @RequestParam("seatType.seatTypeID") Integer seatTypeID, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
         try {
             Carriage carriage = carriageService.findCarriageById(carriageID);
             SeatType seatType = seatTypeService.getSeatTypeById(seatTypeID);
             seat.setCarriage(carriage);
             seat.setSeatType(seatType);
             seatService.updateSeat(seat.getSeatID(), seat);
-            modelAndView.addObject("successMessage", "Cập nhật ghế thành công");
-            modelAndView.addObject("contentFragment", "admin/seats");
-            modelAndView.addObject("seatList", seatService.getAllSeats());
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật ghế thành công");
+            return "redirect:/admin/seats";
         } catch (Exception e) {
-            modelAndView.addObject("seat", seat);
-            modelAndView.addObject("errorMessage", "Lỗi khi cập nhật ghế :" + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi cập nhật ghế: " + e.getMessage());
+            return "redirect:/admin/seats/edit/" + seat.getSeatID();
         }
-
-        return modelAndView;
     }
 
     /* ========================== STATION ========================================== */
 
     @GetMapping("/stations")
-    public ModelAndView showStationManagementPage(HttpSession session) {
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "stations");
-        modelAndView.addObject("stationList", stationService.getAllStations());
-        modelAndView.addObject("contentFragment", "admin/stations");
-        return modelAndView;
+    public ModelAndView showStationManagementPage(HttpSession session, Model model) {
+        ModelAndView mav = createAdminView("admin/stations", "stations", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("stationList", stationService.getAllStations());
+        mav.addObject("successMessage", model.asMap().get("successMessage"));
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
     }
 
     @GetMapping("/stations/delete/{stationID}")
-    public ModelAndView deleteStation(@PathVariable("stationID") Integer stationID, HttpSession session) {
-        if (!isAdmin(session)) {
-            return new ModelAndView("redirect:/error");
-        }
-
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "stations");
-        modelAndView.addObject("contentFragment", "admin/stations");
-
+    public String deleteStation(@PathVariable("stationID") Integer stationID, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
         try {
             stationService.deleteStation(stationID);
-            modelAndView.addObject("stationList", stationService.getAllStations());
-            modelAndView.addObject("successMessage", "Xóa ga tàu thành công");
-        }catch (Exception e) {
-            modelAndView.addObject("errorMessage",  "Lỗi khi xóa ga tàu: "+e.getMessage());
+            redirectAttributes.addFlashAttribute("successMessage", "Xóa ga tàu thành công");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi xóa ga tàu: " + e.getMessage());
         }
-
-        return modelAndView;
+        return "redirect:/admin/stations";
     }
 
     @GetMapping("/stations/create")
-    public ModelAndView createStation(HttpSession session) {
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "stations");
-        modelAndView.addObject("station", new Station());
-        modelAndView.addObject("contentFragment", "admin/create-station");
-        return modelAndView;
+    public ModelAndView createStation(HttpSession session, Model model) {
+        ModelAndView mav = createAdminView("admin/create-station", "stations", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("station", new Station());
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
     }
 
     @PostMapping("/stations/create")
-    public ModelAndView createStation(@ModelAttribute("station") Station station, HttpSession session) {
-        if (!isAdmin(session)) {
-            return new ModelAndView("redirect:/error");
-        }
-
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "stations");
-        modelAndView.addObject("contentFragment", "admin/create-station");
-
+    public String createStation(@ModelAttribute("station") Station station, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
         try {
             stationService.saveStation(station);
-            modelAndView.addObject("stationList", stationService.getAllStations());
-            modelAndView.addObject("successMessage", "Thêm ga tàu mới thành công");
-            modelAndView.addObject("contentFragment", "admin/stations");
-        }catch (Exception e) {
-            modelAndView.addObject("station", station);
-            modelAndView.addObject("errorMessage", "Lỗi khi xảy ra khi thêm ga tàu: "+e.getMessage());
+            redirectAttributes.addFlashAttribute("successMessage", "Thêm ga tàu mới thành công");
+            return "redirect:/admin/stations";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi thêm: " + e.getMessage());
+            return "redirect:/admin/stations/create";
         }
-
-        return modelAndView;
     }
 
     @GetMapping("/stations/edit/{stationID}")
-    public ModelAndView editStation(@PathVariable("stationID") Integer stationID, HttpSession session) {
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "stations");
-        modelAndView.addObject("station", stationService.getStationsByID(stationID));
-        modelAndView.addObject("contentFragment", "admin/edit-station");
-        return modelAndView;
+    public ModelAndView editStation(@PathVariable("stationID") Integer stationID, HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+        Station station = stationService.getStationsByID(stationID);
+        if (station == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy ga ID: " + stationID);
+            return new ModelAndView("redirect:/admin/stations");
+        }
+
+        ModelAndView mav = createAdminView("admin/edit-station", "stations", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("station", station);
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
     }
 
     @PostMapping("/stations/edit")
-    public ModelAndView editStation(@ModelAttribute("station") Station station, HttpSession session){
-        if (!isAdmin(session)) {
-            return new ModelAndView("redirect:/error");
-        }
-
-        ModelAndView modelAndView = createModelAndView(session, "admin/admin-layout", "stations");
-        modelAndView.addObject("contentFragment", "admin/edit-station");
-
+    public String editStation(@ModelAttribute("station") Station station, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
         try {
             stationService.updateStation(station.getStationID(), station);
-            modelAndView.addObject("stationList", stationService.getAllStations());
-            modelAndView.addObject("successMessage", "Cập nhật ga tàu thành công");
-            modelAndView.addObject("contentFragment", "admin/stations");
-        }catch (Exception e) {
-            modelAndView.addObject("station", station);
-            modelAndView.addObject("errorMessage", "Lỗi xảy ra khi cập nhật ga tàu: "+e.getMessage());
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật ga tàu thành công");
+            return "redirect:/admin/stations";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi cập nhật: " + e.getMessage());
+            return "redirect:/admin/stations/edit/" + station.getStationID();
         }
-
-        return modelAndView;
     }
-
-    /* ============================================================================= */
-    private ModelAndView createModelAndView(HttpSession session, String viewName, String currentPage) {
-        User user = (User) session.getAttribute("user");
-        if (!isLoggedIn(session)) {
-            return new ModelAndView("redirect:/home");
-        }
-        if (!isAdmin(session)) {
-            return new ModelAndView("redirect:/error");
-        }
-        ModelAndView modelAndView = new ModelAndView(viewName);
-        modelAndView.addObject("isAdmin", true);
-        modelAndView.addObject("currentPage", currentPage);
-        modelAndView.addObject("user", user);
-        return modelAndView;
-    }
-
-    private boolean isLoggedIn(HttpSession session) {
-        User user = (User) session.getAttribute("user");
-        return user != null;
-    }
-
-    private boolean isAdmin(HttpSession session) {
-        User user = (User) session.getAttribute("user");
-        return user != null && "ADMIN".equalsIgnoreCase(user.getRole());
-    }
-
 }

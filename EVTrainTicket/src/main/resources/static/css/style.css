@@ -610,3 +610,22 @@ footer {
         justify-content: center;
     }
 }
+
+.navbar .user-info a.admin-nav-link {
+    color: white;
+    margin-right: 15px;
+    font-size: 1em;
+    padding: 8px 15px;
+    border-radius: 5px;
+    background-color: var(--secondary-color);
+    text-decoration: none;
+    transition: background-color 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.navbar .user-info a.admin-nav-link:hover {
+    background-color: var(--accent-color);
+    color: #333;
+}
+

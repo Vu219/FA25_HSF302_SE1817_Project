@@ -19,6 +19,9 @@
         </div>
         <div class="user-info" th:if="${user != null}">
             <p>Xin chào, <strong th:text="${user.fullName}"></strong>!</p>
+            <a th:if="${isAdmin}" th:href="@{/admin}" class="admin-nav-link">
+                <i class="fas fa-cogs"></i> Quản trị
+            </a>
             <form th:action="@{/logout}" method="get">
                 <button type="submit">
                     <i class="fas fa-sign-out-alt"></i> Đăng xuất
@@ -80,7 +83,6 @@
         </div>
     </section>
 
-    <!-- Alert Messages -->
     <div class="container" style="margin-top: 30px;">
         <div th:if="${error}" class="alert alert-danger">
             <i class="fas fa-exclamation-circle"></i>
@@ -92,8 +94,7 @@
         </div>
     </div>
 
-    <!-- Search Results Section -->
-    <section th:if="${schedules != null and not #lists.isEmpty(schedules)}" class="search-results-section container">
+    <section id="search-results" th:if="${schedules != null and not #lists.isEmpty(schedules)}" class="search-results-section container">
         <h2 class="section-title">
             <i class="fas fa-list-ul"></i> Kết quả tìm kiếm
         </h2>
@@ -115,7 +116,6 @@
                           th:text="${schedule.status}">
                     </span>
                 </div>
-
                 <div class="schedule-route">
                     <div class="route-point">
                         <i class="fas fa-circle" style="color: #28a745;"></i>
@@ -128,12 +128,10 @@
                             </p>
                         </div>
                     </div>
-
                     <div class="route-line">
                         <i class="fas fa-arrow-down"></i>
                         <span class="route-duration" th:text="${schedule.estimatedTime} + ' phút'"></span>
                     </div>
-
                     <div class="route-point">
                         <i class="fas fa-circle" style="color: #dc3545;"></i>
                         <div>
@@ -146,7 +144,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="schedule-info">
                     <div class="info-item">
                         <i class="fas fa-road"></i>
@@ -157,7 +154,6 @@
                         <span>Giá từ: <strong th:text="${#numbers.formatDecimal(schedule.basePrice, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></strong></span>
                     </div>
                 </div>
-
                 <div class="schedule-actions">
                     <a th:href="@{/search/details/{id}(id=${schedule.scheduleID})}" class="btn btn-primary">
                         <i class="fas fa-info-circle"></i> Xem chi tiết
@@ -218,12 +214,20 @@
             </div>
         </div>
     </section>
-
 </main>
 
 <footer>
     <p>&copy; 2025 EVTrainTicket. All rights reserved.</p>
 </footer>
+
+<script th:if="${schedules != null and not #lists.isEmpty(schedules)}">
+    document.addEventListener('DOMContentLoaded', function() {
+        const resultsSection = document.getElementById('search-results');
+        if (resultsSection) {
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    });
+</script>
 
 </body>
 </html>

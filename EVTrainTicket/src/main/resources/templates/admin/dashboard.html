@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<section>
+    <div class="admin-content-header">
+        <h2>Bảng điều khiển</h2>
+        <p>Tổng quan hệ thống EVTrainTicket.</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="icon" style="background: #007bff;">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="info">
+                <h3 th:text="${scheduleCount}">0</h3>
+                <p>Lịch trình</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="icon" style="background: #17a2b8;">
+                <i class="fas fa-train-subway"></i>
+            </div>
+            <div class="info">
+                <h3 th:text="${trainCount}">0</h3>
+                <p>Đoàn tàu</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="icon" style="background: #28a745;">
+                <i class="fas fa-building-columns"></i>
+            </div>
+            <div class="info">
+                <h3 th:text="${stationCount}">0</h3>
+                <p>Ga tàu</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-box" style="margin-top: 30px;">
+        <h3>Chào mừng trở lại!</h3>
+        <p>Sử dụng menu bên trái để bắt đầu quản lý các khía cạnh khác nhau của hệ thống.</p>
+        <p>Bạn có thể:</p>
+        <ul>
+            <li>Thêm, sửa, xóa các lịch trình tàu.</li>
+            <li>Quản lý thông tin đoàn tàu và các toa tàu.</li>
+            <li>Thiết lập các loại ghế và cấu hình ghế cho từng toa.</li>
+            <li>Cập nhật danh sách các ga tàu đang hoạt động.</li>
+        </ul>
+    </div>
+</section>
+</html>
