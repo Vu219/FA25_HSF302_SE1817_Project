@@ -3,7 +3,7 @@ package fa25.group.evtrainticket.controller;
 import fa25.group.evtrainticket.service.ScheduleService;
 import fa25.group.evtrainticket.service.SeatService;
 import fa25.group.evtrainticket.dto.CarriageLayoutDto;
-import fa25.group.evtrainticket.dto.RoundTripSearchDto;
+// import fa25.group.evtrainticket.dto.RoundTripSearchDto; // Đã xóa
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -20,32 +20,9 @@ public class ScheduleController {
     private ScheduleService scheduleService;
     @Autowired
     private SeatService seatService;
-
-    @GetMapping("/schedule")
-    public String schedule() {
-        return "Schedule";
-    }
-
-    @GetMapping("/api/schedules/search")
-    @ResponseBody
-    public ResponseEntity<RoundTripSearchDto> searchSchedules(
-            @RequestParam int departureStationId,
-            @RequestParam int arrivalStationId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
-            @RequestParam(defaultValue = "false") boolean isRoundTrip,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate returnDate
-    ) {
-        List<RoundTripSearchDto> resultsList = scheduleService.searchSchedules(departureStationId, arrivalStationId, departureDate, returnDate, isRoundTrip);
-
-        if (resultsList.isEmpty()) {
-            // Return empty RoundTripSearchDto if no results found
-            return ResponseEntity.ok(new RoundTripSearchDto());
-        }
-
-        RoundTripSearchDto results = resultsList.get(0);
-        return ResponseEntity.ok(results);
-    }
-
+    /**
+     * API này được booking.html sử dụng để tải sơ đồ ghế
+     */
     @GetMapping("/api/schedules/{scheduleId}/seats")
     @ResponseBody
     public ResponseEntity<List<CarriageLayoutDto>> getSeatLayoutForSchedule(
@@ -55,6 +32,9 @@ public class ScheduleController {
         return ResponseEntity.ok(seatLayout);
     }
 
+    /**
+     * API này được booking.html sử dụng để tải thông tin chi tiết chuyến tàu
+     */
     @GetMapping("/api/schedules/{scheduleId}")
     @ResponseBody
     public ResponseEntity<?> getScheduleById(@PathVariable int scheduleId) {

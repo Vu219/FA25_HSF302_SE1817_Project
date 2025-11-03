@@ -4,6 +4,8 @@ import fa25.group.evtrainticket.service.BookingService;
 import fa25.group.evtrainticket.dto.BookingRequestDto;
 
 import fa25.group.evtrainticket.mapper.BookingMapper;
+import fa25.group.evtrainticket.service.ScheduleService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -15,13 +17,11 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
+@RequiredArgsConstructor
 public class BookingController {
-
-    @Autowired
-    private BookingService bookingService;
-
-    @Autowired
-    private BookingMapper bookingMapper;
+    private final BookingService bookingService;
+    private final BookingMapper bookingMapper;
+    private final ScheduleService scheduleService;
 
     // Web pages
     @GetMapping("/booking")
@@ -249,6 +249,28 @@ public class BookingController {
             return ResponseEntity.badRequest().body(Map.of(
                 "error", "Failed to calculate price: " + e.getMessage()
             ));
+        }
+    }
+
+    @GetMapping("/booking/passenger-info")
+    public String passengerInfoPage(@RequestParam Integer scheduleId,
+                                    @RequestParam List<Integer> seatIds,
+                                    Model model) {
+        try {
+            // Validate schedule and seats
+            var schedule = scheduleService.getScheduleById(scheduleId);
+            if (schedule == null) {
+                return "redirect:/booking?error=Schedule not found";
+            }
+
+            // Add data to model
+            model.addAttribute("schedule", schedule);
+            model.addAttribute("seatIds", seatIds);
+            model.addAttribute("selectedSeatsCount", seatIds.size());
+
+            return "passenger-info";
+        } catch (Exception e) {
+            return "redirect:/booking?error=" + e.getMessage();
         }
     }
 }

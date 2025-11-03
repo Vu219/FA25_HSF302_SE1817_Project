@@ -63,12 +63,19 @@ header {
     background-color: var(--secondary-color);
 }
 
+/* =====================================================
+   FIX: Cập nhật .user-info để dùng "gap"
+   ===================================================== */
 .navbar .user-info {
     display: flex;
     align-items: center;
+    gap: 15px; /* Thêm khoảng cách chuẩn */
 }
 
-.navbar .user-info p { margin: 0 15px 0 0; }
+.navbar .user-info p {
+    margin: 0; /* Bỏ margin cũ */
+}
+/* ===================================================== */
 
 .navbar .user-info button {
     background-color: #dc3545;
@@ -611,9 +618,12 @@ footer {
     }
 }
 
+/* =====================================================
+   FIX: Cập nhật .admin-nav-link (Bỏ margin-right)
+   ===================================================== */
 .navbar .user-info a.admin-nav-link {
     color: white;
-    margin-right: 15px;
+    /* margin-right: 15px; */ /* Bỏ margin, đã dùng gap */
     font-size: 1em;
     padding: 8px 15px;
     border-radius: 5px;
@@ -629,3 +639,38 @@ footer {
     color: #333;
 }
 
+/* ========================================
+   Bổ sung cho booking system
+======================================== */
+
+/* Alert styles bổ sung */
+.alert-warning {
+    background: #fff3cd;
+    color: #856404;
+    border-left: 4px solid #ffc107;
+}
+
+/* Text utilities */
+.text-center {
+    text-align: center;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .search-form {
+        grid-template-columns: 1fr;
+    }
+
+    .schedule-actions {
+        flex-direction: column;
+    }
+
+    .schedule-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

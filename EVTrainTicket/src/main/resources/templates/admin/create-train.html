@@ -2,7 +2,7 @@
     <div class="form-container">
         <h2><i class="fas fa-edit"></i> Cập nhật tàu</h2>
 
-        <form th:action="@{/admin/train/edit}" th:object="${train}" method="post" style="margin-top: 20px;">
+        <form th:action="@{/admin/train/create}" th:object="${train}" method="post" style="margin-top: 20px;">
             <div class="form-group">
                 <label for="trainID">Mã tàu:</label>
                 <input type="text" id="trainID" th:field="*{trainID}" readonly>
@@ -32,7 +32,7 @@
                 <textarea id="notes" th:field="*{notes}" rows="3"></textarea>
             </div>
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Cập nhật tàu</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Thêm tàu</button>
                 <a th:href="@{/admin/train}" class="btn btn-secondary"><i class="fas fa-times"></i> Hủy</a>
             </div>
         </form>

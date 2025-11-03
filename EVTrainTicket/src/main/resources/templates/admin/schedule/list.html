@@ -152,16 +152,8 @@
                                    class="btn btn-info btn-sm">
                                     <i class="fas fa-edit"></i> Edit
                                 </a>
-                                <form th:action="@{/admin/schedules/{id}(id=${schedule.scheduleID})}"
-                                      method="post"
-                                      style="display:inline;">
-                                    <input type="hidden" name="_method" value="delete">
-                                    <button type="submit"
-                                            class="btn btn-danger btn-sm"
-                                            onclick="return confirm('⚠️ Are you sure you want to delete this schedule?\n\nThis action cannot be undone!');">
-                                        <i class="fas fa-trash-alt"></i> Delete
-                                    </button>
-                                </form>
+                                <a th:href="@{'/admin/schedules/delete/' + ${schedule.scheduleID}}" class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Bạn có chắc chắn muốn xóa lịch trin tàu này không?');"><i class="fas fa-trash"></i> Xóa</a>
                             </div>
                         </td>
                     </tr>
