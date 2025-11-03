@@ -49,14 +49,13 @@ public class Schedule {
     private BigDecimal basePrice;
 
     @Column(name = "Origin", nullable = false)
-    private String origin;
+    private String origin;//
 
     @Column(name = "Destination", nullable = false)
-    private String destination;
+    private String destination;//
 
     @Column(name = "Status", nullable = false, columnDefinition = "nvarchar(50)")
     private String status = "ACTIVE";
-
 
     @Column(name = "CreatedAt", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

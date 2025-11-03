@@ -1,8 +1,9 @@
-package fa25.group.evtrainticket.service;
+package fa25.group.evtrainticket.service.Impl;
 
 import fa25.group.evtrainticket.repository.TicketRepository;
 import fa25.group.evtrainticket.entity.Booking;
 import fa25.group.evtrainticket.entity.Ticket;
+import fa25.group.evtrainticket.service.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

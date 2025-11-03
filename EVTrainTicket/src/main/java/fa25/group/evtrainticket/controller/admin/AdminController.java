@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -117,7 +118,7 @@ public class AdminController {
                                  @RequestParam("train.id") Integer trainId,
                                  @RequestParam("distanceKm") Double distanceKm,
                                  @RequestParam("estimatedTime") Integer estimatedTime,
-                                 @RequestParam("basePrice") Double basePrice,
+                                 @RequestParam("basePrice") BigDecimal basePrice,
                                  @RequestParam("status") String status,
                                  HttpSession session, RedirectAttributes redirectAttributes) {
         if (!isAdmin(session)) return "redirect:/error";
@@ -175,7 +176,7 @@ public class AdminController {
                                  @RequestParam("train.id") Integer trainId,
                                  @RequestParam("distanceKm") Double distanceKm,
                                  @RequestParam("estimatedTime") Integer estimatedTime,
-                                 @RequestParam("basePrice") Double basePrice,
+                                 @RequestParam("basePrice") BigDecimal basePrice,
                                  @RequestParam("status") String status,
                                  HttpSession session, RedirectAttributes redirectAttributes) {
         if (!isAdmin(session)) return "redirect:/error";

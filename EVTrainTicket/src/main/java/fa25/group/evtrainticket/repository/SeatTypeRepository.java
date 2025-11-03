@@ -6,4 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SeatTypeRepository extends JpaRepository<SeatType, Integer> {
+    boolean existsByTypeName(String typeName);
+
+    boolean existsBySeatTypeIDAndTypeName(Integer seatTypeID, String typeName);
 }

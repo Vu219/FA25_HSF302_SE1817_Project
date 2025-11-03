@@ -1,8 +1,9 @@
-package fa25.group.evtrainticket.service;
+package fa25.group.evtrainticket.service.Impl;
 
 import fa25.group.evtrainticket.repository.*;
 import fa25.group.evtrainticket.dto.BookingRequestDto;
 import fa25.group.evtrainticket.entity.*;
+import fa25.group.evtrainticket.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -139,7 +140,7 @@ public class BookingServiceImpl implements BookingService {
                     user.setPhone(bookingRequest.getUserPhone());
                     user.setPassword(""); // Anonymous users don't need passwords
                     user.setRole("GUEST");
-                    user.setCreateAt(LocalDateTime.now());
+                    user.setCreatedAt(LocalDateTime.now());
                     user.setStatus("ACTIVE");
                     return userRepository.save(user);
                 });

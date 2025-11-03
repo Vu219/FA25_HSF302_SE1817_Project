@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 public class CarriageLayoutDto {
     private Integer carriageId;
-    private Integer carriageNumber;
+    private String carriageNumber;
     private String carriageTypeName;
     private Integer totalSeats;
     private List<seatDto> seats;

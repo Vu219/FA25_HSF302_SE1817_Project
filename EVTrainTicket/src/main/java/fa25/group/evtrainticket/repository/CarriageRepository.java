@@ -10,4 +10,10 @@ import java.util.List;
 @Repository
 public interface CarriageRepository extends JpaRepository<Carriage, Integer> {
     List<Carriage> findByTrainTrainIDOrderByPositionAsc(int trainId);
+
+    boolean existsByCarriageNumber(String carriageNumber);
+
+    boolean existsByCarriageNumberAndCarriageID(String carriageNumber, Integer carriageID);
+
+    boolean existsByCarriageNumberAndTrain_TrainID(String carriageNumber, Integer trainID);
 }

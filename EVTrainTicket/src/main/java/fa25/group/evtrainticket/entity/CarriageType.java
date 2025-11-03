@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "CarriageTypes")
 @Data
@@ -33,5 +35,6 @@ public class CarriageType {
     private BigDecimal priceMultiplier;
 
     @OneToMany(mappedBy = "carriageType", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Carriage> carriages = new ArrayList<>();
 }

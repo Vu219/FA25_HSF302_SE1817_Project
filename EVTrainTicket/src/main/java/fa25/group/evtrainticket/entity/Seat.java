@@ -1,9 +1,13 @@
 package fa25.group.evtrainticket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "Seats")
@@ -33,6 +37,10 @@ public class Seat {
     @Column(name = "RowNum", nullable = false)
     private Integer rowNumber;
 
-    @Column(name = "ColumnNum", nullable = false, length = 5)
-    private String columnPosition; // A, B, C, D, etc.
+    @Column(name = "ColumnNum", nullable = false)
+    private Integer columnNum;
+
+    @OneToMany(mappedBy = "seat", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Ticket> tickets = new ArrayList<>();
 }

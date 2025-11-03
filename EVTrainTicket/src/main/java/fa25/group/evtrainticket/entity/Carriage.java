@@ -27,11 +27,14 @@ public class Carriage {
     @JoinColumn(name = "CarriageTypeID", nullable = false)
     private CarriageType carriageType;
 
-    @Column(name = "CarriageNumber", nullable = false)
-    private Integer carriageNumber;
+    @Column(name = "CarriageNumber", nullable = false, length = 10)
+    private String carriageNumber;
 
     @Column(name = "Position", nullable = false)
     private Integer position;
+
+    @Column(name = "Status", nullable = false, length = 50, columnDefinition = "nvarchar(50)")
+    private String status;
 
     @Column(name = "TotalSeats", nullable = false)
     private Integer totalSeats;

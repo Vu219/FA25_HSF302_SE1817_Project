@@ -16,8 +16,7 @@ public class seatDto {
     private String seatNumber;
     private Boolean isAvailable;
     private Integer rowNumber;
-    private String columnPosition;
-    private Integer carriageNumber;
+    private String carriageNumber;
     private String seatTypeName;
     private BigDecimal price;
     private SeatStatus status;
@@ -28,7 +27,6 @@ public class seatDto {
         this.seatNumber = seat.getSeatNumber();
         this.isAvailable = seat.getIsAvailable();
         this.rowNumber = seat.getRowNumber();
-        this.columnPosition = seat.getColumnPosition();
         this.carriageNumber = seat.getCarriage().getCarriageNumber();
         this.seatTypeName = seat.getSeatType().getTypeName();
         this.price = finalPrice;

@@ -21,11 +21,6 @@ public class ScheduleController {
     @Autowired
     private SeatService seatService;
 
-    @GetMapping("/")
-    public String home() {
-        return "Schedule";
-    }
-
     @GetMapping("/schedule")
     public String schedule() {
         return "Schedule";
@@ -39,7 +34,7 @@ public class ScheduleController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate,
             @RequestParam(defaultValue = "false") boolean isRoundTrip,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate returnDate
-            ) {
+    ) {
         List<RoundTripSearchDto> resultsList = scheduleService.searchSchedules(departureStationId, arrivalStationId, departureDate, returnDate, isRoundTrip);
 
         if (resultsList.isEmpty()) {
@@ -71,14 +66,14 @@ public class ScheduleController {
 
             // Create a simple response with basic schedule info
             var response = Map.of(
-                "scheduleId", schedule.getScheduleID(),
-                "trainName", schedule.getTrain().getTrainName(),
-                "departureStation", schedule.getDepartureStation().getName(),
-                "arrivalStation", schedule.getArrivalStation().getName(),
-                "departureTime", schedule.getDepartureTime().toString(),
-                "arrivalTime", schedule.getArrivalTime().toString(),
-                "basePrice", schedule.getBasePrice().doubleValue(),
-                "status", schedule.getStatus()
+                    "scheduleId", schedule.getScheduleID(),
+                    "trainName", schedule.getTrain().getTrainName(),
+                    "departureStation", schedule.getDepartureStation().getName(),
+                    "arrivalStation", schedule.getArrivalStation().getName(),
+                    "departureTime", schedule.getDepartureTime().toString(),
+                    "arrivalTime", schedule.getArrivalTime().toString(),
+                    "basePrice", schedule.getBasePrice().doubleValue(),
+                    "status", schedule.getStatus()
             );
             return ResponseEntity.ok(response);
         } catch (Exception e) {

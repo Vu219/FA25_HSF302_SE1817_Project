@@ -14,8 +14,10 @@ public interface SeatRepository extends JpaRepository<Seat, Integer> {
     List<Seat> findByCarriage_Train_TrainIDAndIsAvailableTrue(Integer trainId);
 
     // Find seats by carriage ID ordered by row and column (corrected field names)
-    List<Seat> findByCarriageCarriageIDOrderByRowNumberAscColumnPositionAsc(Integer carriageId);
+    List<Seat> findByCarriageCarriageIDOrderByRowNumberAscColumnNumAsc(Integer carriageId);
 
     // Find seat by seat number and carriage
     Seat findBySeatNumberAndCarriage_CarriageID(String seatNumber, Integer carriageId);
+
+    boolean existsBySeatIDAndSeatNumber(Integer seatID, String seatNumber);
 }
