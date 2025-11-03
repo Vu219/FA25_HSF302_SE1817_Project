@@ -2,19 +2,16 @@ package fa25.group.evtrainticket.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 @Entity
 @Table(name = "SeatTypes")
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class SeatType {
@@ -27,12 +24,11 @@ public class SeatType {
     private String typeName;
 
     @Column(name = "PriceMultiplier", nullable = false)
-    private Double priceMultiplier;
+    private BigDecimal priceMultiplier;
 
     @Column(name = "Description", length = 200, columnDefinition = "nvarchar(200)")
     private String description;
 
     @OneToMany(mappedBy = "seatType", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnore
     private List<Seat> seats = new ArrayList<>();
 }

@@ -2,19 +2,12 @@ package fa25.group.evtrainticket.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "Seats")
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class Seat {
@@ -27,20 +20,19 @@ public class Seat {
     @JoinColumn(name = "CarriageID", nullable = false)
     private Carriage carriage;
 
-    @Column(name = "SeatNumber", nullable = false)
-    private String seatNumber;
-
     @ManyToOne
     @JoinColumn(name = "SeatTypeID", nullable = false)
     private SeatType seatType;
 
+    @Column(name = "SeatNumber", nullable = false, length = 10)
+    private String seatNumber;
+
+    @Column(name = "IsAvailable", nullable = false)
+    private Boolean isAvailable = true;
+
     @Column(name = "RowNum", nullable = false)
-    private Integer rowNum;
+    private Integer rowNumber;
 
-    @Column(name = "ColumnNum", nullable = false)
-    private Integer columnNum;
-
-    @OneToMany(mappedBy = "seat", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnore 
-    private List<Ticket> tickets = new ArrayList<>();
+    @Column(name = "ColumnNum", nullable = false, length = 5)
+    private String columnPosition; // A, B, C, D, etc.
 }

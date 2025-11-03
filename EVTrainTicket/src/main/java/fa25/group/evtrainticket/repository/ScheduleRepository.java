@@ -13,4 +13,11 @@ import java.util.List;
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
     List<Schedule> findByDepartureStationAndArrivalStationAndDepartureTimeBetween(Station departureStation, Station arrivalStation, LocalDateTime startOfDay, LocalDateTime endOfDay);
+    List<Schedule> findByDepartureStationStationIDAndArrivalStationStationIDAndDepartureTimeBetweenAndStatus(
+            int departureId,
+            int arrivalId,
+            LocalDateTime startTime,
+            LocalDateTime endTime,
+            String status
+    );
 }
