@@ -29,7 +29,7 @@
                 <i class="fas fa-history"></i> Vé của tôi
             </a>
 
-            <a th:if="${session.user.role == 'ADMIN'}" th:href="@{/templates/admin}" class="admin-nav-link">
+            <a th:if="${session.user.role == 'ADMIN'}" th:href="@{/admin}" class="admin-nav-link">
                 <i class="fas fa-cogs"></i> Quản trị
             </a>
 
@@ -48,7 +48,7 @@
             <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2><i class="fas fa-history"></i> Vé của tôi</h2>
-                    <a href="/static" class="btn btn-primary">
+                    <a th:href="@{/home}" class="btn btn-primary">
                         <i class="fas fa-plus"></i> Đặt vé mới
                     </a>
                 </div>
@@ -118,7 +118,7 @@
                         <p class="mt-2">Đang tải thông tin...</p>
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer" id="booking-modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="fas fa-times"></i> Đóng
                     </button>
@@ -417,6 +417,34 @@
         } else {
             console.error("Error: Element with ID 'modal-booking-details' not found.");
             alert('Không thể hiển thị chi tiết đặt vé. Vui lòng thử lại.');
+        }
+
+        const footerElement = document.getElementById('booking-modal-footer');
+        if (footerElement) {
+            let footerHtml = `
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Đóng
+                </button>
+            `;
+
+            // Tùy vào trạng thái, hiển thị nút phù hợp
+            if (booking.status === 'CONFIRMED' || booking.status === 'COMPLETED') {
+                footerHtml += `
+                    <button type="button" class="btn btn-primary" onclick="printBooking()">
+                        <i class="fas fa-print"></i> In vé
+                    </button>
+                `;
+            } else if (booking.status === 'PENDING') {
+                // Sử dụng <a> thay vì <button> để chuyển hướng
+                footerHtml += `
+                    <a href="/payment?bookingCode=${booking.bookingCode}" class="btn btn-success">
+                        <i class="fas fa-credit-card"></i> Thanh toán ngay
+                    </a>
+                `;
+            }
+            // Nếu là CANCELLED, không thêm nút nào khác.
+
+            footerElement.innerHTML = footerHtml;
         }
     }
 

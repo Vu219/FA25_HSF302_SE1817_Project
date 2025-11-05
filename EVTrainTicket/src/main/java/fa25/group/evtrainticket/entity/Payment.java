@@ -44,6 +44,6 @@ public class Payment {
     @Column(name = "Notes", length = 500, columnDefinition = "nvarchar(500)")
     private String notes;
 
-    @CreationTimestamp
-    private Instant succeededAt;
+//    @CreationTimestamp
+//    private Instant succeededAt;
 }

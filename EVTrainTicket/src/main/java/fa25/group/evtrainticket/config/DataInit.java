@@ -198,20 +198,49 @@ public class DataInit implements CommandLineRunner {
     private void initSeats() {
         if (seatRepository.count() == 0) {
             List<Carriage> carriages = carriageRepository.findAll();
-            List<SeatType> seatTypes = seatTypeRepository.findAll();
+
+            // Lấy các loại ghế ra để sử dụng
+            List<SeatType> allSeatTypes = seatTypeRepository.findAll();
+            SeatType hardSeat = allSeatTypes.stream().filter(st -> st.getTypeName().equals("Ghế cứng")).findFirst().orElse(null);
+            SeatType softSeat = allSeatTypes.stream().filter(st -> st.getTypeName().equals("Ghế mềm")).findFirst().orElse(null);
+            SeatType bed = allSeatTypes.stream().filter(st -> st.getTypeName().equals("Giường nằm")).findFirst().orElse(null);
+
+            if (hardSeat == null || softSeat == null || bed == null) {
+                System.out.println("❌ Lỗi: Không tìm thấy đủ các loại ghế (Ghế cứng, Ghế mềm, Giường nằm).");
+                return;
+            }
 
             for (Carriage carriage : carriages) {
+                SeatType seatTypeForThisCarriage;
+                String carriageTypeName = carriage.getCarriageType().getTypeName();
+
+                // 1. CHỌN ĐÚNG LOẠI GHẾ
+                if (carriageTypeName.contains("phổ thông") || carriageTypeName.contains("cứng")) {
+                    seatTypeForThisCarriage = hardSeat;
+                } else if (carriageTypeName.contains("cao cấp") || carriageTypeName.contains("mềm")) {
+                    seatTypeForThisCarriage = softSeat;
+                } else if (carriageTypeName.contains("giường nằm")) {
+                    seatTypeForThisCarriage = bed;
+                } else {
+                    seatTypeForThisCarriage = hardSeat; // Mặc định là ghế cứng
+                }
+
                 int seatsPerCarriage = carriage.getTotalSeats();
-                int rows = (int) Math.ceil(seatsPerCarriage / 4.0); // 4 seats per row
+                // 2. SỬA LẠI LOGIC CỘT (dùng 6 cột để khớp với CSS)
+                int cols = 6;
+                int rows = (int) Math.ceil((double) seatsPerCarriage / cols);
 
                 for (int row = 1; row <= rows; row++) {
-                    for (int col = 1; col <= 4; col++) {
-                        int seatIndex = (row - 1) * 4 + col;
+                    for (int col = 1; col <= cols; col++) {
+                        int seatIndex = (row - 1) * cols + col;
                         if (seatIndex > seatsPerCarriage) break;
 
                         Seat seat = new Seat();
                         seat.setCarriage(carriage);
-                        seat.setSeatType(seatTypes.get((seatIndex - 1) % seatTypes.size()));
+
+                        // 3. GÁN ĐÚNG LOẠI GHẾ
+                        seat.setSeatType(seatTypeForThisCarriage);
+
                         seat.setSeatNumber(carriage.getCarriageNumber() + "-" + String.format("%02d", seatIndex));
                         seat.setIsAvailable(true);
                         seat.setRowNumber(row);
@@ -221,7 +250,7 @@ public class DataInit implements CommandLineRunner {
                     }
                 }
             }
-            System.out.println("✅ Đã khởi tạo ghế cho tất cả toa tàu");
+            System.out.println("✅ Đã khởi tạo ghế cho tất cả toa tàu (Đã sửa logic)");
         }
     }
 

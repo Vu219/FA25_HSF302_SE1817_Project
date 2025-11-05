@@ -12,8 +12,8 @@
     align-items: flex-start;
 }
 
-.booking-main {
-    flex: 3;
+.booking-left {
+    flex: 2.5;
 }
 
 .booking-summary-wrapper {

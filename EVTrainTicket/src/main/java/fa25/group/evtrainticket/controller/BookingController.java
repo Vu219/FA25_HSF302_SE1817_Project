@@ -72,14 +72,34 @@ public class BookingController {
     }
 
     @GetMapping("/payment")
-    public String paymentPage(HttpSession session, Model model) {
+    public String paymentPage(HttpSession session, Model model,
+                              @RequestParam(name = "bookingCode", required = false) String bookingCodeParam) {
+
         String bookingCode = (String) session.getAttribute("currentBookingCode");
+
+        // Nếu không có trong session, thử lấy từ param (dành cho thanh toán lại)
+        if (bookingCode == null && bookingCodeParam != null) {
+            bookingCode = bookingCodeParam;
+            // Đặt lại vào session để luồng thanh toán hoạt động
+            session.setAttribute("currentBookingCode", bookingCode);
+        }
+
         if (bookingCode == null) {
-            return "redirect:/booking"; // Redirect to booking if no booking in session
+            // Nếu vẫn không có code, quay về trang đặt vé
+            return "redirect:/booking";
         }
 
         try {
             var booking = bookingService.getBookingByCode(bookingCode);
+            if (booking == null) {
+                return "redirect:/booking?error=notfound";
+            }
+
+            // Nếu đã thanh toán, chuyển thẳng đến trang xác nhận
+            if ("CONFIRMED".equals(booking.getStatus()) || "COMPLETED".equals(booking.getStatus())) {
+                return "redirect:/booking/confirmation?bookingCode=" + booking.getBookingCode();
+            }
+
             model.addAttribute("booking", booking);
             model.addAttribute("bookingCode", bookingCode);
             return "payment";
