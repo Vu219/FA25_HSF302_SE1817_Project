@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch sử đặt vé - EV Train Ticket</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        body { background-color: #f4f7fa; }
+        .main-container {
+            max-width: 1200px;
+            margin: 120px auto 40px auto; /* Thêm margin-top */
+        }
+        .booking-card {
+            transition: transform 0.2s;
+        }
+        .booking-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .status-badge { font-size: 0.75rem; }
+        .journey-info {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 8px;
+            padding: 15px;
+        }
+        /* Override style.css container padding */
+        .container {
+            padding: 0 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <nav class="navbar container">
+        <a th:href="@{/home}" class="logo">
+            <i class="fas fa-train"></i> EVTrainTicket
+        </a>
+        <div class="nav-links" th:if="${session.user == null}">
+            <a th:href="@{/login}">Đăng nhập</a>
+            <a th:href="@{/register}">Đăng ký</a>
+        </div>
+
+        <div class="user-info" th:if="${session.user != null}">
+            <p>Xin chào, <strong th:text="${session.user.fullName}"></strong>!</p>
+
+            <a th:href="@{/booking/history}" class="admin-nav-link" style="background-color: #28a745; border-color: #28a745;">
+                <i class="fas fa-history"></i> Vé của tôi
+            </a>
+
+            <a th:if="${session.user.role == 'ADMIN'}" th:href="@{/admin}" class="admin-nav-link">
+                <i class="fas fa-cogs"></i> Quản trị
+            </a>
+
+            <form th:action="@{/logout}" method="get" style="margin: 0;">
+                <button type="submit">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </button>
+            </form>
+        </div>
+    </nav>
+</header>
+
+<main>
+    <div class="container main-container">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-history"></i> Vé của tôi</h2>
+                    <a href="/" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Đặt vé mới
+                    </a>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label class="form-label">Trạng thái</label>
+                                <select id="status-filter" class="form-select">
+                                    <option value="">Tất cả</option>
+                                    <option value="CONFIRMED">Đã xác nhận</option>
+                                    <option value="CANCELLED">Đã hủy</option>
+                                    <option value="COMPLETED">Đã hoàn tất</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Từ ngày</label>
+                                <input type="date" id="from-date" class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Đến ngày</label>
+                                <input type="date" id="to-date" class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">&nbsp;</label>
+                                <div>
+                                    <button class="btn btn-outline-primary" onclick="applyFilters()">
+                                        <i class="fas fa-filter"></i> Lọc
+                                    </button>
+                                    <button class="btn btn-outline-secondary" onclick="clearFilters()">
+                                        <i class="fas fa-times"></i> Xóa lọc
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="bookings-container">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Đang tải vé của bạn...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="bookingModal" tabindex="-1">
+    </div>
+</main>
+
+<footer>
+    <p>&copy; 2025 EVTrainTicket. All rights reserved.</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // ... (Toàn bộ script của booking-history.html giữ nguyên) ...
+    let allBookings = [];
+    let filteredBookings = [];
+    const currentUserId = 1; // This should come from session/authentication
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadBookings();
+    });
+
+    function loadBookings() {
+        fetch(`/api/booking/user/${currentUserId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (Array.isArray(data)) {
+                    allBookings = data;
+                    filteredBookings = [...allBookings];
+                    renderBookings();
+                } else {
+                    throw new Error(data.message || 'Failed to load bookings');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading bookings:', error);
+                document.getElementById('bookings-container').innerHTML = `
+                        <div class="alert alert-warning">
+                            <h5>Không tìm thấy vé</h5>
+                            <p>Bạn chưa đặt vé nào, hoặc đã có lỗi xảy ra.</p>
+                            <a href="/" class="btn btn-primary">Đặt chuyến đầu tiên</a>
+                        </div>
+                    `;
+            });
+    }
+
+    function renderBookings() {
+        const container = document.getElementById('bookings-container');
+
+        if (filteredBookings.length === 0) {
+            container.innerHTML = `
+                    <div class="alert alert-info">
+                        <h5>No Bookings Found</h5>
+                        <p>No bookings match your current filters.</p>
+                    </div>
+                `;
+            return;
+        }
+
+        const bookingsHtml = filteredBookings.map(booking => {
+            const statusClass = getStatusClass(booking.status);
+            const ticketCount = booking.tickets.length;
+
+            return `
+                    <div class="card booking-card mb-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="journey-info">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h6 class="mb-1">
+                                                    <i class="fas fa-train text-primary"></i>
+                                                    ${booking.schedule.trainName}
+                                                </h6>
+                                                <p class="mb-0">
+                                                    <strong>${booking.schedule.departureStation}</strong>
+                                                    <i class="fas fa-arrow-right mx-2"></i>
+                                                    <strong>${booking.schedule.arrivalStation}</strong>
+                                                </p>
+                                                <small class="text-muted">
+                                                    ${new Date(booking.schedule.departureTime).toLocaleDateString()} •
+                                                    ${new Date(booking.schedule.departureTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                                </small>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p class="mb-1">
+                                                    <strong>Booking Code:</strong> ${booking.bookingCode}
+                                                </p>
+                                                <p class="mb-1">
+                                                    <strong>Tickets:</strong> ${ticketCount} ${ticketCount === 1 ? 'seat' : 'seats'}
+                                                </p>
+                                                <p class="mb-0">
+                                                    <strong>Total:</strong> <span class="text-success">$${booking.totalAmount.toLocaleString()}</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <div class="mb-2">
+                                        <span class="badge ${statusClass} status-badge">${booking.status}</span>
+                                    </div>
+                                    <small class="text-muted d-block mb-2">
+                                        Booked: ${new Date(booking.bookingDate).toLocaleDateString()}
+                                    </small>
+                                    <div class="btn-group-vertical" role="group">
+                                        <button class="btn btn-outline-primary btn-sm" onclick="showBookingDetails('${booking.bookingCode}')">
+                                            <i class="fas fa-eye"></i> View Details
+                                        </button>
+                                        ${booking.status === 'CONFIRMED' ? `
+                                            <button class="btn btn-outline-danger btn-sm mt-1" onclick="cancelBooking(${booking.bookingId})">
+                                                <i class="fas fa-times"></i> Cancel
+                                            </button>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+        }).join('');
+
+        container.innerHTML = bookingsHtml;
+    }
+
+    function getStatusClass(status) {
+        switch (status) {
+            case 'CONFIRMED': return 'bg-success';
+            case 'CANCELLED': return 'bg-danger';
+            case 'COMPLETED': return 'bg-primary';
+            default: return 'bg-secondary';
+        }
+    }
+
+    function showBookingDetails(bookingCode) {
+        fetch(`/api/booking/${bookingCode}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.bookingId) {
+                    renderBookingModal(data);
+                    const modal = new bootstrap.Modal(document.getElementById('bookingModal'));
+                    modal.show();
+                } else {
+                    alert('Error loading booking details');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error loading booking details');
+            });
+    }
+
+    function renderBookingModal(booking) {
+        const ticketsHtml = booking.tickets.map(ticket => `
+                <tr>
+                    <td>${ticket.ticketCode}</td>
+                    <td>${ticket.seatNumber}</td>
+                    <td>${ticket.carriageName}</td>
+                    <td>${ticket.seatType}</td>
+                    <td>$${ticket.price.toLocaleString()}</td>
+                    <td><span class="badge bg-success">${ticket.status}</span></td>
+                </tr>
+            `).join('');
+
+        const html = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-info-circle"></i> Journey Information</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Train:</strong></td><td>${booking.schedule.trainName}</td></tr>
+                            <tr><td><strong>From:</strong></td><td>${booking.schedule.departureStation}</td></tr>
+                            <tr><td><strong>To:</strong></td><td>${booking.schedule.arrivalStation}</td></tr>
+                            <tr><td><strong>Departure:</strong></td><td>${new Date(booking.schedule.departureTime).toLocaleString()}</td></tr>
+                            <tr><td><strong>Arrival:</strong></td><td>${new Date(booking.schedule.arrivalTime).toLocaleString()}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-user"></i> Booking Information</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Code:</strong></td><td>${booking.bookingCode}</td></tr>
+                            <tr><td><strong>Passenger:</strong></td><td>${booking.userFullName}</td></tr>
+                            <tr><td><strong>Email:</strong></td><td>${booking.userEmail}</td></tr>
+                            <tr><td><strong>Status:</strong></td><td><span class="badge ${getStatusClass(booking.status)}">${booking.status}</span></td></tr>
+                            <tr><td><strong>Total:</strong></td><td><strong>$${booking.totalAmount.toLocaleString()}</strong></td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <h6 class="mt-4"><i class="fas fa-tickets"></i> Ticket Details</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Ticket Code</th>
+                                <th>Seat</th>
+                                <th>Carriage</th>
+                                <th>Type</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${ticketsHtml}
+                        </tbody>
+                    </table>
+                </div>
+
+                <h6 class="mt-4"><i class="fas fa-credit-card"></i> Payment Information</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Transaction Code:</strong> ${booking.payment.transactionCode}</p>
+                        <p><strong>Payment Method:</strong> ${booking.payment.paymentMethod.replace('_', ' ')}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Amount:</strong> $${booking.payment.amount.toLocaleString()}</p>
+                        <p><strong>Status:</strong> <span class="badge bg-success">${booking.payment.status}</span></p>
+                    </div>
+                </div>
+            `;
+
+        document.getElementById('modal-booking-details').innerHTML = html;
+    }
+
+    function cancelBooking(bookingId) {
+        if (confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
+            fetch(`/api/booking/${bookingId}/cancel`, {
+                method: 'PUT'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.bookingId) {
+                        alert('Booking cancelled successfully');
+                        loadBookings(); // Reload the bookings list
+                    } else {
+                        alert('Error cancelling booking: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error cancelling booking');
+                });
+        }
+    }
+
+    function applyFilters() {
+        const status = document.getElementById('status-filter').value;
+        const fromDate = document.getElementById('from-date').value;
+        const toDate = document.getElementById('to-date').value;
+
+        filteredBookings = allBookings.filter(booking => {
+            // Status filter
+            if (status && booking.status !== status) return false;
+
+            // Date filters
+            const bookingDate = new Date(booking.bookingDate).toISOString().split('T')[0];
+            if (fromDate && bookingDate < fromDate) return false;
+            if (toDate && bookingDate > toDate) return false;
+
+            return true;
+        });
+
+        renderBookings();
+    }
+
+    function clearFilters() {
+        document.getElementById('status-filter').value = '';
+        document.getElementById('from-date').value = '';
+        document.getElementById('to-date').value = '';
+        filteredBookings = [...allBookings];
+        renderBookings();
+    }
+
+    function printBooking() {
+        window.print();
+    }
+</script>
+</body>
+</html>
+
+

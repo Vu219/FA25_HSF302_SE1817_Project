@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Trip Details</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+        <h1>Trip Details</h1>
+
+        <div th:if="${schedule}">
+            <h2>Schedule ID: <span th:text="${schedule.id}"></span></h2>
+            <p><strong>Train:</strong> <span th:text="${schedule.train.name}"></span></p>
+            <p><strong>Departure Station:</strong> <span th:text="${schedule.departureStation.name}"></span></p>
+            <p><strong>Arrival Station:</strong> <span th:text="${schedule.arrivalStation.name}"></span></p>
+            <p><strong>Departure Date:</strong> <span th:text="${schedule.departureDate}"></span></p>
+            <p><strong>Departure Time:</strong> <span th:text="${schedule.departureTime}"></span></p>
+            <p><strong>Arrival Time:</strong> <span th:text="${schedule.arrivalTime}"></span></p>
+
+            <h3>Schedule Stops:</h3>
+            <p th:if="${scheduleStops.isEmpty()}">No schedule stops for this trip.</p>
+            <table class="table" th:if="${!scheduleStops.isEmpty()}">
+                <thead>
+                    <tr>
+                        <th>Station</th>
+                        <th>Arrival Time</th>
+                        <th>Departure Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="stop : ${scheduleStops}">
+                        <td th:text="${stop.station.name}"></td>
+                        <td th:text="${stop.arrivalTime}"></td>
+                        <td th:text="${stop.departureTime}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <a th:href="@{/search/results}" class="btn btn-secondary">Back to Search Results</a>
+    </div>
+</body>
+</html>

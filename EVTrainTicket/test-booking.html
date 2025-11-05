@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Booking Page</title>
+</head>
+<body>
+    <h1>Test Booking Page</h1>
+    <p>Testing if we can access the booking page:</p>
+    <a href="http://localhost:8080/booking" target="_blank">Open Booking Page</a>
+    <br><br>
+    <p>Testing seat layout API directly:</p>
+    <a href="http://localhost:8080/api/schedules/1/seats" target="_blank">Test Seat Layout API</a>
+    <br><br>
+    <p>Testing schedule API:</p>
+    <a href="http://localhost:8080/api/schedules/1" target="_blank">Test Schedule API</a>
+
+    <script>
+        // Test the seat layout API with JavaScript
+        console.log('Testing seat layout API...');
+
+        fetch('http://localhost:8080/api/schedules/1/seats')
+            .then(response => {
+                console.log('Seat layout API response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Seat layout data:', data);
+                document.body.innerHTML += '<pre>Seat Layout Data: ' + JSON.stringify(data, null, 2) + '</pre>';
+            })
+            .catch(error => {
+                console.error('Seat layout API error:', error);
+                document.body.innerHTML += '<p style="color: red;">Seat Layout API Error: ' + error.message + '</p>';
+            });
+    </script>
+</body>
+</html>
+

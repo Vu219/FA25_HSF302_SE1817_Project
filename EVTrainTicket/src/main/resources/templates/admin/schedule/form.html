@@ -1,0 +1,189 @@
+<div class="admin-form-container form-container">
+    <h2 style="margin-bottom: 25px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">
+        <i th:class="${schedule.scheduleID == null ? 'fas fa-plus-circle' : 'fas fa-edit'}"></i>
+        <span th:text="${schedule.scheduleID == null ? 'Tạo Lịch trình mới' : 'Chỉnh sửa Lịch trình'}"></span>
+    </h2>
+
+    <form th:action="${schedule.scheduleID == null ? '/admin/schedules/create' : '/admin/schedules/edit/' + schedule.scheduleID}"
+          method="post">
+
+        <h3 style="color: var(--admin-primary); margin: 20px 0 15px 0;">
+            <i class="fas fa-info-circle"></i> Thông tin cơ bản
+        </h3>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="train">
+                    <i class="fas fa-train"></i> Tàu <span>*</span>
+                </label>
+                <select id="train" name="train.id" class="form-control" required>
+                    <option value="" disabled th:selected="${schedule.train == null}">Chọn Tàu</option>
+                    <option th:each="train : ${trains}"
+                            th:value="${train.trainID}"
+                            th:text="${train.trainName}"
+                            th:selected="${schedule.train != null and schedule.train.trainID == train.trainID}">
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="status">
+                    <i class="fas fa-toggle-on"></i> Trạng thái <span>*</span>
+                </label>
+                <select id="status" name="status" class="form-control" required>
+                    <option value="">Chọn Trạng thái</option>
+                    <option value="ACTIVE" th:selected="${schedule.status == 'ACTIVE'}">✅ ACTIVE</option>
+                    <option value="INACTIVE" th:selected="${schedule.status == 'INACTIVE'}">⏸️ INACTIVE</option>
+                    <option value="CANCELLED" th:selected="${schedule.status == 'CANCELLED'}">❌ CANCELLED</option>
+                </select>
+            </div>
+        </div>
+
+        <h3 style="color: var(--admin-primary); margin: 30px 0 15px 0;">
+            <i class="fas fa-map-marked-alt"></i> Thông tin Tuyến
+        </h3>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="departureStation">
+                    <i class="fas fa-map-marker-alt" style="color: #28a745;"></i> Ga đi <span>*</span>
+                </label>
+                <select id="departureStation" name="departureStationId" class="form-control" required>
+                    <option value="" disabled th:selected="${schedule.departureStation == null}">Chọn Ga đi</option>
+                    <option th:each="station : ${stations}"
+                            th:value="${station.stationID}"
+                            th:text="${station.name}"
+                            th:selected="${schedule.departureStation != null and schedule.departureStation.stationID == station.stationID}">
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="arrivalStation">
+                    <i class="fas fa-map-marker-alt" style="color: #dc3545;"></i> Ga đến <span>*</span>
+                </label>
+                <select id="arrivalStation" name="arrivalStationId" class="form-control" required>
+                    <option value="" disabled th:selected="${schedule.arrivalStation == null}">Chọn Ga đến</option>
+                    <option th:each="station : ${stations}"
+                            th:value="${station.stationID}"
+                            th:text="${station.name}"
+                            th:selected="${schedule.arrivalStation != null and schedule.arrivalStation.stationID == station.stationID}">
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="distanceKm">
+                    <i class="fas fa-road"></i> Cự ly (km) <span>*</span>
+                </label>
+                <input type="number"
+                       id="distanceKm"
+                       name="distanceKm"
+                       th:value="${schedule.distanceKm}"
+                       class="form-control"
+                       step="0.1"
+                       min="0"
+                       placeholder="Nhập cự ly (km)"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label for="estimatedTime">
+                    <i class="fas fa-hourglass-half"></i> Thời gian (phút) <span>*</span>
+                </label>
+                <input type="number"
+                       id="estimatedTime"
+                       name="estimatedTime"
+                       th:value="${schedule.estimatedTime}"
+                       class="form-control"
+                       min="0"
+                       placeholder="Nhập thời gian (phút)"
+                       required>
+            </div>
+        </div>
+
+        <h3 style="color: var(--admin-primary); margin: 30px 0 15px 0;">
+            <i class="fas fa-clock"></i> Thời gian
+        </h3>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="departureDate">
+                    <i class="fas fa-calendar-day"></i> Ngày đi <span>*</span>
+                </label>
+                <input type="date"
+                       id="departureDate"
+                       name="departureDate"
+                       th:value="${schedule.departureTime != null ? #temporals.format(schedule.departureTime, 'yyyy-MM-dd') : ''}"
+                       class="form-control"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label for="departureTime">
+                    <i class="fas fa-clock"></i> Giờ đi <span>*</span>
+                </label>
+                <input type="time"
+                       id="departureTime"
+                       name="departureTime"
+                       th:value="${schedule.departureTime != null ? #temporals.format(schedule.departureTime, 'HH:mm') : ''}"
+                       class="form-control"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label for="arrivalDate">
+                    <i class="fas fa-calendar-check"></i> Ngày đến <span>*</span>
+                </label>
+                <input type="date"
+                       id="arrivalDate"
+                       name="arrivalDate"
+                       th:value="${schedule.arrivalTime != null ? #temporals.format(schedule.arrivalTime, 'yyyy-MM-dd') : ''}"
+                       class="form-control"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label for="arrivalTime">
+                    <i class="fas fa-clock"></i> Giờ đến <span>*</span>
+                </label>
+                <input type="time"
+                       id="arrivalTime"
+                       name="arrivalTime"
+                       th:value="${schedule.arrivalTime != null ? #temporals.format(schedule.arrivalTime, 'HH:mm') : ''}"
+                       class="form-control"
+                       required>
+            </div>
+        </div>
+
+        <h3 style="color: var(--admin-primary); margin: 30px 0 15px 0;">
+            <i class="fas fa-dollar-sign"></i> Giá vé
+        </h3>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="basePrice">
+                    <i class="fas fa-money-bill-wave"></i> Giá cơ bản (VNĐ) <span>*</span>
+                </label>
+                <input type="number"
+                       id="basePrice"
+                       name="basePrice"
+                       th:value="${schedule.basePrice}"
+                       class="form-control"
+                       step="1000"
+                       min="0"
+                       placeholder="Nhập giá cơ bản"
+                       required>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-save"></i> Lưu Lịch trình
+            </button>
+            <a th:href="@{/admin/schedules}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Hủy
+            </a>
+        </div>
+    </form>
+</div>

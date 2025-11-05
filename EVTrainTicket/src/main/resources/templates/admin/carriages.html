@@ -1,58 +1,42 @@
-<!DOCTYPE html>
-<html lang="en" xmlns="https://www.thymeleaf.org">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TMS - Quản lý toa tàu</title>
-</head>
-
-<body>
-    <h2>Quản lý toa tàu</h2>
-    <div class="message-container">
-        <div th:if="${successMessage}" class="alert alert-success">
-            <span style="color: green;" th:text="${successMessage}"></span>
-        </div>
+<section>
+    <div class="action-bar">
+        <h2>Quản lý toa tàu</h2>
+        <a th:href="@{/admin/carriages/create}" class="btn btn-primary"><i class="fas fa-plus"></i> Thêm toa mới</a>
     </div>
-    <a th:href="@{/admin/carriages/create}">Thêm toa mới</a>
-    <br>
-    <br>
-    <div class="carriages-list">
-        <h3>Danh sách các toa tàu đang hoạt động:</h3>
-        <br>
+
+    <div class="table-container">
         <table th:if="${not #lists.isEmpty(carriageList)}">
             <thead>
-                <tr>
-                    <th>Mã toa</th>
-                    <th>Số hiệu toa</th>
-                    <th>Loại toa</th>
-                    <th>Vị trí toa</th>
-                    <th>Trạng thái</th>
-                    <th>Thuộc tàu</th>
-                    <th>Hành động</th>
-                </tr>
+            <tr>
+                <th>Mã toa</th>
+                <th>Số hiệu toa</th>
+                <th>Loại toa</th>
+                <th>Vị trí toa</th>
+                <th>Trạng thái</th>
+                <th>Thuộc tàu</th>
+                <th>Hành động</th>
+            </tr>
             </thead>
             <tbody>
-                <tr th:each="carriage : ${carriageList}">
-                    <td th:text="${carriage.carriageID}"></td>
-                    <td th:text="${carriage.carriageNumber}"></td>
-                    <td th:text="${carriage.carriageType.typeName}"></td>
-                    <td th:text="${carriage.position}"></td>
-                    <td th:text="${carriage.status}"></td>
-                    <td th:text="${carriage.train.trainName}"></td>
-                    <td>
-                        <a th:href="@{'/admin/carriages/edit/' + ${carriage.carriageID}}">Sửa</a>
-                        <a th:href="@{'/admin/carriages/delete/' + ${carriage.carriageID}}"
-                            onclick="return confirm('Bạn có chắc chắn muốn xóa toa tàu này không?');">Xóa</a>
-                    </td>
-                </tr>
+            <tr th:each="carriage : ${carriageList}">
+                <td th:text="${carriage.carriageID}"></td>
+                <td th:text="${carriage.carriageNumber}"></td>
+                <td th:text="${carriage.carriageType.typeName}"></td>
+                <td th:text="${carriage.position}"></td>
+                <td th:text="${carriage.status}"></td>
+                <td th:text="${carriage.train.trainName}"></td>
+                <td>
+                    <div class="action-links">
+                        <a th:href="@{'/admin/carriages/edit/' + ${carriage.carriageID}}" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Sửa</a>
+                        <a th:href="@{'/admin/carriages/delete/' + ${carriage.carriageID}}" class="btn btn-danger btn-sm"
+                           onclick="return confirm('Bạn có chắc chắn muốn xóa toa tàu này không?');"><i class="fas fa-trash"></i> Xóa</a>
+                    </div>
+                </td>
+            </tr>
             </tbody>
         </table>
         <div th:if="${#lists.isEmpty(carriageList)}">
             <p>Không có toa tàu nào được quản lý.</p>
         </div>
     </div>
-    </div>
-</body>
-
-</html>
+</section>

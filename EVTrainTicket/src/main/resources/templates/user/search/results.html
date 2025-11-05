@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Results</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+        <h1>Search Results</h1>
+
+        <div th:if="${param.error}" class="alert alert-danger">
+            <p th:text="${param.error}"></p>
+        </div>
+        <div th:if="${error}" class="alert alert-danger">
+            <p th:text="${error}"></p>
+        </div>
+
+        <p th:if="${schedules.isEmpty()}">No schedules found for your search criteria.</p>
+
+        <div th:if="${!schedules.isEmpty()}">
+            <h2>Schedules from <span th:text="${departureStation.name}"></span> to <span th:text="${arrivalStation.name}"></span> on <span th:text="${departureDate}"></span></h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Train</th>
+                        <th>Departure Time</th>
+                        <th>Arrival Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="schedule : ${schedules}">
+                        <td th:text="${schedule.train.name}"></td>
+                        <td th:text="${schedule.departureTime}"></td>
+                        <td th:text="${schedule.arrivalTime}"></td>
+                        <td>
+                            <a th:href="@{/search/details/{id}(id=${schedule.id})}" class="btn btn-info">View Details</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <a th:href="@{/search}" class="btn btn-secondary">New Search</a>
+    </div>
+</body>
+</html>

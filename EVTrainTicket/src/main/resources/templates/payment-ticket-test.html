@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simplified Payment API Testing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+        .success {
+            border-left-color: #28a745;
+            background-color: #d4edda;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background-color: #f8d7da;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-active { background-color: #d4edda; color: #155724; }
+        .status-pending { background-color: #fff3cd; color: #856404; }
+        .api-info {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎫 Simplified Payment System - API Testing</h1>
+    <p>This page tests the simplified payment flow that works with external payment merchants and Postman.</p>
+
+    <!-- Create Test Booking Section -->
+    <div class="section">
+        <h2>1️⃣ Create Pending Booking</h2>
+        <div class="api-info">
+            <strong>API:</strong> POST /api/booking/create-pending<br>
+            <strong>Purpose:</strong> Creates a booking with PENDING status waiting for payment
+        </div>
+        <form id="pendingBookingForm">
+            <div class="form-group">
+                <label>Schedule ID:</label>
+                <input type="number" id="scheduleId" value="1" required>
+            </div>
+            <div class="form-group">
+                <label>Seat IDs (comma separated):</label>
+                <input type="text" id="seatIds" value="1,2" required>
+            </div>
+            <div class="form-group">
+                <label>Full Name:</label>
+                <input type="text" id="fullName" value="John Doe" required>
+            </div>
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" id="email" value="john@example.com" required>
+            </div>
+            <div class="form-group">
+                <label>Phone:</label>
+                <input type="text" id="phone" value="1234567890" required>
+            </div>
+            <button type="submit">Create Pending Booking</button>
+        </form>
+        <div id="bookingResult" class="result" style="display:none;"></div>
+    </div>
+
+    <!-- Complete Payment Section -->
+    <div class="section">
+        <h2>2️⃣ Complete Payment (Simulate Payment Merchant)</h2>
+        <div class="api-info">
+            <strong>API:</strong> POST /api/payment/complete/{bookingCode}<br>
+            <strong>Purpose:</strong> Called by payment merchant after successful payment to activate tickets
+        </div>
+        <div class="form-group">
+            <label>Booking Code:</label>
+            <input type="text" id="bookingCode" required>
+        </div>
+        <button onclick="completePayment()">Complete Payment & Activate Tickets</button>
+        <div id="activationResult" class="result"></div>
+    </div>
+
+    <!-- Check Payment Status Section -->
+    <div class="section">
+        <h2>3️⃣ Check Payment Status</h2>
+        <div class="api-info">
+            <strong>API:</strong> GET /api/payment/status/{bookingCode}<br>
+            <strong>Purpose:</strong> Check current booking and ticket status
+        </div>
+        <div class="form-group">
+            <label>Booking Code:</label>
+            <input type="text" id="statusBookingCode" required>
+        </div>
+        <button onclick="checkPaymentStatus()">Check Payment Status</button>
+        <div id="statusResult" class="result"></div>
+    </div>
+
+    <!-- Postman Instructions -->
+    <div class="section">
+        <h2>🔌 Postman Testing Instructions</h2>
+        <div class="api-info">
+            <strong>Base URL:</strong> http://localhost:8080<br><br>
+
+            <strong>1. Create Pending Booking:</strong><br>
+            POST /api/booking/create-pending<br>
+            Content-Type: application/json<br>
+            Body: {<br>
+            &nbsp;&nbsp;"scheduleId": 1,<br>
+            &nbsp;&nbsp;"selectedSeatIds": [1, 2],<br>
+            &nbsp;&nbsp;"ticketType": "ONE_WAY",<br>
+            &nbsp;&nbsp;"userFullName": "John Doe",<br>
+            &nbsp;&nbsp;"userEmail": "john@example.com",<br>
+            &nbsp;&nbsp;"userPhone": "1234567890"<br>
+            }<br><br>
+
+            <strong>2. Complete Payment:</strong><br>
+            POST /api/payment/complete/{bookingCode}<br><br>
+
+            <strong>3. Check Status:</strong><br>
+            GET /api/payment/status/{bookingCode}
+        </div>
+    </div>
+
+    <script>
+        // Create Pending Booking
+        document.getElementById('pendingBookingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const bookingData = {
+                scheduleId: parseInt(document.getElementById('scheduleId').value),
+                selectedSeatIds: document.getElementById('seatIds').value.split(',').map(id => parseInt(id.trim())),
+                ticketType: 'ONE_WAY',
+                userFullName: document.getElementById('fullName').value,
+                userEmail: document.getElementById('email').value,
+                userPhone: document.getElementById('phone').value,
+                notes: 'Test booking from simplified demo page'
+            };
+
+            try {
+                const response = await fetch('/api/booking/create-pending', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bookingData)
+                });
+
+                const result = await response.json();
+                const resultDiv = document.getElementById('bookingResult');
+
+                if (response.ok) {
+                    // Auto-fill the payment form
+                    document.getElementById('bookingCode').value = result.bookingCode;
+                    document.getElementById('statusBookingCode').value = result.bookingCode;
+
+                    resultDiv.className = 'result success';
+                    resultDiv.style.display = 'block';
+                    resultDiv.innerHTML = `
+                        <h4>✅ Booking Created Successfully!</h4>
+                        <p><strong>Booking Code:</strong> ${result.bookingCode}</p>
+                        <p><strong>Status:</strong> <span class="status-badge status-pending">${result.status}</span></p>
+                        <p><strong>Total Amount:</strong> $${result.totalAmount}</p>
+                        <p><strong>Tickets Created:</strong> ${result.tickets ? result.tickets.length : 'N/A'}</p>
+                        <div style="margin-top: 15px;">
+                            <button onclick="window.location.href='/payment'" style="background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">
+                                🚀 Go to Payment Page
+                            </button>
+                            <span style="color: #666;">Or wait 3 seconds for automatic redirect...</span>
+                        </div>
+                    `;
+
+                    // Redirect to payment page after 3 seconds
+                    setTimeout(() => {
+                        window.location.href = '/payment';
+                    }, 3000);
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.style.display = 'block';
+                    resultDiv.innerHTML = `<h4>❌ Error:</h4><p>${typeof result === 'string' ? result : JSON.stringify(result)}</p>`;
+                }
+            } catch (error) {
+                const resultDiv = document.getElementById('bookingResult');
+                resultDiv.className = 'result error';
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `<h4>❌ Error:</h4><p>${error.message}</p>`;
+            }
+        });
+
+        // Complete Payment
+        async function completePayment() {
+            const bookingCode = document.getElementById('bookingCode').value;
+            if (!bookingCode) {
+                alert('Please enter a booking code');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/payment/complete/${bookingCode}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const result = await response.json();
+                const resultDiv = document.getElementById('activationResult');
+
+                if (response.ok && result.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        ✅ ${result.message}<br>
+                        <strong>Booking Code:</strong> ${result.bookingCode}<br>
+                        <strong>Tickets Activated:</strong> ${result.ticketCount}<br>
+                        <strong>Booking Status:</strong> ${result.bookingStatus}<br>
+                        <strong>Ticket Codes:</strong> ${result.ticketCodes ? result.ticketCodes.join(', ') : 'N/A'}
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ ${result.error || 'Payment completion failed'}`;
+                }
+            } catch (error) {
+                const resultDiv = document.getElementById('activationResult');
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+
+        // Check Payment Status
+        async function checkPaymentStatus() {
+            const bookingCode = document.getElementById('statusBookingCode').value;
+            if (!bookingCode) {
+                alert('Please enter a booking code');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/payment/status/${bookingCode}`);
+                const result = await response.json();
+                const resultDiv = document.getElementById('statusResult');
+
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        📋 <strong>Payment Status</strong><br>
+                        <strong>Booking Code:</strong> ${result.bookingCode}<br>
+                        <strong>Booking Status:</strong> <span class="status-badge ${result.paymentCompleted ? 'status-active' : 'status-pending'}">${result.bookingStatus}</span><br>
+                        <strong>Total Amount:</strong> $${result.totalAmount}<br>
+                        <strong>Ticket Count:</strong> ${result.ticketCount}<br>
+                        <strong>All Tickets Active:</strong> ${result.allTicketsActive ? 'Yes' : 'No'}<br>
+                        <strong>Payment Completed:</strong> ${result.paymentCompleted ? 'Yes' : 'No'}
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ ${result.error || 'Status check failed'}`;
+                }
+            } catch (error) {
+                const resultDiv = document.getElementById('statusResult');
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

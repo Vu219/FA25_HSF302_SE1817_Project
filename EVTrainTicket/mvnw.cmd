@@ -1,3 +1,4 @@
+SET JAVA_HOME=C:\Users\acer\.jdks\ms-17.0.16
 <# : batch portion
 @REM ----------------------------------------------------------------------------
 @REM Licensed to the Apache Software Foundation (ASF) under one

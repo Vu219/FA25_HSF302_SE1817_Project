@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Đặt vé - EV Train Ticket</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/booking.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+<header>
+    <nav class="navbar container">
+        <a th:href="@{/home}" class="logo">
+            <i class="fas fa-train"></i> EVTrainTicket
+        </a>
+        <div class="nav-links" th:if="${session.user == null}">
+            <a th:href="@{/login}">Đăng nhập</a>
+            <a th:href="@{/register}">Đăng ký</a>
+        </div>
+
+        <div class="user-info" th:if="${session.user != null}">
+            <p>Xin chào, <strong th:text="${session.user.fullName}"></strong>!</p>
+
+            <a th:href="@{/booking/history}" class="admin-nav-link" style="background-color: #28a745; border-color: #28a745;">
+                <i class="fas fa-history"></i> Vé của tôi
+            </a>
+
+            <a th:if="${session.user.role == 'ADMIN'}" th:href="@{/admin}" class="admin-nav-link">
+                <i class="fas fa-cogs"></i> Quản trị
+            </a>
+
+            <form th:action="@{/logout}" method="get" style="margin: 0;">
+                <button type="submit">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </button>
+            </form>
+        </div>
+    </nav>
+</header>
+
+<main class="booking-page-container">
+    <!-- Bên trái - Chọn ghế -->
+    <div class="booking-left">
+        <div class="booking-card">
+            <div class="booking-card-header">
+                <h4><i class="fas fa-chair"></i> Chọn chỗ ngồi của bạn</h4>
+            </div>
+
+            <div class="booking-card-body">
+                <div id="booking-error" class="alert alert-danger" style="display: none;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div>
+                        <strong>Lỗi tải chuyến tàu!</strong>
+                        <p id="booking-error-message" style="margin: 0;">Không tìm thấy thông tin chuyến tàu. Vui lòng quay lại trang chủ và tìm kiếm lại.</p>
+                        <a th:href="@{/home}" class="btn btn-primary" style="margin-top: 10px;">Về trang chủ</a>
+                    </div>
+                </div>
+
+                <div id="booking-content" style="display: none;">
+                    <!-- Chú thích ghế -->
+                    <div class="seat-legend">
+                        <div><span class="seat available"></span> Trống</div>
+                        <div><span class="seat selected"></span> Đang chọn</div>
+                        <div><span class="seat occupied"></span> Đã đặt</div>
+                    </div>
+
+                    <!-- Container cho các toa tàu -->
+                    <div id="carriages-container">
+                        <p class="text-center">Đang tải sơ đồ ghế...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bên phải - Thông tin chuyến tàu và tóm tắt -->
+    <div class="booking-right">
+        <!-- Thông tin chuyến tàu -->
+        <div class="booking-card" id="schedule-info-card">
+            <div class="booking-card-header">
+                <h4><i class="fas fa-train"></i> Thông tin chuyến tàu</h4>
+            </div>
+            <div class="booking-card-body">
+                <div class="schedule-info-box">
+                    <div class="info-row">
+                        <strong>Chuyến tàu:</strong>
+                        <span id="train-name">-</span>
+                    </div>
+                    <div class="info-row">
+                        <strong>Từ:</strong>
+                        <span id="departure-station">-</span>
+                    </div>
+                    <div class="info-row">
+                        <strong>Đến:</strong>
+                        <span id="arrival-station">-</span>
+                    </div>
+                    <div class="info-row">
+                        <strong>Khởi hành:</strong>
+                        <span id="departure-time">-</span>
+                    </div>
+                    <div class="info-row">
+                        <strong>Đến nơi:</strong>
+                        <span id="arrival-time">-</span>
+                    </div>
+                    <div class="info-row">
+                        <strong>Giá cơ bản:</strong>
+                        <span id="base-price">-</span> VNĐ
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tóm tắt đặt vé -->
+        <div class="booking-card" id="booking-summary">
+            <div class="booking-card-header">
+                <h4><i class="fas fa-receipt"></i> Tóm tắt đặt vé</h4>
+            </div>
+            <div class="booking-card-body">
+                <div id="summary-content">
+                    <div class="summary-item">
+                        <strong>Chuyến tàu</strong>
+                        <span id="summary-train-name">Vui lòng chọn chuyến tàu...</span>
+                    </div>
+                    <div class="summary-item">
+                        <strong>Hành trình</strong>
+                        <span id="summary-route">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <strong>Ghế đã chọn</strong>
+                        <div id="summary-seats-list">
+                            <p class="text-muted">Chưa chọn ghế nào</p>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="total-amount-section">
+                    <strong>Tổng cộng:</strong>
+                    <strong id="total-amount">0 VNĐ</strong>
+                </div>
+
+                <!-- Nút điều hướng -->
+                <div class="booking-navigation">
+                    <button class="btn btn-primary" id="next-btn" disabled>
+                        Tiếp theo <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <p>&copy; 2025 EVTrainTicket. All rights reserved.</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/booking.js}"></script>
+</body>
+</html>

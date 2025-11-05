@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TrainRepository extends JpaRepository<Train,Integer> {
     boolean existsByTrainNumber(String trainNumber);
+    Train findByTrainName(String trainName);
+    Train findByTrainNumber(String trainNumber);
 }

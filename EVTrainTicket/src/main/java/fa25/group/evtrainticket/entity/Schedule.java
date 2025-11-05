@@ -1,20 +1,18 @@
 package fa25.group.evtrainticket.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "Schedules")
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class Schedule {
@@ -24,11 +22,11 @@ public class Schedule {
     private Integer scheduleID;
 
     @ManyToOne
-    @JoinColumn(name = "departureStationID", nullable = false)
+    @JoinColumn(name = "DepartureStationID", nullable = false)
     private Station departureStation;
 
     @ManyToOne
-    @JoinColumn(name = "arrivalStationID", nullable = false)
+    @JoinColumn(name = "ArrivalStationID", nullable = false)
     private Station arrivalStation;
 
     @ManyToOne
@@ -48,22 +46,34 @@ public class Schedule {
     private Integer estimatedTime;
 
     @Column(name = "BasePrice", nullable = false)
-    private Double basePrice;
+    private BigDecimal basePrice;
+
+    @Column(name = "Origin", nullable = false)
+    private String origin;//
+
+    @Column(name = "Destination", nullable = false)
+    private String destination;//
 
     @Column(name = "Status", nullable = false, columnDefinition = "nvarchar(50)")
-    private String status;
+    private String status = "ACTIVE";
 
     @Column(name = "CreatedAt", nullable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "Notes", length = 500, columnDefinition = "nvarchar(500)")
     private String notes;
 
-    @JsonIgnore
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Ticket> tickets = new ArrayList<>();
 
-    @JsonIgnore
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ScheduleStop> scheduleStops = new ArrayList<>();
+    private List<ScheduleStop> stops = new ArrayList<>();
+
+    public String getOrigin() {
+        return origin != null ? origin : departureStation.getName();
+    }
+
+    public String getDestination() {
+        return destination != null ? destination : arrivalStation.getName();
+    }
 }

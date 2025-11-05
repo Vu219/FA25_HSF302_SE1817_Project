@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Schedules</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+        <h1>Search Schedules</h1>
+
+        <div th:if="${param.error}" class="alert alert-danger">
+            <p th:text="${param.error}"></p>
+        </div>
+        <div th:if="${error}" class="alert alert-danger">
+            <p th:text="${error}"></p>
+        </div>
+
+        <form th:action="@{/search/results}" method="get">
+            <div class="form-group">
+                <label for="departureStation">Departure Station:</label>
+                <select id="departureStation" name="departureStationId" class="form-control" required>
+                    <option value="">Select Departure Station</option>
+                    <option th:each="station : ${stations}" th:value="${station.id}" th:text="${station.name}"></option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="arrivalStation">Arrival Station:</label>
+                <select id="arrivalStation" name="arrivalStationId" class="form-control" required>
+                    <option value="">Select Arrival Station</option>
+                    <option th:each="station : ${stations}" th:value="${station.id}" th:text="${station.name}"></option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="departureDate">Departure Date:</label>
+                <input type="date" id="departureDate" name="departureDate" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+</body>
+</html>

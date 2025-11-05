@@ -1,57 +1,40 @@
-<!DOCTYPE html>
-<html lang="en" xmlns="https://www.thymeleaf.org">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TMS - Quản lý loại toa tàu</title>
-</head>
-
-<body>
-    <div th:fragment="content">
+<section>
+    <div class="action-bar">
         <h2>Quản lý loại toa tàu</h2>
-        <div class="message-container">
-            <div th:if="${successMessage}" class="alert alert-success">
-                <span style="color: green;" th:text="${successMessage}"></span>
-            </div>
-        </div>
-        <a th:href="@{/admin/carriageTypes/create}">Thêm loại toa mới</a>
-        <br>
-        <br>
-        <div class="carriageTypes-list">
-            <h3>Danh sách các loại toa hiện có:</h3>
-            <br>
-            <table th:if="${not #lists.isEmpty(carriageTypeList)}">
-                <thead>
-                    <tr>
-                        <th>Mã loại toa</th>
-                        <th>Tên loại toa</th>
-                        <th>Số lượng ghế</th>
-                        <th>Mô tả</th>
-                        <th>Hệ số giá</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="carriageType : ${carriageTypeList}">
-                        <td th:text="${carriageType.carriageTypeId}"></td>
-                        <td th:text="${carriageType.typeName}"></td>
-                        <td th:text="${carriageType.seatCount}"></td>
-                        <td th:text="${carriageType.description}"></td>
-                        <td th:text="${carriageType.priceMultiplier}"></td>
-                        <td>
-                            <a th:href="@{'/admin/carriageTypes/edit/' + ${carriageType.carriageTypeId}}">Sửa</a>
-                            <a th:href="@{'/admin/carriageTypes/delete/' + ${carriageType.carriageTypeId}}"
-                                onclick="return confirm('Bạn có chắc chắn muốn xóa loại toa này không?');">Xóa</a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <div th:if="${#lists.isEmpty(carriageTypeList)}">
-                <p>Không có loại toa nào được quản lý.</p>
-            </div>
+        <a th:href="@{/admin/carriageTypes/create}" class="btn btn-primary"><i class="fas fa-plus"></i> Thêm loại toa mới</a>
+    </div>
+
+    <div class="table-container">
+        <table th:if="${not #lists.isEmpty(carriageTypeList)}">
+            <thead>
+            <tr>
+                <th>Mã loại toa</th>
+                <th>Tên loại toa</th>
+                <th>Số lượng ghế</th>
+                <th>Mô tả</th>
+                <th>Hệ số giá</th>
+                <th>Hành động</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="carriageType : ${carriageTypeList}">
+                <td th:text="${carriageType.carriageTypeId}"></td>
+                <td th:text="${carriageType.typeName}"></td>
+                <td th:text="${carriageType.seatCount}"></td>
+                <td th:text="${carriageType.description}"></td>
+                <td th:text="${carriageType.priceMultiplier}"></td>
+                <td>
+                    <div class="action-links">
+                        <a th:href="@{'/admin/carriageTypes/edit/' + ${carriageType.carriageTypeId}}" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Sửa</a>
+                        <a th:href="@{'/admin/carriageTypes/delete/' + ${carriageType.carriageTypeId}}" class="btn btn-danger btn-sm"
+                           onclick="return confirm('Bạn có chắc chắn muốn xóa loại toa này không?');"><i class="fas fa-trash"></i> Xóa</a>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <div th:if="${#lists.isEmpty(carriageTypeList)}">
+            <p>Không có loại toa nào được quản lý.</p>
         </div>
     </div>
-</body>
-
-</html>
+</section>
