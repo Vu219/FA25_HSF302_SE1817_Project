@@ -29,7 +29,7 @@
                 <i class="fas fa-history"></i> Vé của tôi
             </a>
 
-            <a th:if="${session.user.role == 'ADMIN'}" th:href="@{/admin}" class="admin-nav-link">
+            <a th:if="${session.user.role == 'ADMIN'}" th:href="@{/templates/admin}" class="admin-nav-link">
                 <i class="fas fa-cogs"></i> Quản trị
             </a>
 
@@ -48,7 +48,7 @@
             <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2><i class="fas fa-history"></i> Vé của tôi</h2>
-                    <a href="/" class="btn btn-primary">
+                    <a href="/static" class="btn btn-primary">
                         <i class="fas fa-plus"></i> Đặt vé mới
                     </a>
                 </div>
@@ -174,7 +174,7 @@
                         <div class="alert alert-warning">
                             <h5>Không tìm thấy vé</h5>
                             <p>Bạn chưa đặt vé nào, hoặc đã có lỗi xảy ra.</p>
-                            <a href="/" class="btn btn-primary">Đặt chuyến đầu tiên</a>
+                            <a href="/static" class="btn btn-primary">Đặt chuyến đầu tiên</a>
                         </div>
                     `;
             });
