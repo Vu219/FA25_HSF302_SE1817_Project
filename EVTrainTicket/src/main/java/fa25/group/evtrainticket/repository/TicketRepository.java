@@ -4,8 +4,10 @@ import fa25.group.evtrainticket.entity.Booking;
 import fa25.group.evtrainticket.entity.Ticket;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,4 +26,10 @@ public interface TicketRepository extends JpaRepository<Ticket, Integer> {
 
     @Query("SELECT t FROM Ticket t WHERE t.schedule.scheduleID = ?1 AND t.status IN ?2")
     List<Ticket> findByScheduleScheduleIDAndBookingStatusIn(Integer scheduleId, List<String> statuses);
+
+    @Query("SELECT COUNT(t) FROM Ticket t WHERE CAST(t.createdAt AS date) BETWEEN :startDate AND :endDate")
+    long countTickets(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT COUNT(t) FROM Ticket t")
+    long countTotalTickets();
 }

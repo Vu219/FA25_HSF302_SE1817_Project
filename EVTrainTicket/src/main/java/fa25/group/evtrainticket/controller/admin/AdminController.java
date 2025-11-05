@@ -1,8 +1,11 @@
 package fa25.group.evtrainticket.controller.admin;
 
+import fa25.group.evtrainticket.dto.StatsResponse;
+import fa25.group.evtrainticket.dto.WeeklyStatsResponse;
 import fa25.group.evtrainticket.entity.*;
 import fa25.group.evtrainticket.service.*;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +15,13 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/admin")
@@ -29,6 +37,7 @@ public class AdminController {
     // Thêm ScheduleService
     private final ScheduleService scheduleService;
     private final UserService userService;
+    private final DashboardService dashboardService;
 
     // Helper kiểm tra quyền
     private boolean isAdmin(HttpSession session) {
@@ -811,4 +820,58 @@ public class AdminController {
         }
         return "redirect:/admin/users";
     }
+
+    /*====================== DASHBOARD ============================*/
+    @GetMapping("/dashboard")
+    public String showDashboard(Model model) {
+        YearMonth currentMonth = YearMonth.now();
+        YearMonth previousMonth = currentMonth.minusMonths(1);
+
+        model.addAttribute("startMonth", previousMonth.toString());
+        model.addAttribute("endMonth", currentMonth.toString());
+
+        return "admin/dashboard";
+    }
+
+    @GetMapping("/dashboard/total-stats")
+    @ResponseBody
+    public ResponseEntity<List<StatsResponse>> getTotalStats() {
+        List<StatsResponse> stats = dashboardService.getAllStats();
+        return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/dashboard/weekly-stats")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getWeeklyStats(
+            @RequestParam String startMonth,
+            @RequestParam String endMonth) {
+
+        YearMonth startYearMonth;
+        YearMonth endYearMonth;
+
+        if (startMonth == null || startMonth.isBlank()) {
+            startYearMonth = YearMonth.now();
+        } else {
+            startYearMonth = YearMonth.parse(startMonth, DateTimeFormatter.ofPattern("yyyy-MM"));
+        }
+
+        if (endMonth == null || endMonth.isBlank()) {
+            endYearMonth = YearMonth.now();
+        } else {
+            endYearMonth = YearMonth.parse(endMonth, DateTimeFormatter.ofPattern("yyyy-MM"));
+        }
+
+        LocalDate startDate = startYearMonth.atDay(1);
+        LocalDate endDate = endYearMonth.atEndOfMonth();
+
+        List<WeeklyStatsResponse> weeklyStats = dashboardService.getAllStatsWeekly(startDate, endDate);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("weeklyStats", weeklyStats);
+        response.put("dateRange", startDate + " -> " + endDate);
+        response.put("monthRange", startMonth + " - " + endMonth);
+
+        return ResponseEntity.ok(response);
+    }
+
 }

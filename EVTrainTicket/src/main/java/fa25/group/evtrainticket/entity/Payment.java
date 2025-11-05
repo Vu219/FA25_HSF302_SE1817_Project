@@ -5,7 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -41,4 +43,7 @@ public class Payment {
 
     @Column(name = "Notes", length = 500, columnDefinition = "nvarchar(500)")
     private String notes;
+
+    @CreationTimestamp
+    private Instant succeededAt;
 }

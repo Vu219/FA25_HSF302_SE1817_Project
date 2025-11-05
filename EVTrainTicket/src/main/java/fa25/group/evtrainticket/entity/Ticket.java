@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "Tickets")
 @Getter
@@ -41,4 +43,14 @@ public class Ticket {
 
     @Column(name = "Status", nullable = false, length = 50, columnDefinition = "nvarchar(50)")
     private String status;
+
+    @Column(name = "CreatedAt", nullable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
 }
