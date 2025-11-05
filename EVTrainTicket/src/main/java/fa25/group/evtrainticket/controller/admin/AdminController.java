@@ -28,6 +28,7 @@ public class AdminController {
     private final StationService stationService;
     // Thêm ScheduleService
     private final ScheduleService scheduleService;
+    private final UserService userService;
 
     // Helper kiểm tra quyền
     private boolean isAdmin(HttpSession session) {
@@ -733,5 +734,81 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi cập nhật: " + e.getMessage());
             return "redirect:/admin/stations/edit/" + station.getStationID();
         }
+    }
+
+    /*====================== USER ============================*/
+    @GetMapping("/users")
+    public ModelAndView showUser(HttpSession session, Model model) {
+        ModelAndView mav = createAdminView("admin/users", "users", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("userList", userService.getAllUsers());
+        mav.addObject("successMessage", model.asMap().get("successMessage"));
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
+    }
+
+    @GetMapping("/users/create")
+    public ModelAndView createUser(HttpSession session, Model model) {
+        ModelAndView mav = createAdminView("admin/create-user", "users", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("user", new User());
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
+    }
+
+    @PostMapping("/users/create")
+    public String createUser(@ModelAttribute("user") User user, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
+        try {
+            userService.saveUser(user);
+            redirectAttributes.addFlashAttribute("successMessage", "Thêm nguời dùng mới thành công");
+            return "redirect:/admin/users";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi thêm: " + e.getMessage());
+            return "redirect:/admin/users/create";
+        }
+    }
+
+    @GetMapping("/users/edit/{userID}")
+    public ModelAndView editUser(@PathVariable("userID") Integer userID, HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+        User user = userService.findById(userID);
+        if (user == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy người dùng ID: " + userID);
+            return new ModelAndView("redirect:/admin/users");
+        }
+
+        ModelAndView mav = createAdminView("admin/edit-user", "users", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        mav.addObject("user", user);
+        mav.addObject("errorMessage", model.asMap().get("errorMessage"));
+        return mav;
+    }
+
+    @PostMapping("/users/edit")
+    public String editUser(@ModelAttribute("user") User user, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
+        try {
+            userService.updateUser(user.getUserID(),  user);
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật người dùng thành công");
+            return "redirect:/admin/users";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi cập nhật: " + e.getMessage());
+            return "redirect:/admin/users/edit/" + user.getUserID();
+        }
+    }
+
+    @GetMapping("/users/delete/{userID}")
+    public String deleteUser(@PathVariable("userID") Integer userID, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return "redirect:/error";
+        try {
+            userService.deleteUser(userID);
+            redirectAttributes.addFlashAttribute("successMessage", "Xóa người dùng thành công");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi xóa người dùng: " + e.getMessage());
+        }
+        return "redirect:/admin/users";
     }
 }

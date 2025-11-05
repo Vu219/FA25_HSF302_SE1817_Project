@@ -1,0 +1,35 @@
+<section>
+    <div class="form-container">
+        <h2><i class="fas fa-edit"></i> Cập nhật người dùng</h2>
+
+        <form th:action="@{/admin/users/edit}" th:object="${user}" method="post" style="margin-top: 20px;">
+            <div class="form-group">
+                <label for="id">ID:</label>
+                <input type="text" id="id" th:field="*{userID}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="name">Họ tên:</label>
+                <input type="text" id="name" th:field="*{fullName}">
+            </div>
+            <div class="form-group">
+                <label for="phone">Điện thoại:</label>
+                <input type="number" id="phone" th:field="*{phone}">
+            </div>
+            <div class="form-group">
+                <label for="role">Vai trò:</label>
+                <select id="role" th:field="*{role}" class="form-control">
+                    <option value="USER">USER</option>
+                    <option value="ADMIN">ADMIN</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="status">Trạng thái:</label>
+                <input type="text" id="status" th:field="*{status}" readonly>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Cập nhật người dùng</button>
+                <a th:href="@{/admin/users}" class="btn btn-secondary"><i class="fas fa-times"></i> Hủy</a>
+            </div>
+        </form>
+    </div>
+</section>
