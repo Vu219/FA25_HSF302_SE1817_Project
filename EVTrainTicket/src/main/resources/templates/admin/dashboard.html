@@ -1,51 +1,57 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<section>
-    <div class="admin-content-header">
-        <h2>Bảng điều khiển</h2>
-        <p>Tổng quan hệ thống EVTrainTicket.</p>
-    </div>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - EVTrain</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+</head>
+<body>
+<div class="dashboard-container">
+    <main class="main-content">
+        <div class="stats-grid" id="statsGrid">
+        </div>
 
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="icon" style="background: #007bff;">
-                <i class="fas fa-calendar-alt"></i>
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3>Thống kê tăng trưởng theo tuần (%)</h3>
+                <div class="chart-controls">
+                    <div class="month-filter">
+                        <label>Từ tháng</label>
+                        <input type="month" id="startMonth" th:value="${startMonth}">
+                    </div>
+                    <div class="month-filter">
+                        <label>Đến tháng</label>
+                        <input type="month" id="endMonth" th:value="${endMonth}">
+                    </div>
+                    <button class="btn-confirm" onclick="loadWeeklyStats()">Xác nhận</button>
+                </div>
             </div>
-            <div class="info">
-                <h3 th:text="${scheduleCount}">0</h3>
-                <p>Lịch trình</p>
+            <div class="chart-legend">
+                <label class="legend-item">
+                    <input type="checkbox" id="toggleUsers" checked>
+                    <span class="legend-color" style="background: #4CAF50"></span>
+                    Tổng người dùng
+                </label>
+                <label class="legend-item">
+                    <input type="checkbox" id="toggleTickets" checked>
+                    <span class="legend-color" style="background: #2196F3"></span>
+                    Tổng số vé
+                </label>
+                <label class="legend-item">
+                    <input type="checkbox" id="toggleRevenue" checked>
+                    <span class="legend-color" style="background: #FF9800"></span>
+                    Doanh thu
+                </label>
             </div>
+            <div class="date-range" id="chartDateRange"></div>
+            <canvas id="growthChart"></canvas>
+            <div class="week-details" id="weekDetails"></div>
         </div>
-        <div class="stat-card">
-            <div class="icon" style="background: #17a2b8;">
-                <i class="fas fa-train-subway"></i>
-            </div>
-            <div class="info">
-                <h3 th:text="${trainCount}">0</h3>
-                <p>Đoàn tàu</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="icon" style="background: #28a745;">
-                <i class="fas fa-building-columns"></i>
-            </div>
-            <div class="info">
-                <h3 th:text="${stationCount}">0</h3>
-                <p>Ga tàu</p>
-            </div>
-        </div>
-    </div>
+    </main>
+</div>
 
-    <div class="content-box" style="margin-top: 30px;">
-        <h3>Chào mừng trở lại!</h3>
-        <p>Sử dụng menu bên trái để bắt đầu quản lý các khía cạnh khác nhau của hệ thống.</p>
-        <p>Bạn có thể:</p>
-        <ul>
-            <li>Thêm, sửa, xóa các lịch trình tàu.</li>
-            <li>Quản lý thông tin đoàn tàu và các toa tàu.</li>
-            <li>Thiết lập các loại ghế và cấu hình ghế cho từng toa.</li>
-            <li>Cập nhật danh sách các ga tàu đang hoạt động.</li>
-        </ul>
-    </div>
-</section>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
 </html>

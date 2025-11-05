@@ -1,0 +1,44 @@
+<section>
+    <div class="action-bar">
+        <h2>Quản lý người dùng</h2>
+        <a th:href="@{/admin/users/create}" class="btn btn-primary"><i class="fas fa-plus"></i> Thêm người dùng mới</a>
+    </div>
+
+    <div class="table-container">
+        <table th:if="${not #lists.isEmpty(userList)}">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Họ Tên</th>
+                <th>Email</th>
+                <th>Điện thoại</th>
+                <th>Vai trò</th>
+                <th>Ngày tạo</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="user : ${userList}">
+                <td th:text="${user.userID}"></td>
+                <td th:text="${user.fullName}"></td>
+                <td th:text="${user.email}"></td>
+                <td th:text="${user.phone}"></td>
+                <td th:text="${user.role}"></td>
+                <td th:text="${#temporals.format(user.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                <td th:text="${user.status}"></td>
+                <td>
+                    <div class="action-links">
+                        <a th:href="@{'/admin/users/edit/' + ${user.userID}}" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Sửa</a>
+                        <a th:href="@{'/admin/users/delete/' + ${user.userID}}" class="btn btn-danger btn-sm"
+                           onclick="return confirm('Bạn có chắc chắn muốn xóa người dùng này không?');"><i class="fas fa-trash"></i> Xóa</a>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <div th:if="${#lists.isEmpty(userList)}">
+            <p>Không có người dùng nào được quản lý.</p>
+        </div>
+    </div>
+</section>

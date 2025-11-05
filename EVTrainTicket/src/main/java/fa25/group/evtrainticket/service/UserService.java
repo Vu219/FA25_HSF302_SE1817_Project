@@ -1,7 +1,10 @@
 package fa25.group.evtrainticket.service;
 
 import fa25.group.evtrainticket.dto.UserRegistrationDto;
+import fa25.group.evtrainticket.entity.Station;
 import fa25.group.evtrainticket.entity.User;
+
+import java.util.List;
 
 public interface UserService {
 //    User registerUser(UserRegistrationDto registrationDto);
@@ -12,4 +15,8 @@ public interface UserService {
     public boolean existsByEmail(String email);
     public void updatePassword(String email, String newPassword) throws Exception;
     public User findByEmail(String email) throws Exception;
+    List<User> getAllUsers();
+    User saveUser(User user);
+    User updateUser(Integer userID, User newUser);
+    void deleteUser(Integer userID);
 }
