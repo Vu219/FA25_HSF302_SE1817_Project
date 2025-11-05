@@ -24,6 +24,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Gắn sự kiện cho nút tiếp theo
     document.getElementById('next-btn').addEventListener('click', handleNextStep);
+
+    // Get initial carriage section styles
+    const carriageStyles = getCarriageSectionStyles();
+    console.log('Carriage Section Styles:', carriageStyles);
 });
 
 /**
@@ -108,6 +112,56 @@ function loadSeatLayout(scheduleId) {
 }
 
 /**
+ * Sets styles on an element and returns a promise
+ */
+async function setElementStyles(element, styles) {
+    return new Promise((resolve) => {
+        if (!element) {
+            console.warn('Element not found for styling');
+            resolve(false);
+            return;
+        }
+
+        Object.assign(element.style, styles);
+
+        // Use requestAnimationFrame to ensure styles are applied
+        requestAnimationFrame(() => {
+            resolve(true);
+        });
+    });
+}
+
+/**
+ * Manages seat map layout and visibility
+ */
+async function manageSeatMapLayout(seatMap) {
+    // Set basic grid layout
+    await setElementStyles(seatMap, {
+        gridTemplateColumns: 'repeat(6, 1fr)',
+        gridTemplateRows: 'repeat(4, 1fr)',
+        gap: '8px'
+    });
+
+    // Ensure only 24 seats are visible
+    const seats = Array.from(seatMap.children);
+    for (let i = 0; i < seats.length; i++) {
+        if (i >= 24) {
+            // Hide seats beyond 24
+            await setElementStyles(seats[i], {
+                display: 'none'
+            });
+        } else {
+            // Add margin after every 3rd seat for aisle
+            if ((i + 1) % 3 === 0 && (i + 1) % 6 !== 0) {
+                await setElementStyles(seats[i], {
+                    marginRight: '20px'
+                });
+            }
+        }
+    }
+}
+
+/**
  * Vẽ sơ đồ ghế lên UI
  */
 function renderSeatLayout() {
@@ -136,27 +190,36 @@ function renderSeatLayout() {
         const seatMap = document.createElement('div');
         seatMap.className = 'seat-map';
 
-        // Xác định số cột
-        const columns = Math.max(...carriage.seats.map(s => s.columnNum || 0));
-        seatMap.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
-
-        // Sắp xếp ghế
+        // Sort seats by row and column for proper display
         carriage.seats.sort((a, b) => {
-            if (a.rowNumber !== b.rowNumber) return a.rowNumber - b.rowNumber;
-            return (a.columnNum || 0) - (b.columnNum || 0);
-        }).forEach(seat => {
+            const rowDiff = a.rowNumber - b.rowNumber;
+            return rowDiff !== 0 ? rowDiff : (a.columnNum || 0) - (b.columnNum || 0);
+        });
+
+        // Create and append seats
+        carriage.seats.forEach(seat => {
             const seatDiv = document.createElement('div');
-            const isAvailable = seat.status === 'AVAILABLE';
+            const isAvailable = seat.status === 'AVAILABLE' || seat.isAvailable === true;
 
             seatDiv.className = `seat ${isAvailable ? 'available' : 'occupied'}`;
+            if (selectedSeats.some(s => s.seatID === seat.seatID)) {
+                seatDiv.classList.remove('available');
+                seatDiv.classList.add('selected');
+            }
+
             seatDiv.textContent = seat.seatNumber;
             seatDiv.dataset.seatId = seat.seatID;
             seatDiv.dataset.price = seat.price;
             seatDiv.dataset.seatType = seat.seatTypeName;
-            seatDiv.title = `${seat.seatTypeName} - ${parseFloat(seat.price).toLocaleString('vi-VN')} VNĐ`;
+            seatDiv.dataset.status = seat.status || (seat.isAvailable ? 'AVAILABLE' : 'OCCUPIED');
+            seatDiv.title = isAvailable
+                ? `${seat.seatTypeName} - ${parseFloat(seat.price).toLocaleString('vi-VN')} VNĐ - Có sẵn`
+                : `${seat.seatNumber} - Đã đặt`;
 
             if (isAvailable) {
                 seatDiv.addEventListener('click', () => toggleSeat(seat));
+            } else {
+                seatDiv.style.cursor = 'not-allowed';
             }
 
             seatMap.appendChild(seatDiv);
@@ -246,4 +309,79 @@ function validateSeatSelection() {
         return false;
     }
     return true;
+}
+
+/**
+ * Lấy thông tin kiểu dáng của phần toa xe và sơ đồ ghế
+ */
+function getCarriageSectionStyles() {
+    const carriageSection = document.querySelector('.carriage-section');
+    let data = {};
+
+    if (carriageSection) {
+        const carriageStyles = window.getComputedStyle(carriageSection);
+        const seatMap = carriageSection.querySelector('.seat-map');
+        let seatMapStyles = {};
+
+        if (seatMap) {
+            seatMapStyles = window.getComputedStyle(seatMap);
+        }
+
+        data = {
+            carriageSectionStyles: {
+                display: carriageStyles['display'],
+                flexDirection: carriageStyles['flex-direction'],
+                gridTemplateColumns: carriageStyles['grid-template-columns'],
+                gridTemplateRows: carriageStyles['grid-template-rows'],
+                width: carriageStyles['width'],
+                height: carriageStyles['height'],
+            },
+            seatMapStyles: {
+                display: seatMapStyles['display'],
+                gridTemplateColumns: seatMapStyles['grid-template-columns'],
+                flexWrap: seatMapStyles['flex-wrap'],
+                width: seatMapStyles['width'],
+                height: seatMapStyles['height'],
+            },
+            seatMapChildrenCount: seatMap ? seatMap.children.length : 0,
+            parentCarriagesContainerStyles: {
+                display: window.getComputedStyle(carriageSection.parentElement)['display'],
+                flexDirection: window.getComputedStyle(carriageSection.parentElement)['flex-direction'],
+                gridTemplateColumns: window.getComputedStyle(carriageSection.parentElement)['grid-template-columns'],
+            }
+        };
+    } else {
+        data = {
+            error: ".carriage-section not found."
+        };
+    }
+
+    return data;
+}
+
+/**
+ * Gets carriage container styles
+ */
+function getCarriagesContainerStyles() {
+    const carriagesContainer = document.querySelector('div#carriages-container');
+    let data = {};
+
+    if (carriagesContainer) {
+        const containerStyles = window.getComputedStyle(carriagesContainer);
+        data = {
+            carriagesContainerStyles: {
+                display: containerStyles['display'],
+                flexDirection: containerStyles['flex-direction'],
+                gridTemplateColumns: containerStyles['grid-template-columns'],
+                width: containerStyles['width'],
+                height: containerStyles['height'],
+            },
+            carriageSectionsCount: carriagesContainer.children.length
+        };
+    } else {
+        data = {
+            error: "div#carriages-container not found."
+        };
+    }
+    return data;
 }

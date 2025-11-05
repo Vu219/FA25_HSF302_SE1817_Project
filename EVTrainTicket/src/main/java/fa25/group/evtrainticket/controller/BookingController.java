@@ -6,7 +6,6 @@ import fa25.group.evtrainticket.dto.BookingRequestDto;
 import fa25.group.evtrainticket.mapper.BookingMapper;
 import fa25.group.evtrainticket.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -64,18 +63,12 @@ public class BookingController {
     }
 
     @GetMapping("/booking/history")
-    public String bookingHistoryPage() {
+    public String bookingHistoryPage(HttpSession session, Model model) {
+        var user = session.getAttribute("user");
+        if (user != null) {
+            model.addAttribute("user", user);
+        }
         return "booking-history";
-    }
-
-    @GetMapping("/payment-ticket-test")
-    public String paymentTicketTestPage() {
-        return "payment-ticket-test";
-    }
-
-    @GetMapping("/payment-test-simple")
-    public String paymentTestSimplePage() {
-        return "payment-ticket-test-simple";
     }
 
     @GetMapping("/payment")
@@ -126,8 +119,8 @@ public class BookingController {
 
     @PostMapping("/api/booking/process-payment")
     @ResponseBody
-    public ResponseEntity<?> processPayment(@RequestParam String bookingCode,
-                                          @RequestParam(defaultValue = "DEMO_PAYMENT") String paymentMethod) {
+    public ResponseEntity<?> processPayment(@RequestParam(name = "bookingCode") String bookingCode,
+                                          @RequestParam(name = "paymentMethod", defaultValue = "DEMO_PAYMENT") String paymentMethod) {
         try {
             var booking = bookingService.processPayment(bookingCode, paymentMethod);
             var response = bookingMapper.toDto(booking);
@@ -146,7 +139,7 @@ public class BookingController {
 
     @PostMapping("/api/booking/confirm-payment")
     @ResponseBody
-    public ResponseEntity<?> confirmPayment(@RequestParam String bookingCode) {
+    public ResponseEntity<?> confirmPayment(@RequestParam(name = "bookingCode") String bookingCode) {
         try {
             var booking = bookingService.confirmPayment(bookingCode);
             var response = bookingMapper.toDto(booking);
@@ -165,7 +158,7 @@ public class BookingController {
 
     @GetMapping("/api/booking/{bookingCode}")
     @ResponseBody
-    public ResponseEntity<?> getBooking(@PathVariable String bookingCode) {
+    public ResponseEntity<?> getBooking(@PathVariable(name = "bookingCode") String bookingCode) {
         try {
             var booking = bookingService.getBookingByCode(bookingCode);
             var response = bookingMapper.toDto(booking);
@@ -177,7 +170,7 @@ public class BookingController {
 
     @GetMapping("/api/booking/email/{email}")
     @ResponseBody
-    public ResponseEntity<?> getBookingsByEmail(@PathVariable String email) {
+    public ResponseEntity<?> getBookingsByEmail(@PathVariable(name = "email") String email) {
         try {
             var bookings = bookingService.getBookingsByEmail(email);
             var response = bookingMapper.toDtoList(bookings);
@@ -187,9 +180,21 @@ public class BookingController {
         }
     }
 
+    @GetMapping("/api/booking/user/{userId}")
+    @ResponseBody
+    public ResponseEntity<?> getBookingsByUserId(@PathVariable(name = "userId") Integer userId) {
+        try {
+            var bookings = bookingService.getBookingsByUserId(userId);
+            var response = bookingMapper.toDtoList(bookings);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to fetch bookings: " + e.getMessage());
+        }
+    }
+
     @PostMapping("/api/booking/cancel/{bookingId}")
     @ResponseBody
-    public ResponseEntity<?> cancelBooking(@PathVariable Integer bookingId) {
+    public ResponseEntity<?> cancelBooking(@PathVariable(name = "bookingId") Integer bookingId) {
         try {
             var booking = bookingService.cancelBooking(bookingId);
             var response = bookingMapper.toDto(booking);
@@ -208,8 +213,8 @@ public class BookingController {
 
     @GetMapping("/api/booking/validate-seats")
     @ResponseBody
-    public ResponseEntity<?> validateSeatAvailability(@RequestParam Integer scheduleId,
-                                                    @RequestParam List<Integer> seatIds) {
+    public ResponseEntity<?> validateSeatAvailability(@RequestParam(name = "scheduleId") Integer scheduleId,
+                                                    @RequestParam(name = "seatIds") List<Integer> seatIds) {
         try {
             boolean isAvailable = bookingService.validateSeatAvailability(scheduleId, seatIds);
             return ResponseEntity.ok(Map.of(
@@ -253,8 +258,8 @@ public class BookingController {
     }
 
     @GetMapping("/booking/passenger-info")
-    public String passengerInfoPage(@RequestParam Integer scheduleId,
-                                    @RequestParam List<Integer> seatIds,
+    public String passengerInfoPage(@RequestParam(name = "scheduleId") Integer scheduleId,
+                                    @RequestParam(name = "seatIds") List<Integer> seatIds,
                                     Model model) {
         try {
             // Validate schedule and seats

@@ -144,7 +144,7 @@ public class TicketController {
      */
     @GetMapping("/booking/{bookingId}")
     @ResponseBody
-    public ResponseEntity<?> getTicketsByBooking(@PathVariable Integer bookingId) {
+    public ResponseEntity<?> getTicketsByBooking(@PathVariable(name = "bookingId") Integer bookingId) {
         try {
             List<Ticket> tickets = ticketService.getTicketsByBookingId(bookingId);
 

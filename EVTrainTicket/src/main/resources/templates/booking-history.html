@@ -7,32 +7,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/booking-history.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
-    <style>
-        body { background-color: #f4f7fa; }
-        .main-container {
-            max-width: 1200px;
-            margin: 120px auto 40px auto; /* Thêm margin-top */
-        }
-        .booking-card {
-            transition: transform 0.2s;
-        }
-        .booking-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        .status-badge { font-size: 0.75rem; }
-        .journey-info {
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-            border-radius: 8px;
-            padding: 15px;
-        }
-        /* Override style.css container padding */
-        .container {
-            padding: 0 1rem;
-        }
-    </style>
 </head>
 <body>
 
@@ -124,7 +100,34 @@
         </div>
     </div>
 
-    <div class="modal fade" id="bookingModal" tabindex="-1">
+    <div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bookingModalLabel">
+                        <i class="fas fa-ticket-alt"></i> Chi tiết đặt vé
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="modal-booking-details">
+                    <!-- Content will be dynamically inserted here by renderBookingModal -->
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Đang tải thông tin...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Đóng
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="printBooking()">
+                        <i class="fas fa-print"></i> In vé
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </main>
 
@@ -133,18 +136,28 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    // ... (Toàn bộ script của booking-history.html giữ nguyên) ...
+<script th:inline="javascript">
     let allBookings = [];
     let filteredBookings = [];
-    const currentUserId = 1; // This should come from session/authentication
+    const currentUserId = /*[[${session.user != null ? session.user.userID : 0}]]*/ 0;
+    const currentUserEmail = /*[[${session.user != null ? session.user.email : ''}]]*/ '';
 
     document.addEventListener('DOMContentLoaded', function() {
+        if (currentUserId === 0 && !currentUserEmail) {
+            // Not logged in - redirect to login
+            window.location.href = '/login';
+            return;
+        }
         loadBookings();
     });
 
     function loadBookings() {
-        fetch(`/api/booking/user/${currentUserId}`)
+        // Fetch by user ID if available, otherwise by email
+        const endpoint = currentUserId > 0
+            ? `/api/booking/user/${currentUserId}`
+            : `/api/booking/email/${encodeURIComponent(currentUserEmail)}`;
+
+        fetch(endpoint)
             .then(response => response.json())
             .then(data => {
                 if (Array.isArray(data)) {
@@ -182,7 +195,14 @@
 
         const bookingsHtml = filteredBookings.map(booking => {
             const statusClass = getStatusClass(booking.status);
-            const ticketCount = booking.tickets.length;
+            const ticketCount = booking.tickets ? booking.tickets.length : 0;
+
+            // Get schedule from first ticket (all tickets in a booking have the same schedule)
+            const schedule = booking.tickets && booking.tickets.length > 0 ? booking.tickets[0].schedule : null;
+
+            if (!schedule) {
+                return ''; // Skip bookings without schedule info
+            }
 
             return `
                     <div class="card booking-card mb-3">
@@ -194,27 +214,27 @@
                                             <div class="col-md-6">
                                                 <h6 class="mb-1">
                                                     <i class="fas fa-train text-primary"></i>
-                                                    ${booking.schedule.trainName}
+                                                    ${schedule.trainName || 'N/A'}
                                                 </h6>
                                                 <p class="mb-0">
-                                                    <strong>${booking.schedule.departureStation}</strong>
+                                                    <strong>${schedule.origin || 'N/A'}</strong>
                                                     <i class="fas fa-arrow-right mx-2"></i>
-                                                    <strong>${booking.schedule.arrivalStation}</strong>
+                                                    <strong>${schedule.destination || 'N/A'}</strong>
                                                 </p>
                                                 <small class="text-muted">
-                                                    ${new Date(booking.schedule.departureTime).toLocaleDateString()} •
-                                                    ${new Date(booking.schedule.departureTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                                    ${new Date(schedule.departureTime).toLocaleDateString()} •
+                                                    ${new Date(schedule.departureTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                                                 </small>
                                             </div>
                                             <div class="col-md-6">
                                                 <p class="mb-1">
-                                                    <strong>Booking Code:</strong> ${booking.bookingCode}
+                                                    <strong>Mã đặt vé:</strong> ${booking.bookingCode}
                                                 </p>
                                                 <p class="mb-1">
-                                                    <strong>Tickets:</strong> ${ticketCount} ${ticketCount === 1 ? 'seat' : 'seats'}
+                                                    <strong>Số vé:</strong> ${ticketCount} ${ticketCount === 1 ? 'ghế' : 'ghế'}
                                                 </p>
                                                 <p class="mb-0">
-                                                    <strong>Total:</strong> <span class="text-success">$${booking.totalAmount.toLocaleString()}</span>
+                                                    <strong>Tổng:</strong> <span class="text-success">${booking.totalAmount.toLocaleString()} VNĐ</span>
                                                 </p>
                                             </div>
                                         </div>
@@ -225,15 +245,15 @@
                                         <span class="badge ${statusClass} status-badge">${booking.status}</span>
                                     </div>
                                     <small class="text-muted d-block mb-2">
-                                        Booked: ${new Date(booking.bookingDate).toLocaleDateString()}
+                                        Đặt ngày: ${new Date(booking.bookingDate).toLocaleDateString()}
                                     </small>
                                     <div class="btn-group-vertical" role="group">
-                                        <button class="btn btn-outline-primary btn-sm" onclick="showBookingDetails('${booking.bookingCode}')">
-                                            <i class="fas fa-eye"></i> View Details
+                                        <button class="btn btn-outline-primary btn-sm view-details-btn" data-booking-code="${booking.bookingCode}">
+                                            <i class="fas fa-eye"></i> Xem chi tiết
                                         </button>
-                                        ${booking.status === 'CONFIRMED' ? `
-                                            <button class="btn btn-outline-danger btn-sm mt-1" onclick="cancelBooking(${booking.bookingId})">
-                                                <i class="fas fa-times"></i> Cancel
+                                        ${booking.status === 'CONFIRMED' || booking.status === 'PENDING' ? `
+                                            <button class="btn btn-outline-danger btn-sm mt-1 cancel-booking-btn" data-booking-id="${booking.bookingId}">
+                                                <i class="fas fa-times"></i> Hủy vé
                                             </button>
                                         ` : ''}
                                     </div>
@@ -245,6 +265,21 @@
         }).join('');
 
         container.innerHTML = bookingsHtml;
+
+        // Attach event listeners to all buttons
+        container.querySelectorAll('.view-details-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const bookingCode = this.dataset.bookingCode;
+                showBookingDetails(bookingCode);
+            });
+        });
+
+        container.querySelectorAll('.cancel-booking-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const bookingId = parseInt(this.dataset.bookingId);
+                cancelBooking(bookingId);
+            });
+        });
     }
 
     function getStatusClass(status) {
@@ -275,52 +310,86 @@
     }
 
     function renderBookingModal(booking) {
-        const ticketsHtml = booking.tickets.map(ticket => `
+        // Safely extract schedule from first ticket
+        const schedule = booking && booking.tickets && booking.tickets.length > 0 && booking.tickets[0].schedule
+            ? booking.tickets[0].schedule
+            : null;
+
+        if (!schedule) {
+            alert('Thông tin lịch trình không khả dụng');
+            return;
+        }
+
+        // Safe property access for all schedule fields
+        const trainName = schedule && schedule.trainName ? schedule.trainName : 'N/A';
+        const origin = schedule && schedule.origin ? schedule.origin : 'N/A';
+        const destination = schedule && schedule.destination ? schedule.destination : 'N/A';
+        const departureTime = schedule && schedule.departureTime ? new Date(schedule.departureTime).toLocaleString('vi-VN') : 'N/A';
+        const arrivalTime = schedule && schedule.arrivalTime ? new Date(schedule.arrivalTime).toLocaleString('vi-VN') : 'N/A';
+
+        // Safe property access for booking fields
+        const bookingCode = booking && booking.bookingCode ? booking.bookingCode : 'N/A';
+        const userFullName = booking && booking.userFullName ? booking.userFullName : 'N/A';
+        const userEmail = booking && booking.userEmail ? booking.userEmail : 'N/A';
+        const status = booking && booking.status ? booking.status : 'UNKNOWN';
+        const totalAmount = booking && booking.totalAmount ? booking.totalAmount.toLocaleString() : '0';
+
+        const ticketsHtml = booking.tickets && booking.tickets.length > 0
+            ? booking.tickets.map(ticket => `
                 <tr>
-                    <td>${ticket.ticketCode}</td>
-                    <td>${ticket.seatNumber}</td>
-                    <td>${ticket.carriageName}</td>
-                    <td>${ticket.seatType}</td>
-                    <td>$${ticket.price.toLocaleString()}</td>
-                    <td><span class="badge bg-success">${ticket.status}</span></td>
+                    <td>${ticket.ticketCode || 'N/A'}</td>
+                    <td>${ticket.seatNumber || 'N/A'}</td>
+                    <td>${ticket.carriageName || 'N/A'}</td>
+                    <td>${ticket.seatType || 'N/A'}</td>
+                    <td>${ticket.price ? ticket.price.toLocaleString() : '0'} VNĐ</td>
+                    <td><span class="badge bg-success">${ticket.status || 'N/A'}</span></td>
                 </tr>
-            `).join('');
+            `).join('')
+            : '<tr><td colspan="6" class="text-center">Không có thông tin vé</td></tr>';
+
+        // Safe payment access
+        const hasPayment = booking && booking.payments && booking.payments.length > 0;
+        const payment = hasPayment ? booking.payments[0] : null;
+        const transactionCode = payment && payment.transactionCode ? payment.transactionCode : 'Chưa có';
+        const paymentMethod = payment && payment.paymentMethod ? payment.paymentMethod.replace('_', ' ') : 'N/A';
+        const paymentAmount = payment && payment.amount ? payment.amount.toLocaleString() : totalAmount;
+        const paymentStatus = payment && payment.status ? payment.status : 'Chưa thanh toán';
 
         const html = `
                 <div class="row">
                     <div class="col-md-6">
-                        <h6><i class="fas fa-info-circle"></i> Journey Information</h6>
+                        <h6><i class="fas fa-info-circle"></i> Thông tin chuyến đi</h6>
                         <table class="table table-sm">
-                            <tr><td><strong>Train:</strong></td><td>${booking.schedule.trainName}</td></tr>
-                            <tr><td><strong>From:</strong></td><td>${booking.schedule.departureStation}</td></tr>
-                            <tr><td><strong>To:</strong></td><td>${booking.schedule.arrivalStation}</td></tr>
-                            <tr><td><strong>Departure:</strong></td><td>${new Date(booking.schedule.departureTime).toLocaleString()}</td></tr>
-                            <tr><td><strong>Arrival:</strong></td><td>${new Date(booking.schedule.arrivalTime).toLocaleString()}</td></tr>
+                            <tr><td><strong>Tàu:</strong></td><td>${trainName}</td></tr>
+                            <tr><td><strong>Từ:</strong></td><td>${origin}</td></tr>
+                            <tr><td><strong>Đến:</strong></td><td>${destination}</td></tr>
+                            <tr><td><strong>Khởi hành:</strong></td><td>${departureTime}</td></tr>
+                            <tr><td><strong>Đến nơi:</strong></td><td>${arrivalTime}</td></tr>
                         </table>
                     </div>
                     <div class="col-md-6">
-                        <h6><i class="fas fa-user"></i> Booking Information</h6>
+                        <h6><i class="fas fa-user"></i> Thông tin đặt vé</h6>
                         <table class="table table-sm">
-                            <tr><td><strong>Code:</strong></td><td>${booking.bookingCode}</td></tr>
-                            <tr><td><strong>Passenger:</strong></td><td>${booking.userFullName}</td></tr>
-                            <tr><td><strong>Email:</strong></td><td>${booking.userEmail}</td></tr>
-                            <tr><td><strong>Status:</strong></td><td><span class="badge ${getStatusClass(booking.status)}">${booking.status}</span></td></tr>
-                            <tr><td><strong>Total:</strong></td><td><strong>$${booking.totalAmount.toLocaleString()}</strong></td></tr>
+                            <tr><td><strong>Mã đặt vé:</strong></td><td>${bookingCode}</td></tr>
+                            <tr><td><strong>Hành khách:</strong></td><td>${userFullName}</td></tr>
+                            <tr><td><strong>Email:</strong></td><td>${userEmail}</td></tr>
+                            <tr><td><strong>Trạng thái:</strong></td><td><span class="badge ${getStatusClass(status)}">${status}</span></td></tr>
+                            <tr><td><strong>Tổng tiền:</strong></td><td><strong>${totalAmount} VNĐ</strong></td></tr>
                         </table>
                     </div>
                 </div>
 
-                <h6 class="mt-4"><i class="fas fa-tickets"></i> Ticket Details</h6>
+                <h6 class="mt-4"><i class="fas fa-ticket-alt"></i> Chi tiết vé</h6>
                 <div class="table-responsive">
                     <table class="table table-sm">
                         <thead>
                             <tr>
-                                <th>Ticket Code</th>
-                                <th>Seat</th>
-                                <th>Carriage</th>
-                                <th>Type</th>
-                                <th>Price</th>
-                                <th>Status</th>
+                                <th>Mã vé</th>
+                                <th>Ghế</th>
+                                <th>Toa</th>
+                                <th>Loại</th>
+                                <th>Giá</th>
+                                <th>Trạng thái</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -329,20 +398,26 @@
                     </table>
                 </div>
 
-                <h6 class="mt-4"><i class="fas fa-credit-card"></i> Payment Information</h6>
+                <h6 class="mt-4"><i class="fas fa-credit-card"></i> Thông tin thanh toán</h6>
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Transaction Code:</strong> ${booking.payment.transactionCode}</p>
-                        <p><strong>Payment Method:</strong> ${booking.payment.paymentMethod.replace('_', ' ')}</p>
+                        <p><strong>Mã giao dịch:</strong> ${transactionCode}</p>
+                        <p><strong>Phương thức:</strong> ${paymentMethod}</p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Amount:</strong> $${booking.payment.amount.toLocaleString()}</p>
-                        <p><strong>Status:</strong> <span class="badge bg-success">${booking.payment.status}</span></p>
+                        <p><strong>Số tiền:</strong> ${paymentAmount} VNĐ</p>
+                        <p><strong>Trạng thái:</strong> <span class="badge bg-success">${paymentStatus}</span></p>
                     </div>
                 </div>
             `;
 
-        document.getElementById('modal-booking-details').innerHTML = html;
+        const modalElement = document.getElementById('modal-booking-details');
+        if (modalElement) {
+            modalElement.innerHTML = html;
+        } else {
+            console.error("Error: Element with ID 'modal-booking-details' not found.");
+            alert('Không thể hiển thị chi tiết đặt vé. Vui lòng thử lại.');
+        }
     }
 
     function cancelBooking(bookingId) {

@@ -4,11 +4,15 @@ import fa25.group.evtrainticket.service.BookingService;
 import fa25.group.evtrainticket.service.TicketService;
 import fa25.group.evtrainticket.entity.Booking;
 import fa25.group.evtrainticket.entity.Ticket;
+import fa25.group.evtrainticket.entity.Payment;
+import fa25.group.evtrainticket.repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +26,9 @@ public class PaymentController {
 
     @Autowired
     private BookingService bookingService;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
 
     /**
      * Complete payment using booking from session (simplified for real payment flow)
@@ -56,6 +63,17 @@ public class PaymentController {
 
             // Activate all tickets for this booking
             List<Ticket> tickets = ticketService.activateTicketsForBooking(bookingCode);
+
+            // Create Payment entity
+            Payment payment = new Payment();
+            payment.setBooking(booking);
+            payment.setAmount(booking.getTotalAmount());
+            payment.setPaymentMethod("DEMO_PAYMENT"); // In real system, this would come from payment gateway
+            payment.setPaymentDate(LocalDateTime.now());
+            payment.setTransactionCode(generateTransactionCode());
+            payment.setStatus("COMPLETED");
+            payment.setNotes("Payment completed via demo system");
+            paymentRepository.save(payment);
 
             // Update booking status
             booking.setStatus("CONFIRMED");
@@ -122,6 +140,17 @@ public class PaymentController {
             // Activate all tickets for this booking
             List<Ticket> tickets = ticketService.activateTicketsForBooking(bookingCode);
 
+            // Create Payment entity
+            Payment payment = new Payment();
+            payment.setBooking(booking);
+            payment.setAmount(booking.getTotalAmount());
+            payment.setPaymentMethod("DEMO_PAYMENT");
+            payment.setPaymentDate(LocalDateTime.now());
+            payment.setTransactionCode(generateTransactionCode());
+            payment.setStatus("COMPLETED");
+            payment.setNotes("Payment completed via external merchant");
+            paymentRepository.save(payment);
+
             // Update booking status
             booking.setStatus("CONFIRMED");
             bookingService.updateBooking(booking);
@@ -147,6 +176,16 @@ public class PaymentController {
                 "error", "Failed to complete payment: " + e.getMessage()
             ));
         }
+    }
+
+    /**
+     * Generate unique transaction code
+     */
+    private String generateTransactionCode() {
+        LocalDateTime now = LocalDateTime.now();
+        String dateStr = now.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        long count = paymentRepository.count() + 1;
+        return String.format("TXN%s%04d", dateStr, count);
     }
 
     /**

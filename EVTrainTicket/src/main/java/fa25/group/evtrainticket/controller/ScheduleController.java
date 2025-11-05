@@ -3,14 +3,11 @@ package fa25.group.evtrainticket.controller;
 import fa25.group.evtrainticket.service.ScheduleService;
 import fa25.group.evtrainticket.service.SeatService;
 import fa25.group.evtrainticket.dto.CarriageLayoutDto;
-// import fa25.group.evtrainticket.dto.RoundTripSearchDto; // Đã xóa
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +23,7 @@ public class ScheduleController {
     @GetMapping("/api/schedules/{scheduleId}/seats")
     @ResponseBody
     public ResponseEntity<List<CarriageLayoutDto>> getSeatLayoutForSchedule(
-            @PathVariable int scheduleId) {
+            @PathVariable("scheduleId") int scheduleId) {
 
         List<CarriageLayoutDto> seatLayout = seatService.getSeatLayout(scheduleId);
         return ResponseEntity.ok(seatLayout);
@@ -37,7 +34,7 @@ public class ScheduleController {
      */
     @GetMapping("/api/schedules/{scheduleId}")
     @ResponseBody
-    public ResponseEntity<?> getScheduleById(@PathVariable int scheduleId) {
+    public ResponseEntity<?> getScheduleById(@PathVariable("scheduleId") int scheduleId) {
         try {
             var schedule = scheduleService.getScheduleById(scheduleId);
             if (schedule == null) {

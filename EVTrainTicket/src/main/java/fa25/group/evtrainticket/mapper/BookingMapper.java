@@ -25,6 +25,12 @@ public class BookingMapper {
         dto.setTotalAmount(booking.getTotalAmount());
         dto.setNotes(booking.getNotes());
 
+        // Add user information
+        if (booking.getUser() != null) {
+            dto.setUserFullName(booking.getUser().getFullName());
+            dto.setUserEmail(booking.getUser().getEmail());
+        }
+
         // Map tickets to TicketDto
         if (booking.getTickets() != null) {
             dto.setTickets(booking.getTickets().stream()
@@ -61,7 +67,20 @@ public class BookingMapper {
         dto.setTicketCode(ticket.getTicketCode());
         dto.setStatus(ticket.getStatus());
         dto.setPrice(ticket.getPrice());
-        
+
+        // Add seat information
+        if (ticket.getSeat() != null) {
+            dto.setSeatNumber(ticket.getSeat().getSeatNumber());
+
+            if (ticket.getSeat().getCarriage() != null) {
+                dto.setCarriageName("Toa " + ticket.getSeat().getCarriage().getCarriageNumber());
+            }
+
+            if (ticket.getSeat().getSeatType() != null) {
+                dto.setSeatType(ticket.getSeat().getSeatType().getTypeName());
+            }
+        }
+
         if (ticket.getSchedule() != null) {
             dto.setSchedule(toScheduleDto(ticket.getSchedule()));
         }
@@ -98,6 +117,11 @@ public class BookingMapper {
         dto.setOrigin(schedule.getOrigin());
         dto.setDestination(schedule.getDestination());
         dto.setStatus(schedule.getStatus());
+
+        // Add train name
+        if (schedule.getTrain() != null) {
+            dto.setTrainName(schedule.getTrain().getTrainName());
+        }
 
         return dto;
     }

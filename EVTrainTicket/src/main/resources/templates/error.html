@@ -1,11 +1,126 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>403 Forbidden</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${status != null ? status + ' - Lỗi' : 'Lỗi'}" >Lỗi</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background-color: #f4f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .error-container {
+            max-width: 600px;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .error-icon {
+            font-size: 72px;
+            margin-bottom: 20px;
+        }
+        .error-403 .error-icon { color: #dc3545; }
+        .error-404 .error-icon { color: #ffc107; }
+        .error-500 .error-icon { color: #6c757d; }
+        .error-default .error-icon { color: #17a2b8; }
+
+        h1 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 2em;
+        }
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .error-details {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+        .error-details p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .btn-home {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        .btn-home:hover {
+            background-color: #0056b3;
+        }
+        .btn-back {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            margin-left: 10px;
+        }
+        .btn-back:hover {
+            background-color: #5a6268;
+        }
+    </style>
 </head>
 <body>
-    <p>Bạn không có quyền truy cập vào trang này.</p>
-    <a th:href="@{/home}">Trở về trang chủ</a>
+    <div class="error-container" th:classappend="${'error-' + (status != null ? status : 'default')}">
+        <!-- Error Icon based on status -->
+        <div class="error-icon">
+            <i class="fas fa-exclamation-circle" th:if="${status == null or status == 500}"></i>
+            <i class="fas fa-lock" th:if="${status == 403}"></i>
+            <i class="fas fa-search" th:if="${status == 404}"></i>
+            <i class="fas fa-ban" th:if="${status != null and status != 403 and status != 404 and status != 500}"></i>
+        </div>
+
+        <!-- Error Title -->
+        <h1 th:if="${status == 403}">403 - Truy cập bị từ chối</h1>
+        <h1 th:if="${status == 404}">404 - Không tìm thấy trang</h1>
+        <h1 th:if="${status == 500}">500 - Lỗi máy chủ</h1>
+        <h1 th:if="${status == null or (status != 403 and status != 404 and status != 500)}">Đã xảy ra lỗi</h1>
+
+        <!-- Error Message -->
+        <p th:if="${status == 403}">Bạn không có quyền truy cập vào trang này. Vui lòng đăng nhập hoặc liên hệ quản trị viên.</p>
+        <p th:if="${status == 404}">Trang bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.</p>
+        <p th:if="${status == 500}">Máy chủ gặp sự cố không mong muốn. Chúng tôi đang khắc phục vấn đề.</p>
+        <p th:if="${status == null or (status != 403 and status != 404 and status != 500)}">Đã xảy ra lỗi trong quá trình xử lý yêu cầu của bạn.</p>
+
+        <!-- Error Details (optional) -->
+        <div class="error-details" th:if="${error != null or message != null}">
+            <p th:if="${error != null}"><strong>Lỗi:</strong> <span th:text="${error}"></span></p>
+            <p th:if="${message != null}"><strong>Chi tiết:</strong> <span th:text="${message}"></span></p>
+            <p th:if="${path != null}"><strong>Đường dẫn:</strong> <span th:text="${path}"></span></p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div>
+            <a th:href="@{/home}" class="btn-home">
+                <i class="fas fa-home"></i> Về trang chủ
+            </a>
+            <a href="javascript:history.back()" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+        </div>
+    </div>
 </body>
 </html>

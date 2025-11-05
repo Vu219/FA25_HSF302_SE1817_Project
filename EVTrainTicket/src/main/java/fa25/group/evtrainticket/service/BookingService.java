@@ -39,6 +39,8 @@ public interface BookingService {
 
     List<Booking> getBookingsByEmail(String email);
 
+    List<Booking> getBookingsByUserId(Integer userId);
+
     Booking cancelBooking(Integer bookingId);
 
     boolean validateSeatAvailability(Integer scheduleId, List<Integer> seatIds);

@@ -199,6 +199,11 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public List<Booking> getBookingsByUserId(Integer userId) {
+        return bookingRepository.findByUserUserIDOrderByBookingDateDesc(userId);
+    }
+
+    @Override
     @Transactional
     public Booking cancelBooking(Integer bookingId) {
         // Implementation details...

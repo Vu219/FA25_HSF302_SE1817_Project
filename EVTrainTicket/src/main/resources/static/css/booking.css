@@ -113,17 +113,24 @@
     transform: none;
 }
 
-/* Container các toa tàu */
+/* --- Container các toa tàu --- */
 #carriages-container {
-    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    width: 100%;
+    padding: 20px 0;
 }
 
 .carriage-section {
-    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
     border: 2px solid #e9ecef;
     border-radius: 10px;
     padding: 20px;
     background: #fff;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .carriage-section h6 {
@@ -139,15 +146,28 @@
 
 .seat-map {
     display: grid;
-    gap: 8px;
-    justify-content: center;
-    margin-bottom: 15px;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: auto;
+    gap: 10px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 auto;
+}
+
+/* Aisle gap between seats */
+.seat-map .seat:nth-child(3n):not(:nth-child(6n)) {
+    margin-right: 20px;
 }
 
 /* Ghế ngồi */
 .seat {
-    width: 45px;
-    height: 45px;
+    aspect-ratio: 1;
+    width: 100%;
+    max-width: 45px;
+    height: auto;
     border: 2px solid #ccc;
     border-radius: 8px;
     display: flex;
@@ -159,6 +179,7 @@
     transition: all 0.3s ease;
     position: relative;
     background-color: #fff;
+    margin: 0 auto;
 }
 
 .seat:hover {
@@ -273,7 +294,23 @@
     padding-top: 20px;
     border-top: 1px solid #e9ecef;
 }
-
+div#carriages-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px; /* Adjust this value as needed for spacing */
+}
+.seat-map {
+    display: grid; /* If not already set, it's good practice for grid layout */
+    grid-template-columns: repeat(6, 1fr);
+    grid-auto-rows: min-content; /* Helps rows size correctly */
+    /* If you truly want only 24 seats visible (4 rows x 6 columns),
+       you'll need to either:
+       a) Ensure your HTML only generates 24 seat elements per .seat-map.
+       b) Add CSS to hide seats beyond the 24th, for example: */
+    .seat:nth-child(n+25) { /* Targets the 25th seat and onwards */
+        display: none;
+    }
+}
 .btn {
     padding: 12px 25px;
     text-decoration: none;
@@ -353,6 +390,14 @@
         height: 40px;
         font-size: 11px;
     }
+
+    #carriages-container {
+        grid-template-columns: 1fr;
+    }
+
+    .carriage-section {
+        margin-bottom: 20px;
+    }
 }
 
 @media (max-width: 768px) {
@@ -374,6 +419,16 @@
     .carriage-section {
         padding: 15px;
     }
+
+    .seat-map {
+        padding: 15px;
+        gap: 6px;
+    }
+
+    .seat-map-row {
+        gap: 6px;
+    }
+
 }
 
 @media (max-width: 576px) {

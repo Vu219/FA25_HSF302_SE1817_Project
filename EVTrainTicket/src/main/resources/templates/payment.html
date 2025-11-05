@@ -6,84 +6,8 @@
     <title>Hoàn tất thanh toán</title>
 
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/payment.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
-    <style>
-        /* CSS nội tuyến cho trang thanh toán */
-        body { background-color: #f4f7fa; }
-        .payment-container {
-            max-width: 800px;
-            margin: 120px auto 40px auto; /* Thêm margin-top để không bị header che */
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .header {
-            text-align: center;
-            color: #333;
-            border-bottom: 2px solid var(--secondary-color);
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-        .booking-summary {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 4px;
-            margin-bottom: 30px;
-        }
-        .booking-summary h3 { margin-top: 0; color: #333; }
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin: 10px 0;
-            padding: 5px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .info-label { font-weight: bold; color: #666; }
-        .info-value { color: #333; }
-        .total-amount {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--primary-color);
-            text-align: center;
-            margin: 20px 0;
-            padding: 15px;
-            background-color: #e7f3ff;
-            border-radius: 4px;
-        }
-        .payment-button {
-            width: 100%;
-            background-color: #28a745;
-            color: white;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 4px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        .payment-button:hover { background-color: #218838; }
-        .payment-button:disabled { background-color: #6c757d; cursor: not-allowed; }
-        .result {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 4px;
-            display: none;
-        }
-        .success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
-        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
-        .ticket-list { margin-top: 15px; }
-        .ticket-item {
-            background-color: #f8f9fa;
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 4px;
-            border-left: 4px solid #28a745;
-        }
-        .loading { text-align: center; color: #666; }
-    </style>
 </head>
 <body>
 
@@ -162,7 +86,7 @@
         </div>
 
         <div th:if="${booking != null}">
-            <button class="payment-button" onclick="completePayment()" id="paymentBtn">
+            <button class="payment-button" id="paymentBtn">
                 💳 Hoàn tất thanh toán
             </button>
         </div>
@@ -175,99 +99,7 @@
     <p>&copy; 2025 EVTrainTicket. All rights reserved.</p>
 </footer>
 
-<script>
-    async function completePayment() {
-        const button = document.getElementById('paymentBtn');
-        const resultDiv = document.getElementById('result');
-
-        // Disable button and show loading
-        button.disabled = true;
-        button.innerHTML = '⏳ Đang xử lý thanh toán...';
-
-        resultDiv.style.display = 'block';
-        resultDiv.className = 'result';
-        resultDiv.innerHTML = '<div class="loading">Đang xử lý thanh toán của bạn...</div>';
-
-        try {
-            const response = await fetch('/api/payment/complete-session', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            const result = await response.json();
-
-            if (response.ok && result.success) {
-                resultDiv.className = 'result success';
-                resultDiv.innerHTML = `
-                        <h3>✅ Thanh toán thành công!</h3>
-                        <p><strong>${result.message}</strong></p>
-                        <div class="info-row">
-                            <span class="info-label">Mã vé:</span>
-                            <span class="info-value">${result.bookingCode}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Trạng thái:</span>
-                            <span class="info-value">${result.bookingStatus}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Vé đã kích hoạt:</span>
-                            <span class="info-value">${result.ticketCount}</span>
-                        </div>
-                        <div class="ticket-list">
-                            <h4>🎫 Vé của bạn:</h4>
-                            ${result.tickets.map(ticket => `
-                                <div class="ticket-item">
-                                    <strong>Mã vé:</strong> ${ticket.ticketCode}<br>
-                                    <strong>Ghế:</strong> ${ticket.seatNumber}<br>
-                                    <strong>Trạng thái:</strong> ${ticket.status}<br>
-                                    <strong>Giá:</strong> ${ticket.price.toLocaleString('vi-VN')} VNĐ
-                                </div>
-                            `).join('')}
-                        </div>
-                        <p><em>🎉 Vé của bạn đã được kích hoạt. Chúc bạn chuyến đi vui vẻ!</em></p>
-                        <button onclick="window.location.href='/home'" style="margin-top: 15px; padding: 10px 20px; background-color: var(--secondary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">
-                            Đặt chuyến khác
-                        </button>
-                    `;
-
-                // Hide the payment button
-                button.style.display = 'none';
-            } else {
-                resultDiv.className = 'result error';
-                resultDiv.innerHTML = `
-                        <h3>❌ Thanh toán thất bại</h3>
-                        <p>${result.error}</p>
-                        <button onclick="retryPayment()" style="margin-top: 10px; padding: 8px 16px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                            Thử lại
-                        </button>
-                    `;
-
-                // Re-enable button
-                button.disabled = false;
-                button.innerHTML = '💳 Hoàn tất thanh toán';
-            }
-        } catch (error) {
-            resultDiv.className = 'result error';
-            resultDiv.innerHTML = `
-                    <h3>❌ Lỗi</h3>
-                    <p>Đã xảy ra lỗi khi xử lý: ${error.message}</p>
-                    <button onclick="retryPayment()" style="margin-top: 10px; padding: 8px 16px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                        Thử lại
-                    </button>
-                `;
-
-            // Re-enable button
-            button.disabled = false;
-            button.innerHTML = '💳 Hoàn tất thanh toán';
-        }
-    }
-
-    function retryPayment() {
-        const resultDiv = document.getElementById('result');
-        resultDiv.style.display = 'none';
-    }
-</script>
+<script th:src="@{/js/payment.js}"></script>
 </body>
 </html>
+
