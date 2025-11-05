@@ -16,9 +16,9 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
     Optional<Payment> findByTransactionCode(String transactionCode);
     List<Payment> findByStatus(String status);
 
-    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p WHERE p.status = 'PAID'")
+    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p WHERE p.status = 'COMPLETED'")
     long getTotalRevenue();
 
-    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p WHERE p.status = 'PAID' AND CAST(p.succeededAt AS date) BETWEEN :startDate AND :endDate")
+    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p WHERE p.status = 'COMPLETED' AND CAST(p.paymentDate AS date) BETWEEN :startDate AND :endDate")
     long getRevenue(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }
