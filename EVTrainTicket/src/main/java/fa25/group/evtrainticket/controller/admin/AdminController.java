@@ -165,6 +165,8 @@ public class AdminController {
             schedule.setEstimatedTime(estimatedTime);
             schedule.setBasePrice(basePrice);
             schedule.setStatus(status);
+            schedule.setOrigin(departureStation.getName());
+            schedule.setDestination(arrivalStation.getName());
 
             scheduleService.saveSchedule(schedule);
             redirectAttributes.addFlashAttribute("successMessage", "Tạo lịch trình thành công!");
@@ -228,6 +230,8 @@ public class AdminController {
             existingSchedule.setEstimatedTime(estimatedTime);
             existingSchedule.setBasePrice(basePrice);
             existingSchedule.setStatus(status);
+            existingSchedule.setOrigin(departureStation.getName());
+            existingSchedule.setDestination(arrivalStation.getName());
 
             scheduleService.saveSchedule(existingSchedule);
             redirectAttributes.addFlashAttribute("successMessage", "Cập nhật lịch trình thành công!");

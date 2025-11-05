@@ -13,7 +13,7 @@
 <main class="admin-container">
 
     <div class="admin-header">
-        <h1><i class="fas fa-calendar-alt"></i> Schedule Management</h1>
+        <h1><i class="fas fa-calendar-alt"></i>Quản lý lịch trình</h1>
     </div>
 
     <!-- Alerts -->
@@ -45,7 +45,7 @@
             </div>
             <div class="info">
                 <h3 th:text="${schedules.size()}">0</h3>
-                <p>Total Schedules</p>
+                <p>Tổng số lịch trình</p>
             </div>
         </div>
         <div class="stat-card">
@@ -70,9 +70,9 @@
 
     <!-- Action Bar -->
     <div class="action-bar">
-        <h2><i class="fas fa-list"></i> All Schedules</h2>
+        <h2><i class="fas fa-list"></i> Tất cả các lịch trình</h2>
         <a th:href="@{/admin/schedules/new}" class="btn btn-primary">
-            <i class="fas fa-plus-circle"></i> Add New Schedule
+            <i class="fas fa-plus-circle"></i> Thêm lịch trình mới
         </a>
     </div>
 
@@ -83,14 +83,14 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th><i class="fas fa-train"></i> Train</th>
-                        <th><i class="fas fa-map-marker-alt"></i> Route</th>
-                        <th><i class="fas fa-calendar"></i> Departure</th>
-                        <th><i class="fas fa-calendar-check"></i> Arrival</th>
-                        <th><i class="fas fa-road"></i> Distance</th>
-                        <th><i class="fas fa-dollar-sign"></i> Price</th>
-                        <th><i class="fas fa-info-circle"></i> Status</th>
-                        <th><i class="fas fa-cog"></i> Actions</th>
+                        <th><i class="fas fa-train"></i> Xe lửa</th>
+                        <th><i class="fas fa-map-marker-alt"></i> Tuyến đường</th>
+                        <th><i class="fas fa-calendar"></i> Khởi hành</th>
+                        <th><i class="fas fa-calendar-check"></i> Đến</th>
+                        <th><i class="fas fa-road"></i> Khoảng cách</th>
+                        <th><i class="fas fa-dollar-sign"></i> Giá</th>
+                        <th><i class="fas fa-info-circle"></i> Trạng thái</th>
+                        <th><i class="fas fa-cog"></i> Hành động</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -150,7 +150,7 @@
                             <div class="action-buttons">
                                 <a th:href="@{/admin/schedules/{id}/edit(id=${schedule.scheduleID})}"
                                    class="btn btn-info btn-sm">
-                                    <i class="fas fa-edit"></i> Edit
+                                    <i class="fas fa-edit"></i> Sửa
                                 </a>
                                 <a th:href="@{'/admin/schedules/delete/' + ${schedule.scheduleID}}" class="btn btn-danger btn-sm"
                                    onclick="return confirm('Bạn có chắc chắn muốn xóa lịch trin tàu này không?');"><i class="fas fa-trash"></i> Xóa</a>

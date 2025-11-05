@@ -1,44 +1,50 @@
 <section>
     <div class="action-bar">
-        <h2>Quản lý ga tàu</h2>
+        <h2><i class="fas fa-building-columns"></i> Quản lý Ga tàu</h2>
         <a th:href="@{/admin/stations/create}" class="btn btn-primary"><i class="fas fa-plus"></i> Thêm ga tàu mới</a>
     </div>
 
     <div class="table-container">
-        <table th:if="${not #lists.isEmpty(stationList)}">
-            <thead>
-            <tr>
-                <th>Mã ga</th>
-                <th>Tên ga</th>
-                <th>Mã hiệu ga</th>
-                <th>Điạ chỉ</th>
-                <th>Thành phố</th>
-                <th>Tỉnh</th>
-                <th>Trạng thái</th>
-                <th>Hành động</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="station : ${stationList}">
-                <td th:text="${station.stationID}"></td>
-                <td th:text="${station.name}"></td>
-                <td th:text="${station.code}"></td>
-                <td th:text="${station.address}"></td>
-                <td th:text="${station.city}"></td>
-                <td th:text="${station.province}"></td>
-                <td th:text="${station.status}"></td>
-                <td>
-                    <div class="action-links">
-                        <a th:href="@{'/admin/stations/edit/' + ${station.stationID}}" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Sửa</a>
-                        <a th:href="@{'/admin/stations/delete/' + ${station.stationID}}" class="btn btn-danger btn-sm"
-                           onclick="return confirm('Bạn có chắc chắn muốn xóa ga này không?');"><i class="fas fa-trash"></i> Xóa</a>
-                    </div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <div th:if="${#lists.isEmpty(stationList)}">
-            <p>Không có ga tàu nào được quản lý.</p>
+        <div class="table-responsive">
+            <table class="table" th:if="${not #lists.isEmpty(stationList)}">
+                <thead>
+                <tr>
+                    <th>Mã ga</th>
+                    <th>Tên ga</th>
+                    <th>Mã hiệu ga</th>
+                    <th>Điạ chỉ</th>
+                    <th>Thành phố</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="station : ${stationList}">
+                    <td data-label="Mã ga" th:text="${station.stationID}"></td>
+                    <td data-label="Tên ga" th:text="${station.name}"></td>
+                    <td data-label="Mã hiệu" th:text="${station.code}"></td>
+                    <td data-label="Địa chỉ" th:text="${station.address}"></td>
+                    <td data-label="Thành phố" th:text="${station.city}"></td>
+                    <td data-label="Trạng thái">
+                        <span class="badge"
+                              th:classappend="${station.status == 'Hoạt động' ? 'badge-success' : 'badge-warning'}"
+                              th:text="${station.status}"></span>
+                    </td>
+                    <td data-label="Hành động">
+                        <div class="action-buttons">
+                            <a th:href="@{'/admin/stations/edit/' + ${station.stationID}}" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Sửa</a>
+                            <a th:href="@{'/admin/stations/delete/' + ${station.stationID}}" class="btn btn-danger btn-sm"
+                               onclick="return confirm('Bạn có chắc chắn muốn xóa ga này không?');"><i class="fas fa-trash"></i> Xóa</a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:if="${#lists.isEmpty(stationList)}" class="empty-state">
+            <i class="fas fa-building-columns"></i>
+            <h3>Không tìm thấy ga nào</h3>
+            <p>Nhấn "Thêm ga tàu mới" để bắt đầu.</p>
         </div>
     </div>
 </section>

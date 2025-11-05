@@ -1,42 +1,46 @@
 <section>
     <div class="action-bar">
-        <h2>Quản lý toa tàu</h2>
+        <h2><i class="fas fa-door-closed"></i> Quản lý Toa tàu</h2>
         <a th:href="@{/admin/carriages/create}" class="btn btn-primary"><i class="fas fa-plus"></i> Thêm toa mới</a>
     </div>
 
     <div class="table-container">
-        <table th:if="${not #lists.isEmpty(carriageList)}">
-            <thead>
-            <tr>
-                <th>Mã toa</th>
-                <th>Số hiệu toa</th>
-                <th>Loại toa</th>
-                <th>Vị trí toa</th>
-                <th>Trạng thái</th>
-                <th>Thuộc tàu</th>
-                <th>Hành động</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="carriage : ${carriageList}">
-                <td th:text="${carriage.carriageID}"></td>
-                <td th:text="${carriage.carriageNumber}"></td>
-                <td th:text="${carriage.carriageType.typeName}"></td>
-                <td th:text="${carriage.position}"></td>
-                <td th:text="${carriage.status}"></td>
-                <td th:text="${carriage.train.trainName}"></td>
-                <td>
-                    <div class="action-links">
-                        <a th:href="@{'/admin/carriages/edit/' + ${carriage.carriageID}}" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Sửa</a>
-                        <a th:href="@{'/admin/carriages/delete/' + ${carriage.carriageID}}" class="btn btn-danger btn-sm"
-                           onclick="return confirm('Bạn có chắc chắn muốn xóa toa tàu này không?');"><i class="fas fa-trash"></i> Xóa</a>
-                    </div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <div th:if="${#lists.isEmpty(carriageList)}">
-            <p>Không có toa tàu nào được quản lý.</p>
+        <div class="table-responsive">
+            <table class="table" th:if="${not #lists.isEmpty(carriageList)}">
+                <thead>
+                <tr>
+                    <th>Mã toa</th>
+                    <th>Số hiệu toa</th>
+                    <th>Loại toa</th>
+                    <th>Vị trí</th>
+                    <th>Trạng thái</th>
+                    <th>Thuộc tàu</th>
+                    <th>Hành động</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="carriage : ${carriageList}">
+                    <td data-label="Mã toa" th:text="${carriage.carriageID}"></td>
+                    <td data-label="Số hiệu" th:text="${carriage.carriageNumber}"></td>
+                    <td data-label="Loại toa" th:text="${carriage.carriageType.typeName}"></td>
+                    <td data-label="Vị trí" th:text="${carriage.position}"></td>
+                    <td data-label="Trạng thái" th:text="${carriage.status}"></td>
+                    <td data-label="Thuộc tàu" th:text="${carriage.train.trainName}"></td>
+                    <td data-label="Hành động">
+                        <div class="action-buttons">
+                            <a th:href="@{'/admin/carriages/edit/' + ${carriage.carriageID}}" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Sửa</a>
+                            <a th:href="@{'/admin/carriages/delete/' + ${carriage.carriageID}}" class="btn btn-danger btn-sm"
+                               onclick="return confirm('Bạn có chắc chắn muốn xóa toa tàu này không?');"><i class="fas fa-trash"></i> Xóa</a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:if="${#lists.isEmpty(carriageList)}" class="empty-state">
+            <i class="fas fa-door-closed"></i>
+            <h3>Không tìm thấy toa tàu nào</h3>
+            <p>Nhấn "Thêm toa mới" để bắt đầu.</p>
         </div>
     </div>
 </section>

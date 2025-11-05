@@ -1,38 +1,42 @@
 <section>
     <div class="action-bar">
-        <h2>Quản lý loại ghế tàu</h2>
+        <h2><i class="fas fa-couch"></i> Quản lý Loại ghế tàu</h2>
         <a th:href="@{/admin/seatTypes/create}" class="btn btn-primary"><i class="fas fa-plus"></i> Thêm loại ghế mới</a>
     </div>
 
     <div class="table-container">
-        <table th:if="${not #lists.isEmpty(seatTypeList)}">
-            <thead>
-            <tr>
-                <th>Mã loại ghế</th>
-                <th>Tên loại ghế</th>
-                <th>Hệ số giá</th>
-                <th>Mô tả</th>
-                <th>Hành động</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="seatType : ${seatTypeList}">
-                <td th:text="${seatType.seatTypeID}"></td>
-                <td th:text="${seatType.typeName}"></td>
-                <td th:text="${seatType.priceMultiplier}"></td>
-                <td th:text="${seatType.description}"></td>
-                <td>
-                    <div class="action-links">
-                        <a th:href="@{'/admin/seatTypes/edit/' + ${seatType.seatTypeID}}" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Sửa</a>
-                        <a th:href="@{'/admin/seatTypes/delete/' + ${seatType.seatTypeID}}" class="btn btn-danger btn-sm"
-                           onclick="return confirm('Bạn có chắc chắn muốn xóa loại ghế này không?');"><i class="fas fa-trash"></i> Xóa</a>
-                    </div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <div th:if="${#lists.isEmpty(seatTypeList)}">
-            <p>Không có loại ghế nào được quản lý.</p>
+        <div class="table-responsive">
+            <table class="table" th:if="${not #lists.isEmpty(seatTypeList)}">
+                <thead>
+                <tr>
+                    <th>Mã</th>
+                    <th>Tên loại ghế</th>
+                    <th>Hệ số giá</th>
+                    <th>Mô tả</th>
+                    <th>Hành động</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="seatType : ${seatTypeList}">
+                    <td data-label="Mã" th:text="${seatType.seatTypeID}"></td>
+                    <td data-label="Tên" th:text="${seatType.typeName}"></td>
+                    <td data-label="Hệ số giá" th:text="${seatType.priceMultiplier}"></td>
+                    <td data-label="Mô tả" th:text="${seatType.description}"></td>
+                    <td data-label="Hành động">
+                        <div class="action-buttons">
+                            <a th:href="@{'/admin/seatTypes/edit/' + ${seatType.seatTypeID}}" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Sửa</a>
+                            <a th:href="@{'/admin/seatTypes/delete/' + ${seatType.seatTypeID}}" class="btn btn-danger btn-sm"
+                               onclick="return confirm('Bạn có chắc chắn muốn xóa loại ghế này không?');"><i class="fas fa-trash"></i> Xóa</a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:if="${#lists.isEmpty(seatTypeList)}" class="empty-state">
+            <i class="fas fa-couch"></i>
+            <h3>Không tìm thấy loại ghế nào</h3>
+            <p>Nhấn "Thêm loại ghế mới" để bắt đầu.</p>
         </div>
     </div>
 </section>

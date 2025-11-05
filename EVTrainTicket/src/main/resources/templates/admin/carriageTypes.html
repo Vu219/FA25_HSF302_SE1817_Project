@@ -1,40 +1,44 @@
 <section>
     <div class="action-bar">
-        <h2>Quản lý loại toa tàu</h2>
+        <h2><i class="fas fa-door-open"></i> Quản lý Loại toa tàu</h2>
         <a th:href="@{/admin/carriageTypes/create}" class="btn btn-primary"><i class="fas fa-plus"></i> Thêm loại toa mới</a>
     </div>
 
     <div class="table-container">
-        <table th:if="${not #lists.isEmpty(carriageTypeList)}">
-            <thead>
-            <tr>
-                <th>Mã loại toa</th>
-                <th>Tên loại toa</th>
-                <th>Số lượng ghế</th>
-                <th>Mô tả</th>
-                <th>Hệ số giá</th>
-                <th>Hành động</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="carriageType : ${carriageTypeList}">
-                <td th:text="${carriageType.carriageTypeId}"></td>
-                <td th:text="${carriageType.typeName}"></td>
-                <td th:text="${carriageType.seatCount}"></td>
-                <td th:text="${carriageType.description}"></td>
-                <td th:text="${carriageType.priceMultiplier}"></td>
-                <td>
-                    <div class="action-links">
-                        <a th:href="@{'/admin/carriageTypes/edit/' + ${carriageType.carriageTypeId}}" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Sửa</a>
-                        <a th:href="@{'/admin/carriageTypes/delete/' + ${carriageType.carriageTypeId}}" class="btn btn-danger btn-sm"
-                           onclick="return confirm('Bạn có chắc chắn muốn xóa loại toa này không?');"><i class="fas fa-trash"></i> Xóa</a>
-                    </div>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <div th:if="${#lists.isEmpty(carriageTypeList)}">
-            <p>Không có loại toa nào được quản lý.</p>
+        <div class="table-responsive">
+            <table class="table" th:if="${not #lists.isEmpty(carriageTypeList)}">
+                <thead>
+                <tr>
+                    <th>Mã</th>
+                    <th>Tên loại toa</th>
+                    <th>Số ghế</th>
+                    <th>Hệ số giá</th>
+                    <th>Mô tả</th>
+                    <th>Hành động</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="carriageType : ${carriageTypeList}">
+                    <td data-label="Mã" th:text="${carriageType.carriageTypeId}"></td>
+                    <td data-label="Tên" th:text="${carriageType.typeName}"></td>
+                    <td data-label="Số ghế" th:text="${carriageType.seatCount}"></td>
+                    <td data-label="Hệ số giá" th:text="${carriageType.priceMultiplier}"></td>
+                    <td data-label="Mô tả" th:text="${carriageType.description}"></td>
+                    <td data-label="Hành động">
+                        <div class="action-buttons">
+                            <a th:href="@{'/admin/carriageTypes/edit/' + ${carriageType.carriageTypeId}}" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Sửa</a>
+                            <a th:href="@{'/admin/carriageTypes/delete/' + ${carriageType.carriageTypeId}}" class="btn btn-danger btn-sm"
+                               onclick="return confirm('Bạn có chắc chắn muốn xóa loại toa này không?');"><i class="fas fa-trash"></i> Xóa</a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:if="${#lists.isEmpty(carriageTypeList)}" class="empty-state">
+            <i class="fas fa-door-open"></i>
+            <h3>Không tìm thấy loại toa nào</h3>
+            <p>Nhấn "Thêm loại toa mới" để bắt đầu.</p>
         </div>
     </div>
 </section>
