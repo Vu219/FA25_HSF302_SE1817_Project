@@ -25,7 +25,7 @@ public class BookingController {
     // Web pages
     @GetMapping("/booking")
     public String bookingPage() {
-        return "booking";
+        return "booking/booking";
     }
 
     @GetMapping("/booking/confirmation")
@@ -34,7 +34,7 @@ public class BookingController {
                                           Model model) {
         if (bookingCode == null || bookingCode.isEmpty()) {
             // Redirect to booking page if no booking code provided
-            return "redirect:/booking";
+            return "redirect:booking/booking";
         }
 
         try {
@@ -42,7 +42,7 @@ public class BookingController {
             var booking = bookingService.getBookingByCode(bookingCode);
             if (booking == null) {
                 model.addAttribute("error", "Booking not found with code: " + bookingCode);
-                return "booking-confirmation";
+                return "booking/booking-confirmation";
             }
 
             // Add booking details to model
@@ -59,7 +59,7 @@ public class BookingController {
             model.addAttribute("error", "Error loading booking details: " + e.getMessage());
         }
 
-        return "booking-confirmation";
+        return "booking/booking-confirmation";
     }
 
     @GetMapping("/booking/history")
@@ -68,7 +68,7 @@ public class BookingController {
         if (user != null) {
             model.addAttribute("user", user);
         }
-        return "booking-history";
+        return "booking/booking-history";
     }
 
     @GetMapping("/payment")

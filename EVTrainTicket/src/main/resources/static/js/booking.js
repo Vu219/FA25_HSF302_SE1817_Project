@@ -182,7 +182,7 @@ function renderSeatLayout() {
                 <i class="fas fa-subway"></i> 
                 ${carriage.carriageTypeName} - Toa ${carriage.carriageNumber}
                 <small style="font-size: 0.8em; color: #666; margin-left: 10px;">
-                    (${carriage.seats.filter(s => s.status === 'AVAILABLE').length}/${carriage.seats.length} ghế trống)
+                    (${carriage.seats.filter(s => s.isAvailable === true).length}/${carriage.seats.length} ghế trống)
                 </small>
             </h6>
         `;
@@ -199,7 +199,7 @@ function renderSeatLayout() {
         // Create and append seats
         carriage.seats.forEach(seat => {
             const seatDiv = document.createElement('div');
-            const isAvailable = seat.status === 'AVAILABLE' || seat.isAvailable === true;
+            const isAvailable = seat.isAvailable === true;
 
             seatDiv.className = `seat ${isAvailable ? 'available' : 'occupied'}`;
             if (selectedSeats.some(s => s.seatID === seat.seatID)) {
@@ -211,7 +211,7 @@ function renderSeatLayout() {
             seatDiv.dataset.seatId = seat.seatID;
             seatDiv.dataset.price = seat.price;
             seatDiv.dataset.seatType = seat.seatTypeName;
-            seatDiv.dataset.status = seat.status || (seat.isAvailable ? 'AVAILABLE' : 'OCCUPIED');
+            seatDiv.dataset.isAvailable = seat.isAvailable;
             seatDiv.title = isAvailable
                 ? `${seat.seatTypeName} - ${parseFloat(seat.price).toLocaleString('vi-VN')} VNĐ - Có sẵn`
                 : `${seat.seatNumber} - Đã đặt`;
