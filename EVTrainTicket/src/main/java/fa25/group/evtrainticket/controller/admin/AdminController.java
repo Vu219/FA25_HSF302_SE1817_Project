@@ -443,6 +443,17 @@ public class AdminController {
             CarriageType carriageTypeToAdd = carriageTypeService.findCarriageTypeById(carriageTypeId);
             carriage.setTrain(trainToAdd);
             carriage.setCarriageType(carriageTypeToAdd);
+
+            if (carriageTypeToAdd != null) {
+                carriage.setTotalSeats(carriageTypeToAdd.getSeatCount());
+            } else {
+                // Phòng trường hợp carriageTypeToAdd bị null
+                // (Mặc dù nếu bị null, nó sẽ báo lỗi ở dòng trên,
+                // nhưng đây là cách code an toàn)
+                redirectAttributes.addFlashAttribute("errorMessage", "Lỗi: Loại toa không hợp lệ.");
+                return "redirect:/admin/carriages/create";
+            }
+
             carriageService.saveCarriage(carriage);
             redirectAttributes.addFlashAttribute("successMessage", "Thêm toa tàu mới thành công");
             return "redirect:/admin/carriages";

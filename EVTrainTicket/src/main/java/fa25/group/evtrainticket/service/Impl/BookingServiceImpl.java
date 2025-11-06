@@ -206,8 +206,26 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public Booking cancelBooking(Integer bookingId) {
-        // Implementation details...
-        return null;
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy booking với ID: " + bookingId));
+
+        if ("CANCELLED".equals(booking.getStatus())) {
+            throw new RuntimeException("Booking này đã bị hủy trước đó.");
+        }
+
+        booking.setStatus("CANCELLED");
+        List<Ticket> tickets = ticketRepository.findByBookingBookingID(bookingId);
+
+        for (Ticket ticket : tickets) {
+            ticket.setStatus("CANCELLED");
+            Seat seat = ticket.getSeat();
+            if (seat != null) {
+                seat.setIsAvailable(true);
+                seatRepository.save(seat); // Lưu lại trạng thái ghế
+            }
+        }
+
+        return bookingRepository.save(booking);
     }
 
     @Override

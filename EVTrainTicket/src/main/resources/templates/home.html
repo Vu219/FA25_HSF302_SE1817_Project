@@ -199,24 +199,24 @@
     <section id="destinations" class="content-section">
         <div class="container">
             <h2 class="section-title">Điểm đến nổi bật</h2>
-            <p class="section-subtitle">Khám phá vẻ đẹp đất nước qua những cung đường sắt.</p>
+            <p class="section-subtitle">Khám phá vẻ đẹp đất nước qua những chuyến hành trình.</p>
             <div class="destinations-grid">
                 <div class="destination-card">
-                    <img src="https://images.unsplash.com/photo-1559592413-716d4b5a8e7a?q=80&w=1974&auto=format&fit=crop" alt="Hội An">
+                    <img th:src="@{/images/danang.jpg}" alt="Hội An">
                     <div class="card-content">
                         <h3>Đà Nẵng - Hội An</h3>
                     </div>
                 </div>
                 <div class="destination-card">
-                    <img src="https://images.unsplash.com/photo-1595825224329-57b129993e17?q=80&w=1964&auto=format&fit=crop" alt="Sa Pa">
+                    <img th:src="@{/images/nhatrang.jpg}" alt="Nha Trang">
                     <div class="card-content">
-                        <h3>Sa Pa</h3>
+                        <h3>Nha Trang</h3>
                     </div>
                 </div>
                 <div class="destination-card">
-                    <img src="https://images.unsplash.com/photo-1583417319070-a3e723b40dc3?q=80&w=1974&auto=format&fit=crop" alt="Nha Trang">
+                    <img th:src="@{/images/sapa.jpg}" alt="Sa Pa">
                     <div class="card-content">
-                        <h3>Nha Trang</h3>
+                        <h3>Sa Pa</h3>
                     </div>
                 </div>
             </div>
@@ -224,8 +224,48 @@
     </section>
 </main>
 
-<footer>
-    <p>&copy; 2025 EVTrainTicket. All rights reserved.</p>
+<footer class="site-footer">
+    <div class="footer-container container">
+
+        <div class="footer-column">
+            <h3><i class="fas fa-train"></i> EVTrainTicket</h3>
+            <p>Trải nghiệm hành trình an toàn, tiện lợi và đáng nhớ cùng đường sắt Việt Nam. Đặt vé ngay hôm nay!</p>
+        </div>
+
+        <div class="footer-column">
+            <h4>Liên kết nhanh</h4>
+            <ul>
+                <li><a th:href="@{/home}"><i class="fas fa-home"></i> Trang chủ</a></li>
+                <li><a th:href="@{/booking/history}"><i class="fas fa-history"></i> Vé của tôi</a></li>
+                <li th:if="${session.user != null AND session.user.role == 'ADMIN'}">
+                    <a th:href="@{/admin}"><i class="fas fa-cogs"></i> Quản trị</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="footer-column">
+            <h4>Liên hệ</h4>
+            <ul>
+                <li><i class="fas fa-map-marker-alt"></i> Lô E2a-7 - Đường D1 - Khu Công Nghệ Cao - TP. Thủ Đức - TP. HCM</li>
+                <li><i class="fas fa-phone"></i> (024) 1234 5678</li>
+                <li><i class="fas fa-envelope"></i> support@evtrainticket.vn</li>
+            </ul>
+        </div>
+
+        <div class="footer-column">
+            <h4>Theo dõi chúng tôi</h4>
+            <div class="social-links">
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="Youtube"><i class="fab fa-youtube"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>&copy; 2025 EVTrainTicket. All rights reserved.</p>
+    </div>
 </footer>
 
 <script th:if="${schedules != null and not #lists.isEmpty(schedules)}">

@@ -278,14 +278,11 @@ header {
     font-size: 1.8em;
 }
 
-/* --- Footer --- */
-footer {
-    text-align: center;
-    padding: 40px 20px;
-    margin-top: 40px;
-    background-color: #212529;
-    color: #f8f9fa;
-}
+/* ========================================
+   KHỐI CSS CŨ CỦA FOOTER ĐÃ BỊ XÓA
+   (Đã được thay thế bằng .site-footer)
+========================================
+*/
 
 /* --- Login Page --- */
 .login-container {
@@ -673,4 +670,123 @@ footer {
         width: 100%;
         justify-content: center;
     }
+}
+
+/* ========================================
+   NEW FOOTER STYLES
+======================================== */
+
+.site-footer {
+    background-color: #212529;
+    color: #f8f9fa;
+    padding-top: 60px; /* Thêm padding */
+    margin-top: 40px;
+    line-height: 1.7; /* Đảm bảo dễ đọc */
+}
+
+.footer-container {
+    display: grid;
+    /* Tự động chia cột, tối thiểu 250px */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.footer-column {
+    padding-right: 20px;
+}
+
+.footer-column h3 {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.footer-column h4 {
+    font-size: 1.25em;
+    color: #ffffff;
+    margin-bottom: 25px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+/* Dấu gạch chân cho tiêu đề */
+.footer-column h4::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background-color: var(--secondary-color); /* Dùng màu xanh của theme */
+}
+
+.footer-column p {
+    color: #bdc3c7;
+}
+
+.footer-column ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-column ul li {
+    margin-bottom: 12px;
+}
+
+/* Căn chỉnh icon và text */
+.footer-column ul li a,
+.footer-column ul li {
+    color: #bdc3c7;
+    text-decoration: none;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.footer-column ul li a:hover {
+    color: var(--accent-color); /* Dùng màu vàng của theme */
+    padding-left: 5px; /* Hiệu ứng khi hover */
+}
+
+.social-links {
+    display: flex;
+    gap: 15px;
+}
+
+.social-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #343a40;
+    color: #f8f9fa;
+    font-size: 1.1em;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.social-links a:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-3px);
+}
+
+.footer-bottom {
+    text-align: center;
+    padding: 20px;
+    background-color: #1a1e21; /* Màu tối hơn 1 chút */
+    border-top: 1px solid #343a40;
+}
+
+.footer-bottom p {
+    margin: 0;
+    color: #aaa;
 }
