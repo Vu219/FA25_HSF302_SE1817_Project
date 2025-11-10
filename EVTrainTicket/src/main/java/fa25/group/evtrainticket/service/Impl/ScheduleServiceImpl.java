@@ -5,8 +5,10 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import fa25.group.evtrainticket.entity.Schedule;
+import fa25.group.evtrainticket.entity.Seat;
 import fa25.group.evtrainticket.entity.Station;
 import fa25.group.evtrainticket.repository.ScheduleRepository;
+import fa25.group.evtrainticket.repository.SeatRepository;
 import fa25.group.evtrainticket.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
 
@@ -15,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class ScheduleServiceImpl implements ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
+    private final SeatRepository seatRepository;
     private static final String STATUS_SCHEDULED = "Active";
 
     @Override
@@ -50,5 +53,10 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     public List<Schedule> findSchedulesByStationsAndDate(Station departureStation, Station arrivalStation, LocalDateTime startOfDay, LocalDateTime endOfDay) {
         return scheduleRepository.findByDepartureStationAndArrivalStationAndDepartureTimeBetween(departureStation, arrivalStation, startOfDay, endOfDay);
+    }
+
+    @Override
+    public List<Seat> getSeatsByScheduleId(Integer scheduleId) {
+        return seatRepository.findByCarriage_Train_Schedules_ScheduleID(scheduleId);
     }
 }

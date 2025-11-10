@@ -1,6 +1,7 @@
 package fa25.group.evtrainticket.service;
 
 import fa25.group.evtrainticket.entity.Schedule;
+import fa25.group.evtrainticket.entity.Seat;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,4 +17,6 @@ public interface ScheduleService {
     void deleteSchedule(Integer id);
 
     List<Schedule> findSchedulesByStationsAndDate(Station departureStation, Station arrivalStation, LocalDateTime startOfDay, LocalDateTime endOfDay);
+
+    List<Seat> getSeatsByScheduleId(Integer scheduleId);
 }

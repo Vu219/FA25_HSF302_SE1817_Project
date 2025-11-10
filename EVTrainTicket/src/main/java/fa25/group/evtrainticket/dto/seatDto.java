@@ -16,6 +16,10 @@ public class seatDto {
     private String seatNumber;
     private Boolean isAvailable;
     private Integer rowNumber;
+
+    // --- THÊM DÒNG NÀY ---
+    private Integer columnNum; // (Để HTML có thể chia cột)
+
     private String carriageNumber;
     private String seatTypeName;
     private BigDecimal price;
@@ -27,9 +31,18 @@ public class seatDto {
         this.seatNumber = seat.getSeatNumber();
         this.isAvailable = seat.getIsAvailable();
         this.rowNumber = seat.getRowNumber();
+
+        // --- THÊM DÒNG NÀY ---
+        // (Giả sử Entity Seat của bạn có phương thức getColumnNum())
+        this.columnNum = seat.getColumnNum();
+
         this.carriageNumber = seat.getCarriage().getCarriageNumber();
         this.seatTypeName = seat.getSeatType().getTypeName();
         this.price = finalPrice;
         this.status = seatStatus;
+    }
+
+    public Integer getColumnNum() {
+        return this.columnNum;
     }
 }
