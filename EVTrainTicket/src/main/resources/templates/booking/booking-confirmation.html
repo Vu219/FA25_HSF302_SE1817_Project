@@ -221,7 +221,7 @@
         button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
 
         try {
-            const response = await fetch(`/api/payment/complete/${bookingCode}`, {
+            const response = await fetch(`/api/booking/confirm-payment?bookingCode=${bookingCode}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

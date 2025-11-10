@@ -1,13 +1,121 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hoàn tất thanh toán</title>
-
+    <title>Thanh toán - EV Train Ticket</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
-    <link rel="stylesheet" th:href="@{/css/payment.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .payment-container {
+            max-width: 800px;
+            margin: 120px auto 40px auto;
+            padding: 20px;
+        }
+        .payment-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        .payment-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .payment-header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .booking-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #555;
+        }
+        .info-value {
+            color: #333;
+        }
+        .total-section {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .total-amount {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .payment-method {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .payment-method h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        .btn-complete {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-complete:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .success-page {
+            text-align: center;
+            padding: 40px;
+        }
+        .success-icon {
+            font-size: 4rem;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
 
@@ -16,90 +124,109 @@
         <a th:href="@{/home}" class="logo">
             <i class="fas fa-train"></i> EVTrainTicket
         </a>
-        <div class="nav-links" th:if="${session.user == null}">
-            <a th:href="@{/login}">Đăng nhập</a>
-            <a th:href="@{/register}">Đăng ký</a>
-        </div>
-
-        <div class="user-info" th:if="${session.user != null}">
-            <p>Xin chào, <strong th:text="${session.user.fullName}"></strong>!</p>
-
-            <a th:href="@{/booking/history}" class="admin-nav-link" style="background-color: #28a745; border-color: #28a745;">
-                <i class="fas fa-history"></i> Vé của tôi
-            </a>
-
-            <a th:if="${session.user.role == 'ADMIN'}" th:href="@{/admin}" class="admin-nav-link">
-                <i class="fas fa-cogs"></i> Quản trị
-            </a>
-
-            <form th:action="@{/logout}" method="get" style="margin: 0;">
-                <button type="submit">
-                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                </button>
-            </form>
+        <div class="nav-links">
+            <a th:href="@{/home}">Trang chủ</a>
+            <a th:href="@{/booking}">Đặt vé</a>
         </div>
     </nav>
 </header>
 
-<main>
-    <div class="payment-container">
-        <div class="header">
-            <h1>🎫 Hoàn tất thanh toán</h1>
-            <p>Kiểm tra thông tin và hoàn tất thanh toán của bạn</p>
+<main class="payment-container">
+    <!-- Error Alert -->
+    <div th:if="${error}" class="alert alert-danger">
+        <i class="fas fa-exclamation-circle"></i>
+        <strong>Lỗi:</strong> <span th:text="${error}"></span>
+    </div>
+
+    <!-- Success Page -->
+    <div th:if="${success}" class="payment-card success-page">
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h1>Đặt vé thành công!</h1>
+        <p style="font-size: 1.2rem; margin: 20px 0;">
+            Mã đặt vé của bạn: <strong th:text="${bookingCode}">-</strong>
+        </p>
+        <div class="alert alert-success" style="text-align: left;">
+            <p><i class="fas fa-info-circle"></i> Vui lòng giữ mã đặt vé này và mang theo tiền mặt khi lên tàu.</p>
+            <p style="margin-top: 10px;"><i class="fas fa-money-bill-wave"></i> Thanh toán tiền mặt khi xuất trình vé.</p>
+        </div>
+        <a th:href="@{/home}" class="btn-complete" style="display: inline-block; text-decoration: none; margin-top: 20px;">
+            <i class="fas fa-home"></i> Về trang chủ
+        </a>
+    </div>
+
+    <!-- Payment Page -->
+    <div th:if="${success == null and booking != null}" class="payment-card">
+        <div class="payment-header">
+            <h1><i class="fas fa-credit-card"></i> Thanh toán vé tàu</h1>
+            <p>Vui lòng kiểm tra thông tin và hoàn tất đặt vé</p>
         </div>
 
-        <div class="booking-summary" th:if="${booking}">
-            <h3>📋 Tóm tắt vé</h3>
+        <!-- Booking Information -->
+        <div class="booking-info">
+            <h3 style="margin-bottom: 15px;">Thông tin đặt vé</h3>
             <div class="info-row">
-                <span class="info-label">Mã vé:</span>
-                <span class="info-value" th:text="${bookingCode}">BK12345678</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Hành khách:</span>
-                <span class="info-value" th:text="${booking.user.fullName}">John Doe</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Email:</span>
-                <span class="info-value" th:text="${booking.user.email}">john@example.com</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">SĐT:</span>
-                <span class="info-value" th:text="${booking.user.phone}">1234567890</span>
+                <span class="info-label">Mã đặt vé:</span>
+                <span class="info-value" th:text="${bookingCode}">-</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Số lượng vé:</span>
-                <span class="info-value" th:text="${booking.tickets.size()}">2</span>
+                <span class="info-value" th:text="${booking.tickets != null ? booking.tickets.size() : 0}">-</span>
             </div>
             <div class="info-row">
                 <span class="info-label">Trạng thái:</span>
-                <span class="info-value" th:text="${booking.status}">PENDING</span>
+                <span class="info-value" th:text="${booking.status}">-</span>
             </div>
         </div>
 
-        <div class="total-amount" th:if="${booking}">
-            Tổng cộng: <span th:text="${#numbers.formatDecimal(booking.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></span>
+        <!-- Total Amount -->
+        <div class="total-section">
+            <div>Tổng tiền thanh toán</div>
+            <div class="total-amount" th:text="${#numbers.formatCurrency(booking.totalAmount)}">0 VNĐ</div>
         </div>
 
-        <div th:if="${booking == null}" class="error" style="display: block;">
-            <h3>❌ Không tìm thấy vé</h3>
-            <p>Không tìm thấy thông tin vé trong phiên làm việc. Vui lòng <a href="/home">quay lại trang chủ</a> và đặt lại.</p>
+        <!-- Payment Method -->
+        <div class="payment-method">
+            <h3><i class="fas fa-money-bill-wave"></i> Phương thức thanh toán</h3>
+            <p><strong>Thanh toán tiền mặt khi lên tàu</strong></p>
+            <p style="margin: 10px 0; color: #856404;">
+                <i class="fas fa-info-circle"></i>
+                Vui lòng mang theo tiền mặt và xuất trình mã vé khi lên tàu
+            </p>
         </div>
 
-        <div th:if="${booking != null}">
-            <button class="payment-button" id="paymentBtn">
-                💳 Hoàn tất thanh toán
+        <!-- Complete Payment Form -->
+        <form method="post" th:action="@{/payment/complete-cash}">
+            <input type="hidden" name="bookingCode" th:value="${bookingCode}"/>
+            <button type="submit" class="btn-complete">
+                <i class="fas fa-check-circle"></i> Xác nhận đặt vé
             </button>
-        </div>
+        </form>
 
-        <div id="result" class="result"></div>
+        <p style="text-align: center; margin-top: 20px; color: #666; font-size: 0.9rem;">
+            <i class="fas fa-shield-alt"></i>
+            Thông tin của bạn được bảo mật tuyệt đối
+        </p>
+    </div>
+
+    <!-- No Booking Found -->
+    <div th:if="${success == null and booking == null}" class="payment-card">
+        <div class="alert alert-danger">
+            <h3><i class="fas fa-exclamation-triangle"></i> Không tìm thấy thông tin đặt vé</h3>
+            <p>Phiên làm việc đã hết hạn hoặc không có thông tin đặt vé.</p>
+            <p style="margin-top: 15px;">
+                <a th:href="@{/booking}" class="btn-complete" style="display: inline-block; padding: 10px 20px; text-decoration: none;">
+                    Quay lại đặt vé
+                </a>
+            </p>
+        </div>
     </div>
 </main>
 
-<footer>
+<footer style="text-align: center; padding: 20px; background: #f8f9fa; margin-top: 40px;">
     <p>&copy; 2025 EVTrainTicket. All rights reserved.</p>
 </footer>
 
-<script th:src="@{/js/payment.js}"></script>
 </body>
 </html>
-

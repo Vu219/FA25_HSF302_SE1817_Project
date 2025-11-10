@@ -103,6 +103,7 @@ public class SeatServiceImpl implements SeatService {
         dto.setSeatNumber(seat.getSeatNumber());
         dto.setIsAvailable(seat.getIsAvailable());
         dto.setRowNumber(seat.getRowNumber());
+        dto.setColumnNum(seat.getColumnNum());
         dto.setCarriageNumber(seat.getCarriage().getCarriageNumber());
         dto.setSeatTypeName(seat.getSeatType().getTypeName());
         return dto;

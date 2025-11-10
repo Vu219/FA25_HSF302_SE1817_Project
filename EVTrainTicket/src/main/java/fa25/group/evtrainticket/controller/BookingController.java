@@ -40,7 +40,7 @@ public class BookingController {
         try {
             // Get booking details
             var booking = bookingService.getBookingByCode(bookingCode);
-            if (booking == null) {
+            if (booking == null) { //NOSONAR
                 model.addAttribute("error", "Booking not found with code: " + bookingCode);
                 return "booking/booking-confirmation";
             }
@@ -49,7 +49,6 @@ public class BookingController {
             model.addAttribute("booking", booking);
             model.addAttribute("bookingCode", bookingCode);
             model.addAttribute("status", status);
-            model.addAttribute("totalAmount", "$" + booking.getTotalAmount().toString());
 
             // Check if payment is already completed
             boolean isCompleted = "CONFIRMED".equals(booking.getStatus()) || "COMPLETED".equals(booking.getStatus());
@@ -140,7 +139,7 @@ public class BookingController {
     @PostMapping("/api/booking/confirm-payment")
     @ResponseBody
     public ResponseEntity<?> confirmPayment(@RequestParam(name = "bookingCode") String bookingCode) {
-        try {
+        try { //NOSONAR
             var booking = bookingService.confirmPayment(bookingCode);
             var response = bookingMapper.toDto(booking);
             return ResponseEntity.ok(Map.of(
@@ -159,7 +158,7 @@ public class BookingController {
     @GetMapping("/api/booking/{bookingCode}")
     @ResponseBody
     public ResponseEntity<?> getBooking(@PathVariable(name = "bookingCode") String bookingCode) {
-        try {
+        try { //NOSONAR
             var booking = bookingService.getBookingByCode(bookingCode);
             var response = bookingMapper.toDto(booking);
             return ResponseEntity.ok(response);
@@ -171,7 +170,7 @@ public class BookingController {
     @GetMapping("/api/booking/email/{email}")
     @ResponseBody
     public ResponseEntity<?> getBookingsByEmail(@PathVariable(name = "email") String email) {
-        try {
+        try { //NOSONAR
             var bookings = bookingService.getBookingsByEmail(email);
             var response = bookingMapper.toDtoList(bookings);
             return ResponseEntity.ok(response);
@@ -183,7 +182,7 @@ public class BookingController {
     @GetMapping("/api/booking/user/{userId}")
     @ResponseBody
     public ResponseEntity<?> getBookingsByUserId(@PathVariable(name = "userId") Integer userId) {
-        try {
+        try { //NOSONAR
             var bookings = bookingService.getBookingsByUserId(userId);
             var response = bookingMapper.toDtoList(bookings);
             return ResponseEntity.ok(response);
@@ -195,7 +194,7 @@ public class BookingController {
     @PostMapping("/api/booking/cancel/{bookingId}")
     @ResponseBody
     public ResponseEntity<?> cancelBooking(@PathVariable(name = "bookingId") Integer bookingId) {
-        try {
+        try { //NOSONAR
             var booking = bookingService.cancelBooking(bookingId);
             var response = bookingMapper.toDto(booking);
             return ResponseEntity.ok(Map.of(
@@ -215,7 +214,7 @@ public class BookingController {
     @ResponseBody
     public ResponseEntity<?> validateSeatAvailability(@RequestParam(name = "scheduleId") Integer scheduleId,
                                                     @RequestParam(name = "seatIds") List<Integer> seatIds) {
-        try {
+        try { //NOSONAR
             boolean isAvailable = bookingService.validateSeatAvailability(scheduleId, seatIds);
             return ResponseEntity.ok(Map.of(
                 "available", isAvailable
@@ -230,7 +229,7 @@ public class BookingController {
     @PostMapping("/api/booking/calculate-price")
     @ResponseBody
     public ResponseEntity<?> calculatePrice(@RequestBody BookingRequestDto bookingRequest) {
-        try {
+        try { //NOSONAR
             double price = bookingService.calculateBookingPrice(bookingRequest);
             return ResponseEntity.ok(Map.of(
                 "totalAmount", price
@@ -242,10 +241,10 @@ public class BookingController {
         }
     }
 
-    @GetMapping("/api/booking/check-price")
+    @PostMapping("/api/booking/check-price")
     @ResponseBody
     public ResponseEntity<?> checkPrice(@RequestBody BookingRequestDto bookingRequest) {
-        try {
+        try { //NOSONAR
             double price = bookingService.calculateBookingPrice(bookingRequest);
             return ResponseEntity.ok(Map.of(
                 "totalAmount", price

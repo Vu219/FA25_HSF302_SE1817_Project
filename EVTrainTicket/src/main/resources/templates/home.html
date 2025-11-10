@@ -222,6 +222,28 @@
             </div>
         </div>
     </section>
+
+    <!-- Development Test Links (Remove in production) -->
+    <section class="content-section container" style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 40px auto;">
+        <h3 style="color: #dc3545;"><i class="fas fa-bug"></i> Test Links (Development Only)</h3>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px;">
+            <a href="/schedules" class="btn btn-info">
+                <i class="fas fa-list"></i> Xem tất cả lịch trình
+            </a>
+            <a href="/booking?scheduleId=1" class="btn btn-success">
+                <i class="fas fa-ticket-alt"></i> Test Booking (Schedule 1)
+            </a>
+            <a href="/booking?scheduleId=2" class="btn btn-success">
+                <i class="fas fa-ticket-alt"></i> Test Booking (Schedule 2)
+            </a>
+            <a href="/seat-layout?scheduleId=1" class="btn btn-warning">
+                <i class="fas fa-th"></i> Test Seat Layout (Schedule 1)
+            </a>
+            <a href="/api/schedules/1/seats" class="btn btn-secondary" target="_blank">
+                <i class="fas fa-code"></i> API: Seat Data (Schedule 1)
+            </a>
+        </div>
+    </section>
 </main>
 
 <footer>

@@ -5,176 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thông tin hành khách - EV Train Ticket</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/booking.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
-    <style>
-        body { background-color: #f4f7fa; }
-        .passenger-container {
-            max-width: 900px;
-            margin: 120px auto 40px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .page-header {
-            text-align: center;
-            color: #333;
-            border-bottom: 2px solid var(--secondary-color);
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-        .page-header h2 { margin: 0; }
-        .page-header p { margin: 10px 0 0 0; color: #666; }
-
-        .schedule-summary {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 4px;
-            margin-bottom: 30px;
-        }
-        .schedule-summary h3 { margin-top: 0; color: #333; }
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin: 10px 0;
-            padding: 8px 0;
-            border-bottom: 1px solid #dee2e6;
-        }
-        .info-label { font-weight: 600; color: #666; }
-        .info-value { color: #333; }
-
-        .passenger-form {
-            margin-top: 30px;
-        }
-        .form-section {
-            margin-bottom: 30px;
-            padding: 20px;
-            background-color: #f8f9fa;
-            border-radius: 4px;
-        }
-        .form-section h4 {
-            margin-top: 0;
-            margin-bottom: 20px;
-            color: #333;
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 10px;
-        }
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 15px;
-        }
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-        .form-group label {
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: #333;
-        }
-        .form-group label span.required {
-            color: red;
-        }
-        .form-group input,
-        .form-group select {
-            padding: 10px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25);
-        }
-
-        .seats-info {
-            background-color: #e7f3ff;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
-        .seats-info h5 {
-            margin-top: 0;
-            color: #333;
-        }
-        .seats-info p {
-            margin: 5px 0;
-            color: #666;
-        }
-
-        .action-buttons {
-            display: flex;
-            justify-content: space-between;
-            gap: 20px;
-            margin-top: 30px;
-        }
-        .btn {
-            flex: 1;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .btn-back {
-            background-color: #6c757d;
-            color: white;
-        }
-        .btn-back:hover {
-            background-color: #5a6268;
-        }
-        .btn-submit {
-            background-color: #28a745;
-            color: white;
-        }
-        .btn-submit:hover {
-            background-color: #218838;
-        }
-        .btn:disabled {
-            background-color: #6c757d;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        .error-message {
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
-            padding: 12px 20px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            display: none;
-        }
-        .success-message {
-            background-color: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
-            padding: 12px 20px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            .passenger-container {
-                margin: 80px 20px 20px 20px;
-                padding: 20px;
-            }
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
 </head>
 <body>
 
@@ -183,212 +15,137 @@
         <a th:href="@{/home}" class="logo">
             <i class="fas fa-train"></i> EVTrainTicket
         </a>
-        <div class="nav-links" th:if="${session.user == null}">
-            <a th:href="@{/login}">Đăng nhập</a>
-            <a th:href="@{/register}">Đăng ký</a>
-        </div>
-
-        <div class="user-info" th:if="${session.user != null}">
-            <p>Xin chào, <strong th:text="${session.user.fullName}"></strong>!</p>
-
-            <a th:href="@{/booking/history}" class="admin-nav-link" style="background-color: #28a745; border-color: #28a745;">
-                <i class="fas fa-history"></i> Vé của tôi
-            </a>
-
-            <a th:if="${session.user.role == 'ADMIN'}" th:href="@{/admin}" class="admin-nav-link">
-                <i class="fas fa-cogs"></i> Quản trị
-            </a>
-
-            <form th:action="@{/logout}" method="get" style="margin: 0;">
-                <button type="submit">
-                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                </button>
-            </form>
+        <div class="nav-links">
+            <a th:href="@{/home}">Trang chủ</a>
+            <a th:href="@{/booking}">Đặt vé</a>
         </div>
     </nav>
 </header>
 
-<main>
-    <div class="passenger-container">
-        <div class="page-header">
-            <h2><i class="fas fa-user-edit"></i> Thông tin hành khách</h2>
-            <p>Vui lòng điền đầy đủ thông tin để hoàn tất đặt vé</p>
+<main class="booking-page-container">
+    <div class="booking-card">
+        <div class="booking-card-header">
+            <h2><i class="fas fa-user"></i> Thông tin hành khách</h2>
         </div>
 
-        <div id="error-message" class="error-message"></div>
-        <div id="success-message" class="success-message"></div>
+        <div class="booking-card-body">
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <strong>Đã chọn ghế thành công!</strong>
+                <span>Bạn đã chọn <strong th:text="${selectedSeatsCount ?: 0}"></strong> ghế.</span>
+            </div>
 
-        <!-- Schedule Summary -->
-        <div class="schedule-summary" th:if="${schedule != null}">
-            <h3><i class="fas fa-info-circle"></i> Thông tin chuyến tàu</h3>
-            <div class="info-row">
-                <span class="info-label">Tàu:</span>
-                <span class="info-value" th:text="${schedule.train.trainName}">VN123</span>
+            <div class="schedule-info" th:if="${schedule}">
+                <h4>Thông tin chuyến tàu</h4>
+                <div class="info-row">
+                    <strong>Tàu:</strong>
+                    <span th:text="${schedule.train.trainName}">-</span>
+                </div>
+                <div class="info-row">
+                    <strong>Tuyến:</strong>
+                    <span th:text="${schedule.departureStation.name + ' → ' + schedule.arrivalStation.name}">-</span>
+                </div>
+                <div class="info-row">
+                    <strong>Thời gian:</strong>
+                    <span th:text="${#temporals.format(schedule.departureTime, 'dd/MM/yyyy HH:mm')}">-</span>
+                </div>
             </div>
-            <div class="info-row">
-                <span class="info-label">Tuyến:</span>
-                <span class="info-value">
-                    <span th:text="${schedule.departureStation.name}">Hà Nội</span>
-                    <i class="fas fa-arrow-right" style="margin: 0 10px;"></i>
-                    <span th:text="${schedule.arrivalStation.name}">TP. Hồ Chí Minh</span>
-                </span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Khởi hành:</span>
-                <span class="info-value" th:text="${#temporals.format(schedule.departureTime, 'dd/MM/yyyy HH:mm')}">01/01/2025 08:00</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Số ghế đã chọn:</span>
-                <span class="info-value" th:text="${selectedSeatsCount}">2</span>
-            </div>
+
+            <form method="post" th:action="@{/booking/passenger-info}" style="margin-top: 30px;">
+                <input type="hidden" name="scheduleId" th:value="${schedule?.scheduleID}"/>
+                <div th:each="seatId : ${seatIds}">
+                    <input type="hidden" name="seatIds" th:value="${seatId}"/>
+                </div>
+
+                <h4>Thông tin liên hệ</h4>
+                <div class="form-group">
+                    <label for="contactName">Họ và tên *</label>
+                    <input type="text" id="contactName" name="contactName" required class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="contactEmail">Email *</label>
+                    <input type="email" id="contactEmail" name="contactEmail" required class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="contactPhone">Số điện thoại *</label>
+                    <input type="tel" id="contactPhone" name="contactPhone" required class="form-control">
+                </div>
+
+                <div class="booking-navigation">
+                    <a th:href="@{/booking(scheduleId=${schedule?.scheduleID})}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Quay lại chọn ghế
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        Tiếp tục thanh toán <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </form>
         </div>
-
-        <!-- Passenger Form -->
-        <form id="passengerForm" class="passenger-form">
-            <div class="form-section">
-                <h4><i class="fas fa-user"></i> Thông tin liên hệ</h4>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="fullName">Họ và tên <span class="required">*</span></label>
-                        <input type="text" id="fullName" name="fullName" required
-                               placeholder="Nguyễn Văn A"
-                               th:value="${session.user != null ? session.user.fullName : ''}">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="email">Email <span class="required">*</span></label>
-                        <input type="email" id="email" name="email" required
-                               placeholder="email@example.com"
-                               th:value="${session.user != null ? session.user.email : ''}">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="phone">Số điện thoại <span class="required">*</span></label>
-                        <input type="tel" id="phone" name="phone" required
-                               placeholder="0912345678"
-                               pattern="[0-9]{10,11}"
-                               th:value="${session.user != null ? session.user.phone : ''}">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="identityCard">CMND/CCCD</label>
-                        <input type="text" id="identityCard" name="identityCard"
-                               placeholder="001234567890">
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-section">
-                <h4><i class="fas fa-sticky-note"></i> Ghi chú (không bắt buộc)</h4>
-                <div class="form-group full-width">
-                    <label for="notes">Ghi chú thêm:</label>
-                    <input type="text" id="notes" name="notes"
-                           placeholder="Yêu cầu đặc biệt hoặc ghi chú khác...">
-                </div>
-            </div>
-
-            <!-- Hidden fields -->
-            <input type="hidden" id="scheduleId" name="scheduleId" th:value="${schedule != null ? schedule.scheduleID : ''}">
-            <input type="hidden" id="seatIds" name="seatIds" th:value="${seatIds != null ? #strings.listJoin(seatIds, ','): ''}">
-
-            <!-- Action buttons -->
-            <div class="action-buttons">
-                <button type="button" class="btn btn-back" onclick="goBack()">
-                    <i class="fas fa-arrow-left"></i> Quay lại
-                </button>
-                <button type="submit" class="btn btn-submit" id="submitBtn">
-                    <i class="fas fa-check"></i> Xác nhận và thanh toán
-                </button>
-            </div>
-        </form>
     </div>
 </main>
 
-<script th:inline="javascript">
-    const scheduleId = /*[[${schedule != null ? schedule.scheduleID : 0}]]*/ 0;
-    const seatIdsParam = /*[[${seatIds != null ? #strings.listJoin(seatIds, ',') : ''}]]*/ '';
+<footer>
+    <p>&copy; 2025 EVTrainTicket. All rights reserved.</p>
+</footer>
 
-    function goBack() {
-        window.location.href = `/booking?scheduleId=${scheduleId}`;
-    }
+<style>
+.form-group {
+    margin-bottom: 20px;
+}
 
-    function showError(message) {
-        const errorDiv = document.getElementById('error-message');
-        errorDiv.textContent = message;
-        errorDiv.style.display = 'block';
-        document.getElementById('success-message').style.display = 'none';
-        window.scrollTo(0, 0);
-    }
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+}
 
-    function showSuccess(message) {
-        const successDiv = document.getElementById('success-message');
-        successDiv.textContent = message;
-        successDiv.style.display = 'block';
-        document.getElementById('error-message').style.display = 'none';
-        window.scrollTo(0, 0);
-    }
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
 
-    document.getElementById('passengerForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
+.form-control:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
 
-        const submitBtn = document.getElementById('submitBtn');
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+.schedule-info {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
 
-        try {
-            const formData = new FormData(e.target);
-            const seatIdsArray = formData.get('seatIds').split(',').map(id => parseInt(id.trim()));
+.schedule-info h4 {
+    margin: 0 0 15px 0;
+    color: #495057;
+}
 
-            const bookingRequest = {
-                scheduleId: parseInt(formData.get('scheduleId')),
-                selectedSeatIds: seatIdsArray,
-                userFullName: formData.get('fullName'),
-                userEmail: formData.get('email'),
-                userPhone: formData.get('phone'),
-                notes: formData.get('notes') || null
-            };
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 8px 0;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
 
-            // Create pending booking
-            const response = await fetch('/api/booking/create-pending', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(bookingRequest)
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || 'Đặt vé thất bại');
-            }
-
-            const booking = await response.json();
-
-            // Redirect to payment page
-            window.location.href = `/payment?bookingCode=${booking.bookingCode}`;
-
-        } catch (error) {
-            console.error('Booking error:', error);
-            showError(error.message || 'Có lỗi xảy ra khi đặt vé. Vui lòng thử lại.');
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-check"></i> Xác nhận và thanh toán';
-        }
-    });
-
-    // Validate phone number on input
-    document.getElementById('phone').addEventListener('input', function(e) {
-        this.value = this.value.replace(/[^0-9]/g, '');
-    });
-
-    // Validate identity card on input
-    document.getElementById('identityCard').addEventListener('input', function(e) {
-        this.value = this.value.replace(/[^0-9]/g, '');
-    });
-</script>
+.booking-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
+}
+</style>
 
 </body>
 </html>
-

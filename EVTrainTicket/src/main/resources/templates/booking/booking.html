@@ -46,29 +46,176 @@
         <div class="booking-card">
             <div class="booking-card-header">
                 <h4><i class="fas fa-chair"></i> Chọn chỗ ngồi của bạn</h4>
+                <div class="header-actions">
+                    <a href="#" id="view-seat-layout-btn" class="btn btn-outline-light btn-sm" style="display: none;">
+                        <i class="fas fa-th"></i> Xem sơ đồ ghế
+                    </a>
+                </div>
             </div>
 
             <div class="booking-card-body">
-                <div id="booking-error" class="alert alert-danger" style="display: none;">
+                <!-- Flash Messages -->
+                <div th:if="${error}" class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span th:text="${error}"></span>
+                </div>
+
+                <div th:if="${message}" class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span th:text="${message}"></span>
+                </div>
+
+                <div th:if="${error}" id="booking-error" class="alert alert-danger">
                     <i class="fas fa-exclamation-circle"></i>
                     <div>
                         <strong>Lỗi tải chuyến tàu!</strong>
-                        <p id="booking-error-message" style="margin: 0;">Không tìm thấy thông tin chuyến tàu. Vui lòng quay lại trang chủ và tìm kiếm lại.</p>
+                        <p id="booking-error-message" style="margin: 0;" th:text="${error}">Không tìm thấy thông tin chuyến tàu. Vui lòng quay lại trang chủ và tìm kiếm lại.</p>
                         <a th:href="@{/home}" class="btn btn-primary" style="margin-top: 10px;">Về trang chủ</a>
                     </div>
                 </div>
 
-                <div id="booking-content" style="display: none;">
-                    <!-- Chú thích ghế -->
+                <div th:unless="${error}" id="booking-content">
+                    <!-- Seat Legend -->
                     <div class="seat-legend">
-                        <div><span class="seat available"></span> Trống</div>
-                        <div><span class="seat selected"></span> Đang chọn</div>
+                        <div><span class="seat available"></span> Có thể chọn</div>
+                        <div><span class="seat selected"></span> Đã chọn</div>
                         <div><span class="seat occupied"></span> Đã đặt</div>
                     </div>
 
-                    <!-- Container cho các toa tàu -->
-                    <div id="carriages-container">
-                        <p class="text-center">Đang tải sơ đồ ghế...</p>
+                    <!-- ALWAYS RENDERED: Seat selection elements outside ALL conditionals -->
+                    <div class="selection-summary" style="background: #f8f9fa; padding: 15px; margin: 15px 0; border-radius: 8px;">
+                        <div id="selected-seats-info">
+                            <p><strong>Ghế đã chọn:</strong> <span id="selected-count">0</span>/4 ghế</p>
+                            <div id="selected-seats-list">Vui lòng chọn ghế để tiếp tục</div>
+                        </div>
+                    </div>
+
+                    <!-- Show message if no schedule selected -->
+                    <div th:if="${scheduleId == null}" class="text-center" style="padding: 40px;">
+                        <i class="fas fa-train" style="font-size: 3rem; color: #6c757d; margin-bottom: 20px;"></i>
+                        <h4>Vui lòng chọn chuyến tàu</h4>
+                        <p>Hãy chọn một chuyến tàu từ <a th:href="@{/schedules}">danh sách lịch trình</a> để xem sơ đồ ghế</p>
+                    </div>
+
+                    <!-- Seat Layout Display with Selection -->
+                    <div th:if="${scheduleId != null}" id="carriages-container">
+                        <!-- Form always exists when scheduleId is present -->
+                        <form id="seat-selection-form" method="post" th:action="@{/booking/select-seats}">
+                            <input type="hidden" name="scheduleId" th:value="${scheduleId}"/>
+
+                            <!-- Show carriage data if available -->
+                            <div th:if="${carriageLayouts != null}">
+                                <div th:each="carriage : ${carriageLayouts}" class="carriage-section">
+                                    <h6 th:text="${carriage.carriageNumber + ' - ' + carriage.carriageTypeName + ' (' + carriage.totalSeats + ' ghế)'}">
+                                        Toa 1 - Loại toa (60 ghế)
+                                    </h6>
+
+                                    <!-- Seat Map for this carriage -->
+                                    <div class="seat-map">
+                                        <div th:each="rowEntry : ${carriage.seatsByRow}" class="seat-row-container">
+                                            <div class="row-label" th:text="'Hàng ' + ${rowEntry.key}">Hàng 1</div>
+                                            <div class="seat-row">
+                                                <!-- Left side seats (columns 1-2) -->
+                                                <div class="seat-group">
+                                                    <div th:each="seat : ${rowEntry.value}"
+                                                         th:if="${seat.columnNum <= 2}"
+                                                         class="seat-container">
+
+                                                        <!-- Available seat as selectable checkbox -->
+                                                        <div th:if="${seat.status.name() == 'AVAILABLE'}" class="seat-input-container">
+                                                            <input type="checkbox"
+                                                                   th:id="'seat-' + ${seat.seatID}"
+                                                                   name="selectedSeats"
+                                                                   th:value="${seat.seatID}"
+                                                                   th:attr="data-seat-number=${seat.seatNumber},
+                                                                           data-price=${seat.price},
+                                                                           data-carriage=${seat.carriageNumber},
+                                                                           data-seat-type=${seat.seatTypeName}"
+                                                                   class="seat-checkbox"/>
+                                                            <label th:for="'seat-' + ${seat.seatID}"
+                                                                   class="seat available selectable"
+                                                                   th:title="${seat.seatNumber + ' - ' + seat.seatTypeName + ' - ' + #numbers.formatCurrency(seat.price)}">
+                                                                <span th:text="${seat.seatNumber}">01</span>
+                                                                <span class="seat-price" th:text="${#numbers.formatCurrency(seat.price)}"></span>
+                                                            </label>
+                                                        </div>
+
+                                                        <!-- Booked seat (non-selectable) -->
+                                                        <div th:if="${seat.status.name() == 'BOOKED'}" class="seat booked"
+                                                             th:title="${seat.seatNumber + ' - Đã đặt'}">
+                                                            <span th:text="${seat.seatNumber}">01</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Aisle -->
+                                                <div class="aisle"></div>
+
+                                                <!-- Right side seats (columns 3-4) -->
+                                                <div class="seat-group">
+                                                    <div th:each="seat : ${rowEntry.value}"
+                                                         th:if="${seat.columnNum > 2}"
+                                                         class="seat-container">
+
+                                                        <!-- Available seat as selectable checkbox -->
+                                                        <div th:if="${seat.status.name() == 'AVAILABLE'}" class="seat-input-container">
+                                                            <input type="checkbox"
+                                                                   th:id="'seat-' + ${seat.seatID}"
+                                                                   name="selectedSeats"
+                                                                   th:value="${seat.seatID}"
+                                                                   th:attr="data-seat-number=${seat.seatNumber},
+                                                                           data-price=${seat.price},
+                                                                           data-carriage=${seat.carriageNumber},
+                                                                           data-seat-type=${seat.seatTypeName}"
+                                                                   class="seat-checkbox"/>
+                                                            <label th:for="'seat-' + ${seat.seatID}"
+                                                                   class="seat available selectable"
+                                                                   th:title="${seat.seatNumber + ' - ' + seat.seatTypeName + ' - ' + #numbers.formatCurrency(seat.price)}">
+                                                                <span th:text="${seat.seatNumber}">03</span>
+                                                                <span class="seat-price" th:text="${#numbers.formatCurrency(seat.price)}"></span>
+                                                            </label>
+                                                        </div>
+
+                                                        <!-- Booked seat (non-selectable) -->
+                                                        <div th:if="${seat.status.name() == 'BOOKED'}" class="seat booked"
+                                                             th:title="${seat.seatNumber + ' - Đã đặt'}">
+                                                            <span th:text="${seat.seatNumber}">03</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Submit button inside form -->
+                            <div class="form-actions" style="text-align: center; margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                                <p style="margin-bottom: 15px; color: #666;">
+                                    <i class="fas fa-info-circle"></i>
+                                    Chọn ghế và nhấn "Tiếp tục" để đi đến bước nhập thông tin hành khách
+                                </p>
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-arrow-right"></i> Tiếp tục đặt vé
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Show debug info if carriageLayouts is null -->
+                        <div th:if="${carriageLayouts == null}" style="background: #ffebee; padding: 15px; margin: 10px 0; border: 1px solid #f44336;">
+                            <h4 style="color: #d32f2f;">⚠️ No Carriage Data Found</h4>
+                            <p><strong>scheduleId:</strong> <span th:text="${scheduleId}">null</span></p>
+                            <p><strong>schedule object:</strong> <span th:text="${schedule != null ? 'exists' : 'null'}">null</span></p>
+                            <p><strong>carriageLayouts:</strong> null</p>
+                        </div>
+                    </div>
+
+                    <!-- Loading message when schedule selected but no carriage data -->
+                    <div th:if="${scheduleId != null and carriageLayouts == null}" class="text-center" style="padding: 40px;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <p style="margin-top: 15px;">Đang tải sơ đồ ghế...</p>
                     </div>
                 </div>
             </div>
@@ -86,27 +233,43 @@
                 <div class="schedule-info-box">
                     <div class="info-row">
                         <strong>Chuyến tàu:</strong>
-                        <span id="train-name">-</span>
+                        <span th:text="${schedule != null ? schedule.train.trainName : '-'}">-</span>
                     </div>
                     <div class="info-row">
                         <strong>Từ:</strong>
-                        <span id="departure-station">-</span>
+                        <span th:text="${schedule != null ? schedule.departureStation.name : '-'}">-</span>
                     </div>
                     <div class="info-row">
                         <strong>Đến:</strong>
-                        <span id="arrival-station">-</span>
+                        <span th:text="${schedule != null ? schedule.arrivalStation.name : '-'}">-</span>
                     </div>
                     <div class="info-row">
                         <strong>Khởi hành:</strong>
-                        <span id="departure-time">-</span>
+                        <span th:text="${schedule != null ? #temporals.format(schedule.departureTime, 'dd/MM/yyyy HH:mm') : '-'}">-</span>
                     </div>
                     <div class="info-row">
                         <strong>Đến nơi:</strong>
-                        <span id="arrival-time">-</span>
+                        <span th:text="${schedule != null ? #temporals.format(schedule.arrivalTime, 'dd/MM/yyyy HH:mm') : '-'}">-</span>
                     </div>
                     <div class="info-row">
                         <strong>Giá cơ bản:</strong>
-                        <span id="base-price">-</span> VNĐ
+                        <span th:text="${schedule != null ? #numbers.formatCurrency(schedule.basePrice) + ' VNĐ' : '-'}">-</span>
+                    </div>
+                    <!-- Show seat statistics when available -->
+                    <div th:if="${totalSeats != null}">
+                        <hr>
+                        <div class="info-row">
+                            <strong>Tổng ghế:</strong>
+                            <span th:text="${totalSeats}">0</span>
+                        </div>
+                        <div class="info-row">
+                            <strong>Còn trống:</strong>
+                            <span th:text="${availableSeats}" style="color: #28a745; font-weight: bold;">0</span>
+                        </div>
+                        <div class="info-row">
+                            <strong>Đã đặt:</strong>
+                            <span th:text="${bookedSeats}" style="color: #dc3545; font-weight: bold;">0</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -121,11 +284,11 @@
                 <div id="summary-content">
                     <div class="summary-item">
                         <strong>Chuyến tàu</strong>
-                        <span id="summary-train-name">Vui lòng chọn chuyến tàu...</span>
+                        <span id="summary-train-name" th:text="${schedule != null ? schedule.train.trainName : 'Vui lòng chọn chuyến tàu...'}">Vui lòng chọn chuyến tàu...</span>
                     </div>
                     <div class="summary-item">
                         <strong>Hành trình</strong>
-                        <span id="summary-route">-</span>
+                        <span id="summary-route" th:text="${schedule != null ? (schedule.departureStation.name + ' → ' + schedule.arrivalStation.name) : '-'}">-</span>
                     </div>
                     <div class="summary-item">
                         <strong>Ghế đã chọn</strong>
@@ -156,6 +319,7 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-<script th:src="@{/js/booking.js}"></script>
+
+
 </body>
 </html>

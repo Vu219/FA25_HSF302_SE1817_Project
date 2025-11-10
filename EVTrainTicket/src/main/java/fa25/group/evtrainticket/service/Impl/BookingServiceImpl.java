@@ -5,13 +5,14 @@ import fa25.group.evtrainticket.dto.BookingRequestDto;
 import fa25.group.evtrainticket.entity.*;
 import fa25.group.evtrainticket.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
+import fa25.group.evtrainticket.service.TicketService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class BookingServiceImpl implements BookingService {
@@ -30,6 +31,12 @@ public class BookingServiceImpl implements BookingService {
 
     @Autowired
     private TicketRepository ticketRepository;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Autowired
+    private TicketService ticketService;
 
     @Override
     public Booking findByBookingCode(String bookingCode) {
@@ -166,12 +173,33 @@ public class BookingServiceImpl implements BookingService {
         return String.format("TK%s%03d", dateStr, count);
     }
 
+
     @Override
     @Transactional
     public Booking processPayment(String bookingCode, String paymentMethod) {
         Booking booking = findByBookingCode(bookingCode);
         if (booking != null) {
+            System.out.println("Processing payment for booking: " + bookingCode);
+            System.out.println("Payment method: " + paymentMethod);
+
+            // Update booking status
             booking.setStatus("PROCESSING");
+
+            // Create payment record
+            Payment payment = new Payment();
+            payment.setBooking(booking);
+            payment.setAmount(booking.getTotalAmount());
+            payment.setPaymentMethod(paymentMethod);
+            payment.setPaymentDate(LocalDateTime.now());
+            payment.setStatus("PENDING");
+
+            // Generate payment code
+            String paymentCode = "PAY" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            payment.setTransactionCode(paymentCode);
+
+            System.out.println("Created payment with code: " + paymentCode);
+            paymentRepository.save(payment);
+
             return save(booking);
         }
         return null;
@@ -182,7 +210,24 @@ public class BookingServiceImpl implements BookingService {
     public Booking confirmPayment(String bookingCode) {
         Booking booking = findByBookingCode(bookingCode);
         if (booking != null) {
-            booking.setStatus("COMPLETED");
+            System.out.println("Confirming payment for booking: " + bookingCode);
+
+            // Update booking status
+            booking.setStatus("CONFIRMED"); // Or COMPLETED, depending on your status flow
+
+            // Update all tickets to ACTIVE status
+            List<Ticket> tickets = ticketService.activateTickets(booking.getBookingID());
+
+            // Update payment status to COMPLETED
+            List<Payment> payments = paymentRepository.findByBookingBookingID(booking.getBookingID());
+            for (Payment payment : payments) {
+                payment.setStatus("COMPLETED");
+                System.out.println("Completed payment: " + payment.getTransactionCode());
+            }
+            paymentRepository.saveAll(payments);
+
+            System.out.println("✅ Payment confirmed, all tickets activated");
+
             return save(booking);
         }
         return null;
@@ -212,8 +257,74 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public boolean validateSeatAvailability(Integer scheduleId, List<Integer> seatIds) {
-        // Implementation details...
-        return false;
+        try {
+            System.out.println("=== VALIDATING SEAT AVAILABILITY ===");
+            System.out.println("scheduleId: " + scheduleId);
+            System.out.println("seatIds to validate: " + seatIds);
+
+            if (seatIds == null || seatIds.isEmpty()) {
+                System.out.println("No seats to validate");
+                return false;
+            }
+
+            // Get all tickets for this schedule that are booked or confirmed
+            List<Ticket> bookedTickets = ticketRepository.findByScheduleScheduleIDAndBookingStatusIn(
+                scheduleId,
+                Arrays.asList("BOOKED", "CONFIRMED", "PAID")
+            );
+
+            // Get set of booked seat IDs
+            Set<Integer> bookedSeatIds = bookedTickets.stream()
+                .map(ticket -> ticket.getSeat().getSeatID())
+                .collect(Collectors.toSet());
+
+            System.out.println("Booked seat IDs: " + bookedSeatIds);
+            System.out.println("Requested seat IDs: " + seatIds);
+
+            // Check if any requested seats are already booked
+            for (Integer seatId : seatIds) {
+                if (bookedSeatIds.contains(seatId)) {
+                    System.out.println("Seat " + seatId + " is already booked!");
+                    return false;
+                }
+            }
+
+            // Additional check: verify seats exist and belong to this schedule's train
+            List<Seat> seats = seatRepository.findAllById(seatIds);
+            if (seats.size() != seatIds.size()) {
+                System.out.println("Some seat IDs don't exist. Found " + seats.size() + " out of " + seatIds.size());
+                return false;
+            }
+
+            // Verify all seats belong to the correct train for this schedule
+            Optional<Schedule> schedule = scheduleRepository.findById(scheduleId);
+            if (schedule.isEmpty()) {
+                System.out.println("Schedule not found: " + scheduleId);
+                return false;
+            }
+
+            Integer trainId = schedule.get().getTrain().getTrainID();
+            for (Seat seat : seats) {
+                if (!seat.getCarriage().getTrain().getTrainID().equals(trainId)) {
+                    System.out.println("Seat " + seat.getSeatID() + " doesn't belong to train " + trainId);
+                    return false;
+                }
+
+                // Check if seat is marked as available
+                if (!seat.getIsAvailable()) {
+                    System.out.println("Seat " + seat.getSeatID() + " is marked as unavailable");
+                    return false;
+                }
+            }
+
+            System.out.println("✅ All seats are available!");
+            return true;
+
+        } catch (Exception e) {
+            System.out.println("ERROR in seat validation: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override

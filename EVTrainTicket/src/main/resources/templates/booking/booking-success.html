@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt vé thành công - EV Train Ticket</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .success-container {
+            max-width: 800px;
+            margin: 120px auto 40px auto;
+            padding: 20px;
+        }
+        .success-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 40px;
+            text-align: center;
+        }
+        .success-icon {
+            font-size: 5rem;
+            color: #28a745;
+            margin-bottom: 20px;
+            animation: scaleIn 0.5s ease-out;
+        }
+        @keyframes scaleIn {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+        .success-title {
+            font-size: 2rem;
+            color: #28a745;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        .booking-code-display {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+        .booking-code-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        .booking-code-value {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+        .info-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .info-box h4 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+        .info-box p {
+            margin: 10px 0;
+            color: #856404;
+        }
+        .booking-details {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #555;
+        }
+        .detail-value {
+            color: #333;
+        }
+        .action-buttons {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        .btn {
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <nav class="navbar container">
+        <a th:href="@{/home}" class="logo">
+            <i class="fas fa-train"></i> EVTrainTicket
+        </a>
+        <div class="nav-links">
+            <a th:href="@{/home}">Trang chủ</a>
+            <a th:href="@{/booking}">Đặt vé</a>
+        </div>
+    </nav>
+</header>
+
+<main class="success-container">
+    <div class="success-card">
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+
+        <h1 class="success-title">Đặt vé thành công!</h1>
+
+        <p style="font-size: 1.1rem; color: #666; margin-bottom: 20px;">
+            Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi
+        </p>
+
+        <div class="booking-code-display">
+            <div class="booking-code-label">Mã đặt vé của bạn</div>
+            <div class="booking-code-value" th:text="${bookingCode}">BK-XXX-XXX</div>
+        </div>
+
+        <div class="info-box">
+            <h4><i class="fas fa-info-circle"></i> Thông tin quan trọng</h4>
+            <p><i class="fas fa-money-bill-wave"></i> <strong>Phương thức thanh toán:</strong> Tiền mặt khi lên tàu</p>
+            <p><i class="fas fa-ticket-alt"></i> <strong>Lưu ý:</strong> Vui lòng giữ mã đặt vé này để xuất trình khi lên tàu</p>
+            <p><i class="fas fa-clock"></i> <strong>Thanh toán:</strong> Trả tiền mặt cho nhân viên tàu khi kiểm tra vé</p>
+        </div>
+
+        <div class="booking-details" th:if="${booking}">
+            <h3 style="margin-bottom: 15px; text-align: center;">Chi tiết đặt vé</h3>
+            <div class="detail-row">
+                <span class="detail-label">Mã đặt vé:</span>
+                <span class="detail-value" th:text="${bookingCode}">-</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Số lượng vé:</span>
+                <span class="detail-value" th:text="${booking.tickets != null ? booking.tickets.size() : 0}">-</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Tổng tiền:</span>
+                <span class="detail-value" style="color: #007bff; font-weight: 700;" th:text="${#numbers.formatCurrency(booking.totalAmount)}">-</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Trạng thái:</span>
+                <span class="detail-value" style="color: #28a745; font-weight: 600;" th:text="${booking.status}">-</span>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <a th:href="@{/home}" class="btn btn-primary">
+                <i class="fas fa-home"></i> Về trang chủ
+            </a>
+            <a th:href="@{/booking/history}" class="btn btn-success">
+                <i class="fas fa-history"></i> Xem lịch sử đặt vé
+            </a>
+        </div>
+
+        <p style="margin-top: 30px; color: #999; font-size: 0.9rem;">
+            <i class="fas fa-envelope"></i>
+            Thông tin chi tiết đã được gửi đến email của bạn
+        </p>
+    </div>
+</main>
+
+<footer style="text-align: center; padding: 20px; background: #f8f9fa; margin-top: 40px;">
+    <p>&copy; 2025 EVTrainTicket. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

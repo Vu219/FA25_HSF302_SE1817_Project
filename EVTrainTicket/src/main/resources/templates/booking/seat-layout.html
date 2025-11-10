@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ ghế tàu - EV Train Ticket</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/seat-layout.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+<header>
+    <nav class="navbar container">
+        <a th:href="@{/home}" class="logo">
+            <i class="fas fa-train"></i> EVTrainTicket
+        </a>
+        <div class="nav-links">
+            <a th:href="@{/home}">Trang chủ</a>
+            <a th:href="@{/booking}">Đặt vé</a>
+        </div>
+    </nav>
+</header>
+
+<main class="seat-layout-container">
+    <!-- Error handling -->
+    <div th:if="${error}" class="alert alert-danger">
+        <i class="fas fa-exclamation-circle"></i>
+        <span th:text="${error}"></span>
+        <a th:href="@{/home}" class="btn btn-primary">Về trang chủ</a>
+    </div>
+
+    <!-- Schedule Information -->
+    <div th:unless="${error}" class="schedule-header">
+        <div class="schedule-info-card">
+            <h2><i class="fas fa-train"></i> Thông tin chuyến tàu</h2>
+            <div class="schedule-details">
+                <div class="detail-row">
+                    <strong>Tàu:</strong>
+                    <span th:text="${schedule.train.trainName}"></span>
+                </div>
+                <div class="detail-row">
+                    <strong>Tuyến:</strong>
+                    <span th:text="${schedule.departureStation.name} + ' → ' + ${schedule.arrivalStation.name}"></span>
+                </div>
+                <div class="detail-row">
+                    <strong>Khởi hành:</strong>
+                    <span th:text="${#temporals.format(schedule.departureTime, 'dd/MM/yyyy HH:mm')}"></span>
+                </div>
+                <div class="detail-row">
+                    <strong>Đến nơi:</strong>
+                    <span th:text="${#temporals.format(schedule.arrivalTime, 'dd/MM/yyyy HH:mm')}"></span>
+                </div>
+                <div class="detail-row">
+                    <strong>Giá cơ bản:</strong>
+                    <span th:text="${#numbers.formatCurrency(schedule.basePrice)}"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seat Statistics -->
+        <div class="seat-statistics">
+            <div class="stat-item">
+                <div class="stat-number" th:text="${totalSeats}">0</div>
+                <div class="stat-label">Tổng ghế</div>
+            </div>
+            <div class="stat-item available">
+                <div class="stat-number" th:text="${availableSeats}">0</div>
+                <div class="stat-label">Còn trống</div>
+            </div>
+            <div class="stat-item booked">
+                <div class="stat-number" th:text="${bookedSeats}">0</div>
+                <div class="stat-label">Đã đặt</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seat Legend -->
+    <div th:unless="${error}" class="seat-legend">
+        <h3>Chú thích:</h3>
+        <div class="legend-items">
+            <div class="legend-item">
+                <div class="seat-sample available"></div>
+                <span>Trống</span>
+            </div>
+            <div class="legend-item">
+                <div class="seat-sample booked"></div>
+                <span>Đã đặt</span>
+            </div>
+            <div class="legend-item">
+                <div class="seat-sample aisle"></div>
+                <span>Lối đi</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Carriage Layouts -->
+    <div th:unless="${error}" class="carriages-container">
+        <div th:each="carriage : ${carriageLayouts}" class="carriage-section">
+            <!-- Carriage Header -->
+            <div class="carriage-header">
+                <h3 th:text="${carriage.carriageNumber}">Toa 1</h3>
+                <div class="carriage-info">
+                    <span class="carriage-type" th:text="${carriage.carriageTypeName}">Loại toa</span>
+                    <span class="seat-count" th:text="${carriage.totalSeats} + ' ghế'">0 ghế</span>
+                </div>
+            </div>
+
+            <!-- Seat Layout Grid -->
+            <div class="seat-layout-grid">
+                <!-- Train Direction Indicator -->
+                <div class="train-direction">
+                    <i class="fas fa-arrow-right"></i>
+                    <span>Hướng di chuyển</span>
+                </div>
+
+                <!-- Seat Map -->
+                <div class="seat-map">
+                    <!-- Row by row display -->
+                    <div th:each="rowEntry : ${carriage.seatsByRow}" class="seat-row"
+                         th:attr="data-row=${rowEntry.key}">
+                        <div class="row-number" th:text="'Hàng ' + ${rowEntry.key}">Hàng 1</div>
+
+                        <!-- Seats in this row -->
+                        <div class="seats-in-row">
+                            <!-- Left side seats (columns 1-2) -->
+                            <div class="seat-group left-side">
+                                <div th:each="seat : ${rowEntry.value}"
+                                     th:if="${seat.columnNum <= 2}"
+                                     th:class="'seat ' + ${seat.status.name().toLowerCase()}"
+                                     th:attr="data-seat-id=${seat.seatID},
+                                             data-seat-number=${seat.seatNumber},
+                                             data-price=${seat.price},
+                                             data-seat-type=${seat.seatTypeName}"
+                                     th:title="${seat.seatNumber} + ' - ' + ${seat.seatTypeName} + ' - ' + ${#numbers.formatCurrency(seat.price)}">
+                                    <span class="seat-number" th:text="${seat.seatNumber}">01</span>
+                                    <span class="seat-price" th:text="${#numbers.formatCurrency(seat.price)}">0₫</span>
+                                </div>
+                                <!-- Fill empty seats if less than 2 in left side -->
+                                <!-- Simplified: just show available seats without complex calculations -->
+                            </div>
+
+                            <!-- Aisle -->
+                            <div class="aisle"></div>
+
+                            <!-- Right side seats (columns 3-4) -->
+                            <div class="seat-group right-side">
+                                <div th:each="seat : ${rowEntry.value}"
+                                     th:if="${seat.columnNum > 2}"
+                                     th:class="'seat ' + ${seat.status.name().toLowerCase()}"
+                                     th:attr="data-seat-id=${seat.seatID},
+                                             data-seat-number=${seat.seatNumber},
+                                             data-price=${seat.price},
+                                             data-seat-type=${seat.seatTypeName}"
+                                     th:title="${seat.seatNumber} + ' - ' + ${seat.seatTypeName} + ' - ' + ${#numbers.formatCurrency(seat.price)}">
+                                    <span class="seat-number" th:text="${seat.seatNumber}">03</span>
+                                    <span class="seat-price" th:text="${#numbers.formatCurrency(seat.price)}">0₫</span>
+                                </div>
+                                <!-- Fill empty seats if less than 2 in right side -->
+                                <!-- Simplified: just show available seats without complex calculations -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Carriage Summary -->
+                <div class="carriage-summary">
+                    <div class="summary-item">
+                        <strong>Tổng ghế:</strong>
+                        <span th:text="${carriage.totalSeats} + ' ghế'"></span>
+                    </div>
+                    <div class="summary-item">
+                        <strong>Loại toa:</strong>
+                        <span th:text="${carriage.carriageTypeName}"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to booking button -->
+    <div th:unless="${error}" class="action-buttons">
+        <a th:href="@{/booking(scheduleId=${scheduleId})}" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> Quay lại đặt vé
+        </a>
+        <a th:href="@{/home}" class="btn btn-secondary">
+            <i class="fas fa-home"></i> Trang chủ
+        </a>
+    </div>
+</main>
+
+<footer>
+    <p>&copy; 2025 EVTrainTicket. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Booking - EV Train Ticket</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/booking.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+<header>
+    <nav class="navbar container">
+        <a th:href="@{/home}" class="logo">
+            <i class="fas fa-train"></i> EVTrainTicket
+        </a>
+        <div class="nav-links">
+            <a th:href="@{/home}">Trang chủ</a>
+            <a th:href="@{/booking}">Đặt vé</a>
+        </div>
+    </nav>
+</header>
+
+<main class="booking-page-container">
+    <div class="booking-card">
+        <div class="booking-card-header">
+            <h4><i class="fas fa-bug"></i> DEBUG BOOKING PAGE</h4>
+        </div>
+
+        <div class="booking-card-body">
+            <!-- Debug info to see what data we have -->
+            <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border: 1px solid #ccc;">
+                <strong>DEBUG INFO:</strong><br>
+                scheduleId: <span th:text="${scheduleId}">null</span><br>
+                schedule: <span th:text="${schedule != null ? 'exists' : 'null'}">null</span><br>
+                carriageLayouts: <span th:text="${carriageLayouts != null ? 'exists' : 'null'}">null</span><br>
+                carriageLayouts size: <span th:text="${carriageLayouts != null ? carriageLayouts.size() : 'N/A'}">N/A</span><br>
+                error: <span th:text="${error ?: 'none'}">none</span><br>
+            </div>
+
+            <!-- Show raw data -->
+            <div style="background: #e8f5e8; padding: 10px; margin: 10px 0; border: 1px solid #4caf50;">
+                <strong>RAW DATA:</strong><br>
+                carriageLayouts toString: <span th:text="${carriageLayouts}">null</span><br>
+            </div>
+
+            <!-- Test simple conditional -->
+            <div th:if="${scheduleId != null}" style="background: #e3f2fd; padding: 10px; margin: 10px 0; border: 1px solid #2196f3;">
+                <strong>SCHEDULE ID EXISTS - scheduleId = </strong><span th:text="${scheduleId}">0</span>
+            </div>
+
+            <!-- Test carriageLayouts conditional -->
+            <div th:if="${carriageLayouts != null}" style="background: #fff3e0; padding: 10px; margin: 10px 0; border: 1px solid #ff9800;">
+                <strong>CARRIAGE LAYOUTS EXISTS - Size = </strong><span th:text="${carriageLayouts.size()}">0</span>
+
+                <!-- Try to show first carriage -->
+                <div th:if="${!carriageLayouts.isEmpty()}">
+                    First carriage: <span th:text="${carriageLayouts[0].carriageNumber}">N/A</span>
+                </div>
+            </div>
+
+            <!-- Show if carriageLayouts is null -->
+            <div th:if="${carriageLayouts == null}" style="background: #ffebee; padding: 10px; margin: 10px 0; border: 1px solid #f44336;">
+                <strong>CARRIAGE LAYOUTS IS NULL - This is why elements are not found!</strong>
+            </div>
+
+            <!-- Simple test form -->
+            <div th:if="${carriageLayouts != null}" style="background: #e8f5e8; padding: 10px; margin: 10px 0;">
+                <h4>TEST SEAT SELECTION FORM</h4>
+                <form method="post" th:action="@{/booking/select-seats}">
+                    <input type="hidden" name="scheduleId" th:value="${scheduleId}"/>
+
+                    <div id="selected-seats-info">
+                        <p><strong>Ghế đã chọn:</strong> <span id="selected-count">0</span>/4 ghế</p>
+                        <div id="selected-seats-list">Chưa chọn ghế nào</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="continue-booking">
+                        Test Submit Button
+                    </button>
+                </form>
+            </div>
+
+            <!-- Links for testing -->
+            <div style="background: #f5f5f5; padding: 10px; margin: 10px 0;">
+                <strong>TEST LINKS:</strong><br>
+                <a href="/api/schedules/1/seats" target="_blank">API: schedules/1/seats</a><br>
+                <a href="/api/schedules/1" target="_blank">API: schedule/1 info</a><br>
+                <a href="/booking?scheduleId=1">Booking with scheduleId=1</a><br>
+                <a href="/booking?scheduleId=2">Booking with scheduleId=2</a><br>
+                <a href="/schedules">All schedules</a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <p>&copy; 2025 EVTrainTicket. All rights reserved.</p>
+</footer>
+
+<!-- Simple test JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== DEBUG BOOKING PAGE ===');
+    console.log('selectedCountSpan:', !!document.getElementById('selected-count'));
+    console.log('selectedSeatsList:', !!document.getElementById('selected-seats-list'));
+    console.log('continueButton:', !!document.getElementById('continue-booking'));
+
+    const elements = {
+        selectedCountSpan: document.getElementById('selected-count'),
+        selectedSeatsList: document.getElementById('selected-seats-list'),
+        continueButton: document.getElementById('continue-booking')
+    };
+
+    console.log('Elements:', elements);
+
+    if (elements.selectedCountSpan && elements.selectedSeatsList && elements.continueButton) {
+        console.log('✅ ALL ELEMENTS FOUND! The problem is solved.');
+    } else {
+        console.log('❌ ELEMENTS STILL MISSING');
+    }
+});
+</script>
+
+</body>
+</html>

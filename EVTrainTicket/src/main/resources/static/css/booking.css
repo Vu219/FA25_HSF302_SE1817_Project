@@ -299,6 +299,227 @@ div#carriages-container {
     grid-template-columns: repeat(2, 1fr);
     gap: 20px; /* Adjust this value as needed for spacing */
 }
+
+/* Seat row container for server-side rendering */
+.seat-row-container {
+    margin-bottom: 10px;
+}
+
+.row-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6c757d;
+    text-align: center;
+    margin-bottom: 5px;
+    background: #f8f9fa;
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.seat-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.seat-group {
+    display: flex;
+    gap: 5px;
+}
+
+.aisle {
+    width: 20px;
+    height: 40px;
+    background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+    border-radius: 4px;
+    position: relative;
+    border: 1px dashed #ced4da;
+}
+
+.aisle::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 2px;
+    background: #ced4da;
+}
+
+/* Enhanced seat styling for server-side rendering with selection */
+.seat-container {
+    position: relative;
+}
+
+.seat-input-container {
+    position: relative;
+    display: inline-block;
+}
+
+.seat-checkbox {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+}
+
+.seat {
+    min-width: 35px;
+    height: 35px;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+    background-color: #fff;
+    text-align: center;
+    padding: 2px;
+}
+
+.seat-price {
+    font-size: 8px;
+    opacity: 0.8;
+    margin-top: 1px;
+}
+
+/* Available seats (selectable) */
+.seat.available.selectable {
+    border-color: #28a745;
+    color: #28a745;
+    background-color: #f8fff9;
+    cursor: pointer;
+}
+
+.seat.available.selectable:hover {
+    background-color: #28a745;
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+/* Selected seats (checked checkboxes) - PURE CSS, NO JS NEEDED */
+.seat-checkbox:checked + .seat.available.selectable {
+    background-color: #007bff !important;
+    color: white !important;
+    border-color: #007bff !important;
+    transform: scale(1.02);
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.4);
+}
+
+.seat-checkbox:checked + .seat.available.selectable .seat-price {
+    color: white !important;
+    opacity: 1;
+}
+
+/* Booked seats (non-selectable) */
+.seat.booked {
+    background-color: #dc3545;
+    color: white;
+    border-color: #dc3545;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.seat.booked:hover {
+    transform: none;
+}
+
+/* Form actions styling */
+.form-actions {
+    border: 2px solid #007bff;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.form-actions .btn {
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.form-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 123, 255, 0.3);
+}
+
+/* Selection summary styling */
+.selection-summary {
+    border: 1px solid #dee2e6;
+}
+
+/* Seat legend updates */
+.seat-legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 25px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.seat-legend div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #555;
+}
+
+.seat-legend .seat {
+    width: 25px;
+    height: 25px;
+    font-size: 10px;
+    cursor: default;
+    border: 2px solid;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.seat-legend .seat:hover {
+    transform: none;
+}
+
+.seat-legend .seat.available {
+    border-color: #28a745;
+    color: #28a745;
+    background-color: #f8fff9;
+}
+
+.seat-legend .seat.selected {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.seat-legend .seat.occupied {
+    background-color: #dc3545;
+    color: white;
+    border-color: #dc3545;
+}
+
+/* Loading spinner */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+    border-width: 0.25em;
+}
 .seat-map {
     display: grid; /* If not already set, it's good practice for grid layout */
     grid-template-columns: repeat(6, 1fr);
