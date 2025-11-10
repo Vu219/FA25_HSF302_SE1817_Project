@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -29,6 +30,10 @@ public class DataInit implements CommandLineRunner {
     StationRepository stationRepository;
     ScheduleRepository scheduleRepository;
     ScheduleStopRepository scheduleStopRepository;
+    RouteRepository routeRepository;
+
+    // Services
+    RouteGeneratorService routeGeneratorService;
 
     // Services
     UserService userService;
@@ -54,7 +59,14 @@ public class DataInit implements CommandLineRunner {
         initCarriages();
         initSeats();
         initStations();
+        initRoutes();
+
+        System.out.println("\n🔄 Generating composite routes...");
+        int generatedCount = routeGeneratorService.generateAllPossibleRoutes();
+        System.out.println("✅ Generated " + generatedCount + " composite routes. Total routes now: " + routeRepository.count());
+
         initSchedules();
+        initScheduleStops();
         initScheduleStops();
         System.out.println("✅ Data initialization completed successfully!");
     }
@@ -301,82 +313,120 @@ public class DataInit implements CommandLineRunner {
         }
     }
 
+    private void initRoutes() {
+        if (routeRepository.count() == 0) {
+            System.out.println("\n📍 initRoutes: Creating fully connected route network...");
+
+            Station hn = stationRepository.findByCode("HN");
+            Station dn = stationRepository.findByCode("DN");
+            Station hue = stationRepository.findByCode("HUE");
+            Station nt = stationRepository.findByCode("NT");
+            Station sg = stationRepository.findByCode("SG");
+
+            List<Route> routes = new ArrayList<>();
+
+            // All directional pairs (5 choose 2 = 10 pairs × 2 directions = 20 routes)
+            routes.add(new Route(hn, dn, 750.0));
+            routes.add(new Route(dn, hn, 750.0));
+
+            routes.add(new Route(hn, hue, 1300.0));
+            routes.add(new Route(hue, hn, 1300.0));
+
+            routes.add(new Route(hn, nt, 1700.0));
+            routes.add(new Route(nt, hn, 1700.0));
+
+            routes.add(new Route(hn, sg, 1750.0));
+            routes.add(new Route(sg, hn, 1750.0));
+
+            routes.add(new Route(dn, hue, 550.0));
+            routes.add(new Route(hue, dn, 550.0));
+
+            routes.add(new Route(dn, nt, 950.0));
+            routes.add(new Route(nt, dn, 950.0));
+
+            routes.add(new Route(dn, sg, 2000.0));
+            routes.add(new Route(sg, dn, 2000.0));
+
+            routes.add(new Route(hue, nt, 400.0));
+            routes.add(new Route(nt, hue, 400.0));
+
+            routes.add(new Route(hue, sg, 1450.0));
+            routes.add(new Route(sg, hue, 1450.0));
+
+            routes.add(new Route(nt, sg, 450.0));
+            routes.add(new Route(sg, nt, 450.0));
+
+            routeRepository.saveAll(routes);
+            System.out.println("✅ initRoutes: Created " + routes.size() + " bidirectional routes (fully connected)");
+        } else {
+            System.out.println("⏭️  initRoutes: Routes already exist (" + routeRepository.count() + " total)");
+        }
+    }
+
     private void initSchedules() {
         if (scheduleRepository.count() == 0) {
             List<Train> trains = trainRepository.findAll();
-            List<Station> stations = stationRepository.findAll();
+            LocalDateTime now = LocalDateTime.now();
 
             Station hanoi = stationRepository.findByCode("HN");
             Station danang = stationRepository.findByCode("DN");
             Station hcm = stationRepository.findByCode("SG");
-            Station hue = stationRepository.findByCode("HUE");
-            Station nhatrang = stationRepository.findByCode("NT");
 
-            LocalDateTime now = LocalDateTime.now();
+            // Lấy routes
+            Route r1 = routeRepository.findByFromStationAndToStation(hanoi, danang).orElse(null);
+            Route r2 = routeRepository.findByFromStationAndToStation(danang, hcm).orElse(null);
+            Route r3 = routeRepository.findByFromStationAndToStation(hcm, hanoi).orElse(null);
 
-            // Schedule 1: Hà Nội -> Đà Nẵng
-            Schedule s1 = new Schedule();
-            s1.setTrain(trains.get(0));
-            s1.setDepartureStation(hanoi);
-            s1.setArrivalStation(danang);
-            s1.setDepartureTime(now.plusDays(1).withHour(6).withMinute(0));
-            s1.setArrivalTime(now.plusDays(1).withHour(18).withMinute(30));
-            s1.setDistanceKm(791.0);
-            s1.setEstimatedTime(750); // 12h30
-            s1.setBasePrice(BigDecimal.valueOf(450000));
-            s1.setOrigin("Hà Nội");
-            s1.setDestination("Đà Nẵng");
-            s1.setStatus("ACTIVE");
-            s1.setCreatedAt(now);
-            s1.setNotes("Chuyến tàu SE1 chất lượng cao");
+            if (r1 != null && r2 != null && r3 != null) {
+                // Schedule 1: Hà Nội -> Đà Nẵng
+                Schedule s1 = new Schedule();
+                s1.setTrain(trains.get(0));
+                s1.setDepartureStation(hanoi);
+                s1.setArrivalStation(danang);
+                s1.setRoute(r1);
+                s1.setDepartureTime(now.plusDays(1).withHour(6).withMinute(0));
+                s1.setArrivalTime(now.plusDays(1).withHour(15).withMinute(30));
+                s1.setBasePrice(BigDecimal.valueOf(r1.getDistanceKm() * 700).setScale(0, java.math.RoundingMode.HALF_UP));
+                s1.setStatus("ACTIVE");
+                s1.setCreatedAt(now);
+                s1.setNotes("Chuyến tàu SE1");
 
-            // Schedule 2: Đà Nẵng -> Sài Gòn
-            Schedule s2 = new Schedule();
-            s2.setTrain(trains.get(1));
-            s2.setDepartureStation(danang);
-            s2.setArrivalStation(hcm);
-            s2.setDepartureTime(now.plusDays(2).withHour(8).withMinute(0));
-            s2.setArrivalTime(now.plusDays(2).withHour(22).withMinute(0));
-            s2.setDistanceKm(935.0);
-            s2.setEstimatedTime(840); // 14h
-            s2.setBasePrice(BigDecimal.valueOf(550000));
-            s2.setOrigin("Đà Nẵng");
-            s2.setDestination("Sài Gòn");
-            s2.setStatus("ACTIVE");
-            s2.setCreatedAt(now);
-            s2.setNotes("Chuyến tàu SE3");
+                // Schedule 2: Đà Nẵng -> Sài Gòn
+                Schedule s2 = new Schedule();
+                s2.setTrain(trains.get(1));
+                s2.setDepartureStation(danang);
+                s2.setArrivalStation(hcm);
+                s2.setRoute(r2);
+                s2.setDepartureTime(now.plusDays(2).withHour(8).withMinute(0));
+                s2.setArrivalTime(now.plusDays(2).withHour(21).withMinute(20));
+                s2.setBasePrice(BigDecimal.valueOf(r2.getDistanceKm() * 700).setScale(0, java.math.RoundingMode.HALF_UP));
+                s2.setStatus("ACTIVE");
+                s2.setCreatedAt(now);
+                s2.setNotes("Chuyến tàu SE3");
 
-            // Schedule 3: Sài Gòn -> Hà Nội
-            Schedule s3 = new Schedule();
-            s3.setTrain(trains.get(2));
-            s3.setDepartureStation(hcm);
-            s3.setArrivalStation(hanoi);
-            s3.setDepartureTime(now.plusDays(3).withHour(19).withMinute(30));
-            s3.setArrivalTime(now.plusDays(4).withHour(16).withMinute(0));
-            s3.setDistanceKm(1726.0);
-            s3.setEstimatedTime(1230); // 20h30
-            s3.setBasePrice(BigDecimal.valueOf(850000));
-            s3.setOrigin("Sài Gòn");
-            s3.setDestination("Hà Nội");
-            s3.setStatus("ACTIVE");
-            s3.setCreatedAt(now);
-            s3.setNotes("Chuyến tàu nhanh Sài Gòn - Hà Nội");
+                // Schedule 3: Sài Gòn -> Hà Nội
+                Schedule s3 = new Schedule();
+                s3.setTrain(trains.get(2));
+                s3.setDepartureStation(hcm);
+                s3.setArrivalStation(hanoi);
+                s3.setRoute(r3);
+                s3.setDepartureTime(now.plusDays(3).withHour(19).withMinute(30));
+                s3.setArrivalTime(now.plusDays(4).withHour(16).withMinute(0));
+                s3.setBasePrice(BigDecimal.valueOf(r3.getDistanceKm() * 700).setScale(0, java.math.RoundingMode.HALF_UP));
+                s3.setStatus("ACTIVE");
+                s3.setCreatedAt(now);
+                s3.setNotes("Chuyến tàu nhanh Sài Gòn - Hà Nội");
 
-            scheduleRepository.saveAll(Arrays.asList(s1, s2, s3));
-            System.out.println("✅ Đã khởi tạo 3 lịch trình mẫu");
+                scheduleRepository.saveAll(Arrays.asList(s1, s2, s3));
+                System.out.println("✅ Đã khởi tạo 3 lịch trình từ Routes");
+            }
         }
     }
 
     private void initScheduleStops() {
         if (scheduleStopRepository.count() == 0) {
             List<Schedule> schedules = scheduleRepository.findAll();
-            List<Station> stations = stationRepository.findAll();
-
-            Station hanoi = stationRepository.findByCode("HN");
             Station hue = stationRepository.findByCode("HUE");
-            Station danang = stationRepository.findByCode("DN");
-            Station nhatrang = stationRepository.findByCode("NT");
-            Station hcm = stationRepository.findByCode("SG");
 
             for (Schedule schedule : schedules) {
                 if (schedule.getDepartureStation().getCode().equals("HN") &&

@@ -32,6 +32,9 @@ public class Train {
     @Column(name = "Capacity", nullable = false)
     private Integer capacity;
 
+    @Column(name = "AverageSpeed", nullable = false)
+    private Double averageSpeed = 60.0;  // km/h, default 60
+
     @Column(name = "Status", nullable = false, length = 50, columnDefinition = "nvarchar(50)")
     private String status;
 

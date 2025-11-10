@@ -34,8 +34,8 @@ public class AdminController {
     private final SeatTypeService seatTypeService;
     private final SeatService seatService;
     private final StationService stationService;
-    // Thêm ScheduleService
     private final ScheduleService scheduleService;
+    private final RouteService routeService;
     private final UserService userService;
     private final DashboardService dashboardService;
 
@@ -95,6 +95,7 @@ public class AdminController {
 
         mav.addObject("schedule", new Schedule());
         mav.addObject("stations", stationService.getAllStations());
+        mav.addObject("routes", routeService.getAllRoutes());
         mav.addObject("trains", trainService.getAllTrains());
         mav.addObject("errorMessage", model.asMap().get("errorMessage"));
         return mav;
@@ -113,6 +114,7 @@ public class AdminController {
 
         mav.addObject("schedule", schedule);
         mav.addObject("stations", stationService.getAllStations());
+        mav.addObject("routes", routeService.getAllRoutes());
         mav.addObject("trains", trainService.getAllTrains());
         mav.addObject("errorMessage", model.asMap().get("errorMessage"));
         return mav;
@@ -155,18 +157,38 @@ public class AdminController {
                 return "redirect:/admin/schedules/new";
             }
 
+            // Tính toán khoảng cách & thời gian (support cả direct và indirect routes)
+            java.util.Map<String, Object> routeData = routeService.calculateRouteDistance(departureStation, arrivalStation);
+
+            if (routeData.get("distance_km") == null) {
+                redirectAttributes.addFlashAttribute("errorMessage",
+                    (String) routeData.getOrDefault("error", "Không tìm thấy tuyến đường phù hợp."));
+                return "redirect:/admin/schedules/new";
+            }
+
             Schedule schedule = new Schedule();
+
+            // Set route nếu là direct (routeId != null)
+            Long routeId = (Long) routeData.get("routeId");
+            if (routeId != null) {
+                Route directRoute = routeService.getRouteById(routeId);
+                schedule.setRoute(directRoute);
+            }
+
             schedule.setDepartureStation(departureStation);
             schedule.setArrivalStation(arrivalStation);
             schedule.setTrain(train);
             schedule.setDepartureTime(fullDepartureTime);
             schedule.setArrivalTime(fullArrivalTime);
-            schedule.setDistanceKm(distanceKm);
-            schedule.setEstimatedTime(estimatedTime);
-            schedule.setBasePrice(basePrice);
+
+            // Tính basePrice = distance × 700
+            Double finalDistance = (Double) routeData.get("distance_km");
+            BigDecimal finalPrice = BigDecimal.valueOf(Math.round(finalDistance * 700));
+            schedule.setBasePrice(finalPrice);
+
             schedule.setStatus(status);
-            schedule.setOrigin(departureStation.getName());
-            schedule.setDestination(arrivalStation.getName());
+            // origin & destination sẽ lấy từ getter
+            // distanceKm & estimatedTime sẽ lấy từ route.getter()
 
             scheduleService.saveSchedule(schedule);
             redirectAttributes.addFlashAttribute("successMessage", "Tạo lịch trình thành công!");
@@ -221,17 +243,38 @@ public class AdminController {
                 return "redirect:/admin/schedules/" + id + "/edit";
             }
 
+            // Tính toán khoảng cách & thời gian (support cả direct và indirect routes)
+            java.util.Map<String, Object> routeData = routeService.calculateRouteDistance(departureStation, arrivalStation);
+
+            if (routeData.get("distance_km") == null) {
+                redirectAttributes.addFlashAttribute("errorMessage",
+                    (String) routeData.getOrDefault("error", "Không tìm thấy tuyến đường phù hợp."));
+                return "redirect:/admin/schedules/" + id + "/edit";
+            }
+
+            // Set route nếu là direct (routeId != null)
+            Long routeId = (Long) routeData.get("routeId");
+            if (routeId != null) {
+                Route directRoute = routeService.getRouteById(routeId);
+                existingSchedule.setRoute(directRoute);
+            } else {
+                existingSchedule.setRoute(null);  // Indirect route
+            }
+
             existingSchedule.setDepartureStation(departureStation);
             existingSchedule.setArrivalStation(arrivalStation);
             existingSchedule.setTrain(train);
             existingSchedule.setDepartureTime(fullDepartureTime);
             existingSchedule.setArrivalTime(fullArrivalTime);
-            existingSchedule.setDistanceKm(distanceKm);
-            existingSchedule.setEstimatedTime(estimatedTime);
-            existingSchedule.setBasePrice(basePrice);
+
+            // Tính basePrice = distance × 700
+            Double finalDistance = (Double) routeData.get("distance_km");
+            BigDecimal finalPrice = BigDecimal.valueOf(Math.round(finalDistance * 700));
+            existingSchedule.setBasePrice(finalPrice);
+
             existingSchedule.setStatus(status);
-            existingSchedule.setOrigin(departureStation.getName());
-            existingSchedule.setDestination(arrivalStation.getName());
+            // origin & destination sẽ lấy từ getter
+            // distanceKm & estimatedTime sẽ lấy từ route.getter()
 
             scheduleService.saveSchedule(existingSchedule);
             redirectAttributes.addFlashAttribute("successMessage", "Cập nhật lịch trình thành công!");
