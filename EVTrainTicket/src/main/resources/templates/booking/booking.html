@@ -148,12 +148,6 @@
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="form-actions" style="text-align: center; margin-top: 20px;">
-                                <button type="submit" class="btn btn-primary btn-lg">
-                                    <i class="fas fa-arrow-right"></i> Tiếp tục đặt vé
-                                </button>
-                            </div>
                         </form>
                     </div>
                 </div>
@@ -236,7 +230,7 @@
                 </div>
 
                 <div class="booking-navigation">
-                    <button class="btn btn-primary" id="next-btn" disabled>
+                    <button type="submit" form="seat-selection-form" class="btn btn-primary" id="next-btn" disabled>
                         Tiếp theo <i class="fas fa-arrow-right"></i>
                     </button>
                 </div>
@@ -249,7 +243,72 @@
     <p>&copy; 2025 EVTrainTicket. All rights reserved.</p>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxes = document.querySelectorAll('.seat-checkbox');
+        const nextBtn = document.getElementById('next-btn');
+        const selectedCountEl = document.getElementById('selected-count');
+        const selectedListEl = document.getElementById('selected-seats-list');
+        const totalAmountEl = document.getElementById('total-amount');
+
+        // Hàm cập nhật tóm tắt
+        function updateSummary() {
+            const checkedBoxes = document.querySelectorAll('.seat-checkbox:checked');
+            let selectedSeats = [];
+            let totalAmount = 0;
+
+            checkedBoxes.forEach(box => {
+                const price = parseFloat(box.getAttribute('data-price'));
+                const seatNumber = box.getAttribute('data-seat-number');
+                const seatType = box.getAttribute('data-seat-type');
+
+                selectedSeats.push({
+                    number: seatNumber,
+                    type: seatType,
+                    price: price
+                });
+                totalAmount += price;
+            });
+
+            // Cập nhật số lượng
+            selectedCountEl.textContent = selectedSeats.length;
+
+            // Cập nhật danh sách ghế
+            if (selectedSeats.length === 0) {
+                selectedListEl.innerHTML = 'Vui lòng chọn ghế';
+            } else {
+                selectedListEl.innerHTML = ''; // Xóa nội dung cũ
+                selectedSeats.forEach(seat => {
+                    const item = document.createElement('div');
+                    item.className = 'summary-item'; // Giả sử bạn có class này
+                    item.innerHTML = `
+                        <span>${seat.number} (${seat.type})</span>
+                        <span style="font-weight: 500;">${seat.price.toLocaleString('vi-VN')} VNĐ</span>
+                    `;
+                    selectedListEl.appendChild(item);
+                });
+            }
+
+            // Cập nhật tổng tiền
+            totalAmountEl.textContent = totalAmount.toLocaleString('vi-VN') + ' VNĐ';
+
+            // Kích hoạt nút bấm
+            if (selectedSeats.length > 0) {
+                nextBtn.disabled = false;
+            } else {
+                nextBtn.disabled = true;
+            }
+        }
+
+        // Gắn sự kiện "change" cho mọi checkbox
+        checkboxes.forEach(box => {
+            box.addEventListener('change', updateSummary);
+        });
+
+        // Chạy lần đầu khi tải trang (để đảm bảo nút bị vô hiệu hóa)
+        updateSummary();
+    });
+</script>
 
 
 </body>

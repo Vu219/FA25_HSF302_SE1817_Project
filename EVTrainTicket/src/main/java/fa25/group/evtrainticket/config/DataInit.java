@@ -238,8 +238,8 @@ public class DataInit implements CommandLineRunner {
                 }
 
                 int seatsPerCarriage = carriage.getTotalSeats();
-                // 2. SỬA LẠI LOGIC CỘT (dùng 6 cột để khớp với CSS)
-                int cols = 6;
+                // 2. SỬA LẠI LOGIC CỘT (dùng 4 cột để khớp với CSS)
+                int cols = 4;
                 int rows = (int) Math.ceil((double) seatsPerCarriage / cols);
 
                 for (int row = 1; row <= rows; row++) {
