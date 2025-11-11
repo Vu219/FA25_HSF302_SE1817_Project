@@ -32,4 +32,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Integer> {
 
     @Query("SELECT COUNT(t) FROM Ticket t")
     long countTotalTickets();
+
+    @Query("SELECT COUNT(t) FROM Ticket t JOIN Carriage c JOIN CarriageType ct WHERE ct.typeName = 'Toa phổ thông'")
+    long countEconomyTickets();
 }
