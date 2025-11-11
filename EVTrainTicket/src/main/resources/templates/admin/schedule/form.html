@@ -48,8 +48,8 @@
                 <label for="departureStation">
                     <i class="fas fa-map-marker-alt" style="color: #28a745;"></i> Ga đi <span>*</span>
                 </label>
-                <select id="departureStation" name="departureStationId" class="form-control" required>
-                    <option value="" disabled th:selected="${schedule.departureStation == null}">Chọn Ga đi</option>
+                <select id="departureStation" name="departureStationId" class="form-control" required onchange="updateRouteData()">
+                    <option value="">Chọn Ga đi...</option>
                     <option th:each="station : ${stations}"
                             th:value="${station.stationID}"
                             th:text="${station.name}"
@@ -62,8 +62,8 @@
                 <label for="arrivalStation">
                     <i class="fas fa-map-marker-alt" style="color: #dc3545;"></i> Ga đến <span>*</span>
                 </label>
-                <select id="arrivalStation" name="arrivalStationId" class="form-control" required>
-                    <option value="" disabled th:selected="${schedule.arrivalStation == null}">Chọn Ga đến</option>
+                <select id="arrivalStation" name="arrivalStationId" class="form-control" required onchange="updateRouteData()">
+                    <option value="">Chọn Ga đến...</option>
                     <option th:each="station : ${stations}"
                             th:value="${station.stationID}"
                             th:text="${station.name}"
@@ -71,36 +71,30 @@
                     </option>
                 </select>
             </div>
+        </div>
 
-            <div class="form-group">
-                <label for="distanceKm">
-                    <i class="fas fa-road"></i> Cự ly (km) <span>*</span>
-                </label>
-                <input type="number"
-                       id="distanceKm"
-                       name="distanceKm"
-                       th:value="${schedule.distanceKm}"
-                       class="form-control"
-                       step="0.1"
-                       min="0"
-                       placeholder="Nhập cự ly (km)"
-                       required>
-            </div>
+        <div id="routeDetails" style="display: none; margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 5px; border-left: 4px solid var(--admin-primary);">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="distanceDisplay">
+                        <i class="fas fa-road"></i> Cự ly (km)
+                    </label>
+                    <input type="text" id="distanceDisplay" class="form-control" readonly style="background: #f3e5f5;">
+                </div>
 
-            <div class="form-group">
-                <label for="estimatedTime">
-                    <i class="fas fa-hourglass-half"></i> Thời gian (phút) <span>*</span>
-                </label>
-                <input type="number"
-                       id="estimatedTime"
-                       name="estimatedTime"
-                       th:value="${schedule.estimatedTime}"
-                       class="form-control"
-                       min="0"
-                       placeholder="Nhập thời gian (phút)"
-                       required>
+                <div class="form-group">
+                    <label for="durationDisplay">
+                        <i class="fas fa-hourglass-half"></i> Thời gian chạy
+                    </label>
+                    <input type="text" id="durationDisplay" class="form-control" readonly style="background: #fff3e0;">
+                </div>
             </div>
         </div>
+
+        <!-- Hidden inputs để submit data -->
+        <input type="hidden" id="distanceKm" name="distanceKm">
+        <input type="hidden" id="estimatedTime" name="estimatedTime">
+        <input type="hidden" id="routeId" name="route.id">
 
         <h3 style="color: var(--admin-primary); margin: 30px 0 15px 0;">
             <i class="fas fa-clock"></i> Thời gian
@@ -116,6 +110,7 @@
                        name="departureDate"
                        th:value="${schedule.departureTime != null ? #temporals.format(schedule.departureTime, 'yyyy-MM-dd') : ''}"
                        class="form-control"
+                       onchange="calculateArrivalTime()"
                        required>
             </div>
 
@@ -128,31 +123,32 @@
                        name="departureTime"
                        th:value="${schedule.departureTime != null ? #temporals.format(schedule.departureTime, 'HH:mm') : ''}"
                        class="form-control"
+                       onchange="calculateArrivalTime()"
                        required>
             </div>
 
             <div class="form-group">
                 <label for="arrivalDate">
-                    <i class="fas fa-calendar-check"></i> Ngày đến <span>*</span>
+                    <i class="fas fa-calendar-check"></i> Ngày đến
                 </label>
                 <input type="date"
                        id="arrivalDate"
                        name="arrivalDate"
-                       th:value="${schedule.arrivalTime != null ? #temporals.format(schedule.arrivalTime, 'yyyy-MM-dd') : ''}"
                        class="form-control"
-                       required>
+                       readonly
+                       style="background: #f0f0f0;">
             </div>
 
             <div class="form-group">
                 <label for="arrivalTime">
-                    <i class="fas fa-clock"></i> Giờ đến <span>*</span>
+                    <i class="fas fa-clock"></i> Giờ đến
                 </label>
                 <input type="time"
                        id="arrivalTime"
                        name="arrivalTime"
-                       th:value="${schedule.arrivalTime != null ? #temporals.format(schedule.arrivalTime, 'HH:mm') : ''}"
                        class="form-control"
-                       required>
+                       readonly
+                       style="background: #f0f0f0;">
             </div>
         </div>
 
@@ -162,18 +158,19 @@
 
         <div class="form-grid">
             <div class="form-group">
-                <label for="basePrice">
+                <label for="basePriceDisplay">
                     <i class="fas fa-money-bill-wave"></i> Giá cơ bản (VNĐ) <span>*</span>
                 </label>
-                <input type="number"
-                       id="basePrice"
-                       name="basePrice"
-                       th:value="${schedule.basePrice}"
-                       class="form-control"
-                       step="1000"
-                       min="0"
-                       placeholder="Nhập giá cơ bản"
-                       required>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <div id="basePriceDisplay" class="form-control" style="background: #f0f0f0; display: flex; align-items: center; padding: 10px; border-radius: 4px; min-height: 38px;">
+                        <span id="basePriceValue" style="font-weight: bold; color: #28a745;">Chọn tuyến để tính giá</span>
+                    </div>
+                    <!-- Hidden input để submit giá trị thực -->
+                    <input type="hidden" id="basePrice" name="basePrice" th:value="${schedule.basePrice}">
+                    <span style="color: #666; font-size: 0.9em; white-space: nowrap;">
+                        <i class="fas fa-info-circle"></i> = km × 700 VNĐ
+                    </span>
+                </div>
             </div>
         </div>
 
@@ -187,3 +184,189 @@
         </div>
     </form>
 </div>
+
+<script>
+    const PRICE_PER_KM = 700;
+    const DEFAULT_TRAIN_SPEED_KMPH = 60;  // km/h default
+
+    // Store train speeds data on page load
+    let trainSpeedsMap = {};
+
+    // Convert minutes to readable format (e.g., 270 -> "4 giờ 30 phút")
+    function formatDuration(minutes) {
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+
+        if (hours === 0) {
+            return `${mins} phút`;
+        } else if (mins === 0) {
+            return `${hours} giờ`;
+        } else {
+            return `${hours} giờ ${mins} phút`;
+        }
+    }
+
+    /**
+     * Get train speed from selected train
+     */
+    function getSelectedTrainSpeed() {
+        const trainSelect = document.querySelector('select[name="train.id"]');
+        if (!trainSelect || !trainSelect.value) {
+            return DEFAULT_TRAIN_SPEED_KMPH;
+        }
+
+        const selectedOption = trainSelect.options[trainSelect.selectedIndex];
+        let trainSpeed = parseFloat(selectedOption.dataset.speed);
+
+        if (isNaN(trainSpeed) || trainSpeed <= 0) {
+            trainSpeed = DEFAULT_TRAIN_SPEED_KMPH;
+        }
+
+        return trainSpeed;
+    }
+
+    /**
+     * Tính giờ đến tự động
+     * Công thức:
+     *   - travel_time = distance_km / train_speed_kmph
+     *   - arrival_time = departure_time + travel_time
+     */
+    function calculateArrivalTime() {
+        const depDateInput = document.getElementById('departureDate').value;
+        const depTimeInput = document.getElementById('departureTime').value;
+        const distanceKm = parseFloat(document.getElementById('distanceKm').value) || 0;
+
+        if (!depDateInput || !depTimeInput || distanceKm <= 0) {
+            document.getElementById('arrivalDate').value = '';
+            document.getElementById('arrivalTime').value = '';
+            document.getElementById('durationDisplay').value = '';
+            return;
+        }
+
+        // Lấy vận tốc tàu từ dropdown train đã chọn
+        const trainSpeed = getSelectedTrainSpeed();
+
+        try {
+            // Tạo departure datetime
+            const depDateTime = new Date(`${depDateInput}T${depTimeInput}`);
+
+            // Tính thời gian chạy (phút)
+            const travelMinutes = (distanceKm / trainSpeed) * 60;
+
+            // Tính arrival datetime
+            const arrDateTime = new Date(depDateTime.getTime() + travelMinutes * 60000);
+
+            // Format output
+            const arrDate = arrDateTime.toISOString().split('T')[0];  // YYYY-MM-DD
+            const arrTime = String(arrDateTime.getHours()).padStart(2, '0') + ':' +
+                           String(arrDateTime.getMinutes()).padStart(2, '0');  // HH:MM
+
+            document.getElementById('arrivalDate').value = arrDate;
+            document.getElementById('arrivalTime').value = arrTime;
+
+            // Update duration display
+            document.getElementById('durationDisplay').value = formatDuration(Math.round(travelMinutes)) +
+                ' (' + Math.round(travelMinutes) + ' phút)';
+
+            // Store estimated time in hidden input
+            document.getElementById('estimatedTime').value = Math.round(travelMinutes);
+
+        } catch (error) {
+            console.error('Error calculating arrival time:', error);
+        }
+    }
+
+    async function updateRouteData() {
+        const depStationId = parseInt(document.getElementById('departureStation').value);
+        const arrStationId = parseInt(document.getElementById('arrivalStation').value);
+
+        if (!depStationId || !arrStationId) {
+            document.getElementById('routeDetails').style.display = 'none';
+            clearRouteData();
+            return;
+        }
+
+        if (depStationId === arrStationId) {
+            alert('Ga đi và ga đến không được trùng nhau!');
+            document.getElementById('arrivalStation').value = '';
+            clearRouteData();
+            return;
+        }
+
+        try {
+            // Gọi API tính distance
+            const response = await fetch(`/api/routes/distance?fromStationId=${depStationId}&toStationId=${arrStationId}`);
+            const data = await response.json();
+
+            if (data.error) {
+                alert('❌ ' + data.error);
+                document.getElementById('arrivalStation').value = '';
+                clearRouteData();
+                return;
+            }
+
+            // Update displays
+            document.getElementById('routeDetails').style.display = 'block';
+            document.getElementById('distanceDisplay').value = data.distance_km + ' km' +
+                (data.isIndirect ? ' (gián tiếp)' : ' (trực tiếp)');
+
+            // Update hidden inputs - IMPORTANT: Store numeric value, not formatted
+            document.getElementById('distanceKm').value = data.distance_km;
+            if (data.routeId) {
+                document.getElementById('routeId').value = data.routeId;
+            }
+
+            // Calculate and store price
+            const basePrice = Math.round(data.distance_km * PRICE_PER_KM);
+            document.getElementById('basePrice').value = basePrice;  // Store numeric value for submission
+            document.getElementById('basePriceValue').textContent = basePrice.toLocaleString('vi-VN') + ' VNĐ';  // Display formatted
+
+            // ✨ Auto-calculate arrival time khi route thay đổi
+            calculateArrivalTime();
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert('⚠️ Lỗi khi tính toán tuyến đường');
+            clearRouteData();
+        }
+    }
+
+    function clearRouteData() {
+        document.getElementById('routeDetails').style.display = 'none';
+        document.getElementById('distanceKm').value = '';
+        document.getElementById('estimatedTime').value = '';
+        document.getElementById('routeId').value = '';
+        document.getElementById('basePrice').value = '';
+        document.getElementById('basePriceValue').textContent = 'Chọn tuyến để tính giá';
+        document.getElementById('durationDisplay').value = '';
+        document.getElementById('arrivalDate').value = '';
+        document.getElementById('arrivalTime').value = '';
+    }
+
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', function() {
+        // Check if schedule was pre-selected (edit mode)
+        if (document.getElementById('departureStation').value &&
+            document.getElementById('arrivalStation').value) {
+            updateRouteData();
+        }
+
+        // If basePrice already has a value (edit mode), display it
+        const basePriceValue = document.getElementById('basePrice').value;
+        if (basePriceValue) {
+            document.getElementById('basePriceValue').textContent = parseInt(basePriceValue).toLocaleString('vi-VN') + ' VNĐ';
+        }
+    });
+
+    // Add change listener to train select to recalculate times if train changes
+    document.addEventListener('DOMContentLoaded', function() {
+        const trainSelect = document.querySelector('select[name="train.id"]');
+        if (trainSelect) {
+            trainSelect.addEventListener('change', function() {
+                // Recalculate arrival time when train speed might change
+                calculateArrivalTime();
+            });
+        }
+    });
+</script>
+
