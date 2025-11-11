@@ -1,29 +1,28 @@
 .booking-page-container {
     display: flex;
-    flex-wrap: wrap; /* Để responsive trên di động */
-    max-width: 1600px;
-    margin: 20px auto;
+    flex-wrap: wrap;
+    max-width: 1400px;
+    margin: 80px auto 20px;
     gap: 25px;
-    padding: 0 20px; /* Thêm padding cho viền ngoài */
+    padding: 0 20px;
 }
 
 .booking-left {
-    flex: 3; /* Bên trái chiếm 3 phần */
-    min-width: 600px; /* Ngăn không cho bị bóp quá nhỏ */
+    flex: 3;
+    min-width: 700px;
 }
 
 .booking-right {
-    flex: 1; /* Bên phải chiếm 1 phần */
-    min-width: 300px;
-
-    /* Làm cho sidebar bên phải dính theo khi cuộn */
+    flex: 1;
+    min-width: 350px;
     position: sticky;
-    top: 20px;
+    top: 100px;
     align-self: flex-start;
+    height: fit-content;
 }
 
-/* Responsive cho di động */
-@media (max-width: 900px) {
+/* Responsive */
+@media (max-width: 1100px) {
     .booking-page-container {
         flex-direction: column;
     }
@@ -31,7 +30,7 @@
         min-width: 100%;
     }
     .booking-right {
-        position: static; /* Hủy sticky trên di động */
+        position: static;
     }
 }
 
@@ -40,21 +39,32 @@
 ------------------------- */
 .booking-card {
     background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: 1px solid #e1e5e9;
     margin-bottom: 25px;
+    overflow: hidden;
 }
+
 .booking-card-header {
-    padding: 15px 20px;
-    border-bottom: 1px solid #e9ecef;
+    padding: 18px 24px;
+    border-bottom: 1px solid #f0f0f0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
 }
+
 .booking-card-header h4 {
     margin: 0;
-    color: #333;
+    font-size: 1.2rem;
+    font-weight: 600;
 }
+
+.booking-card-header h4 i {
+    margin-right: 10px;
+}
+
 .booking-card-body {
-    padding: 20px;
+    padding: 24px;
 }
 
 /* -------------------------
@@ -62,108 +72,192 @@
 ------------------------- */
 .seat-legend {
     display: flex;
-    gap: 20px;
-    margin-bottom: 20px;
-    font-size: 0.9rem;
-}
-.seat-legend .seat {
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
-    display: inline-block;
-    vertical-align: middle;
-    margin-right: 5px;
+    gap: 25px;
+    margin-bottom: 25px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
 }
 
-.selection-summary {
-    background: #f8f9fa;
-    padding: 15px;
-    margin: 20px 0;
-    border-radius: 8px;
-    border: 1px solid #e0e0e0;
+.seat-legend div {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #555;
 }
-.selection-summary p { margin: 0 0 10px 0; }
-#selected-seats-list { color: #555; }
+
+.seat-legend .seat {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-right: 8px;
+    border: 2px solid;
+}
+
+.seat-legend .seat.available {
+    background-color: #ffffff;
+    border-color: #28a745;
+}
+
+.seat-legend .seat.selected {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.seat-legend .seat.booked {
+    background-color: #dc3545;
+    border-color: #c82333;
+}
+
+/* Ẩn phần ghế đã chọn bên trái */
+.selection-summary {
+    display: none;
+}
 
 .carriage-section {
-    margin-bottom: 30px;
-    border: 1px solid #eee;
-    border-radius: 8px;
-    padding: 20px;
+    margin-bottom: 35px;
+    border: 2px solid #e1e5e9;
+    border-radius: 12px;
+    padding: 25px;
+    background: #fff;
+    transition: all 0.3s ease;
 }
+
+.carriage-section:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
+}
+
+.carriage-section h6 {
+    margin: 0 0 20px 0;
+    font-size: 1.1rem;
+    color: #2c3e50;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f8f9fa;
+    display: flex;
+    align-items: center;
+}
+
+.carriage-section h6 i {
+    margin-right: 10px;
+    color: #667eea;
+}
+
 .seat-map {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
     max-width: 800px;
     margin: auto;
 }
+
 .seat-row-container {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 20px;
+    margin-bottom: 8px;
 }
+
 .row-label {
-    width: 60px;
+    width: 70px;
     text-align: right;
-    font-size: 0.9rem;
-    color: #666;
+    font-size: 0.85rem;
+    color: #6c757d;
     flex-shrink: 0;
+    font-weight: 500;
 }
+
 .seat-row {
     display: flex;
     justify-content: space-between;
     width: 100%;
     align-items: center;
+    gap: 15px;
 }
+
 .seat-group {
     display: flex;
-    gap: 5px;
+    gap: 8px;
 }
+
 .aisle {
-    width: 30px; /* Khoảng cách lối đi */
+    width: 40px;
     flex-shrink: 0;
+    position: relative;
 }
+
+.aisle::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px;
+    height: 80%;
+    background: linear-gradient(to bottom, transparent, #dee2e6, transparent);
+}
+
 .seat-container {
     position: relative;
 }
+
 .seat {
-    width: 40px;
-    height: 40px;
-    border-radius: 5px;
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 0.8rem;
-    font-weight: bold;
+    font-size: 0.75rem;
+    font-weight: 600;
     cursor: pointer;
-    border: 1px solid;
+    border: 2px solid;
     position: relative;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
 .seat-price {
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     font-weight: normal;
+    margin-top: 2px;
 }
 
 /* Seat Status */
 .seat.available {
-    background-color: #fff;
-    border-color: #0d6efd;
-    color: #0d6efd;
+    background-color: #ffffff;
+    border-color: #28a745;
+    color: #28a745;
 }
+
 .seat.available.selectable:hover {
-    background-color: #e6f0ff;
+    background-color: #e8f5e8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
 }
+
 .seat.selected {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
-    color: #fff;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border-color: #0056b3;
+    color: #ffffff;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
 }
+
 .seat.booked, .seat.occupied {
-    background-color: #e9ecef;
-    border-color: #ced4da;
-    color: #6c757d;
+    background-color: #dc3545;
+    border-color: #c82333;
+    color: #ffffff;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Đảm bảo ghế đã đặt không thể chọn */
+.seat.booked:hover {
+    transform: none;
     cursor: not-allowed;
 }
 
@@ -171,52 +265,152 @@
 .seat-checkbox {
     display: none;
 }
-/* Styling khi checkbox được chọn */
-.seat-checkbox:checked + .seat.available {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
-    color: #fff;
-}
-
-.form-actions {
-    text-align: center;
-    margin-top: 20px;
-}
 
 /* -------------------------
    CSS TÓM TẮT (BÊN PHẢI)
 ------------------------- */
+.schedule-info-box {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+}
+
 .schedule-info-box .info-row {
     display: flex;
     justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px dashed #eee;
+    padding: 10px 0;
+    border-bottom: 1px dashed #dee2e6;
+    font-size: 0.95rem;
 }
+
 .schedule-info-box .info-row:last-child {
     border-bottom: none;
+}
+
+.schedule-info-box .info-row strong {
+    color: #495057;
 }
 
 #summary-content .summary-item {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f8f9fa;
 }
-#summary-seats-list p {
+
+#summary-seats-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.seat-summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #007bff;
     font-size: 0.9rem;
-    color: #666;
-    text-align: right;
 }
+
+.seat-summary-item .seat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.seat-summary-item .seat-number {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.seat-summary-item .seat-type {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.seat-summary-item .seat-price {
+    font-weight: 600;
+    color: #28a745;
+}
+
 .total-amount-section {
     display: flex;
     justify-content: space-between;
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: var(--primary-color, #0d6efd); /* Sử dụng CSS variable nếu có */
-    margin-top: 15px;
-}
-.booking-navigation {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #2c3e50;
     margin-top: 20px;
+    padding-top: 15px;
+    border-top: 2px dashed #dee2e6;
 }
+
+.booking-navigation {
+    margin-top: 25px;
+}
+
 .booking-navigation .btn {
     width: 100%;
+    padding: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.booking-navigation .btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.booking-navigation .btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Scrollbar styling */
+#summary-seats-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+#summary-seats-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+#summary-seats-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+#summary-seats-list::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Đảm bảo ghế đã đặt hiển thị màu đỏ và không thể chọn */
+.seat.booked, .seat.occupied {
+    background-color: #dc3545 !important;
+    border-color: #c82333 !important;
+    color: #ffffff !important;
+    cursor: not-allowed !important;
+    opacity: 0.7;
+}
+
+/* Đảm bảo ghế đã chọn hiển thị màu xanh */
+.seat.selected {
+    background: linear-gradient(135deg, #007bff, #0056b3) !important;
+    border-color: #0056b3 !important;
+    color: #ffffff !important;
+}
+
+/* Đảm bảo ghế có sẵn hiển thị màu xanh lá */
+.seat.available {
+    background-color: #ffffff !important;
+    border-color: #28a745 !important;
+    color: #28a745 !important;
 }

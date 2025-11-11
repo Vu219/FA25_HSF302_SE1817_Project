@@ -24,10 +24,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Gắn sự kiện cho nút tiếp theo
     document.getElementById('next-btn').addEventListener('click', handleNextStep);
-
-    // Get initial carriage section styles
-    const carriageStyles = getCarriageSectionStyles();
-    console.log('Carriage Section Styles:', carriageStyles);
 });
 
 /**
@@ -112,56 +108,6 @@ function loadSeatLayout(scheduleId) {
 }
 
 /**
- * Sets styles on an element and returns a promise
- */
-async function setElementStyles(element, styles) {
-    return new Promise((resolve) => {
-        if (!element) {
-            console.warn('Element not found for styling');
-            resolve(false);
-            return;
-        }
-
-        Object.assign(element.style, styles);
-
-        // Use requestAnimationFrame to ensure styles are applied
-        requestAnimationFrame(() => {
-            resolve(true);
-        });
-    });
-}
-
-/**
- * Manages seat map layout and visibility
- */
-async function manageSeatMapLayout(seatMap) {
-    // Set basic grid layout
-    await setElementStyles(seatMap, {
-        gridTemplateColumns: 'repeat(6, 1fr)',
-        gridTemplateRows: 'repeat(4, 1fr)',
-        gap: '8px'
-    });
-
-    // Ensure only 24 seats are visible
-    const seats = Array.from(seatMap.children);
-    for (let i = 0; i < seats.length; i++) {
-        if (i >= 24) {
-            // Hide seats beyond 24
-            await setElementStyles(seats[i], {
-                display: 'none'
-            });
-        } else {
-            // Add margin after every 3rd seat for aisle
-            if ((i + 1) % 3 === 0 && (i + 1) % 6 !== 0) {
-                await setElementStyles(seats[i], {
-                    marginRight: '20px'
-                });
-            }
-        }
-    }
-}
-
-/**
  * Vẽ sơ đồ ghế lên UI
  */
 function renderSeatLayout() {
@@ -201,7 +147,7 @@ function renderSeatLayout() {
             const seatDiv = document.createElement('div');
             const isAvailable = seat.isAvailable === true;
 
-            seatDiv.className = `seat ${isAvailable ? 'available' : 'occupied'}`;
+            seatDiv.className = `seat ${isAvailable ? 'available' : 'booked'}`;
             if (selectedSeats.some(s => s.seatID === seat.seatID)) {
                 seatDiv.classList.remove('available');
                 seatDiv.classList.add('selected');
@@ -260,30 +206,36 @@ function toggleSeat(seat) {
  */
 function updateBookingSummary() {
     const summarySeatsList = document.getElementById('summary-seats-list');
+    const totalAmountEl = document.getElementById('total-amount');
+    const nextBtn = document.getElementById('next-btn');
 
     if (selectedSeats.length === 0) {
-        summarySeatsList.innerHTML = '<p class="text-muted">Chưa chọn ghế nào</p>';
-        totalAmount = 0;
-        document.getElementById('next-btn').disabled = true;
+        summarySeatsList.innerHTML = '<p class="text-muted" style="text-align: center; padding: 20px;">Chưa chọn ghế nào</p>';
+        totalAmountEl.textContent = '0 VNĐ';
+        nextBtn.disabled = true;
     } else {
         let content = '';
-        totalAmount = 0;
+        let totalAmount = 0;
 
         selectedSeats.forEach(seat => {
             const seatPrice = parseFloat(seat.price);
+            totalAmount += seatPrice;
+
             content += `
-                <div class="seat-item">
-                    <span>${seat.seatNumber} (${seat.seatTypeName})</span>
-                    <span>${seatPrice.toLocaleString('vi-VN')} VNĐ</span>
+                <div class="seat-summary-item">
+                    <div class="seat-info">
+                        <span class="seat-number">${seat.seatNumber}</span>
+                        <span class="seat-type">${seat.seatTypeName}</span>
+                    </div>
+                    <span class="seat-price">${seatPrice.toLocaleString('vi-VN')} VNĐ</span>
                 </div>
             `;
-            totalAmount += seatPrice;
         });
-        summarySeatsList.innerHTML = content;
-        document.getElementById('next-btn').disabled = false;
-    }
 
-    document.getElementById('total-amount').textContent = totalAmount.toLocaleString('vi-VN') + ' VNĐ';
+        summarySeatsList.innerHTML = content;
+        totalAmountEl.textContent = totalAmount.toLocaleString('vi-VN') + ' VNĐ';
+        nextBtn.disabled = false;
+    }
 }
 
 /**
@@ -309,79 +261,4 @@ function validateSeatSelection() {
         return false;
     }
     return true;
-}
-
-/**
- * Lấy thông tin kiểu dáng của phần toa xe và sơ đồ ghế
- */
-function getCarriageSectionStyles() {
-    const carriageSection = document.querySelector('.carriage-section');
-    let data = {};
-
-    if (carriageSection) {
-        const carriageStyles = window.getComputedStyle(carriageSection);
-        const seatMap = carriageSection.querySelector('.seat-map');
-        let seatMapStyles = {};
-
-        if (seatMap) {
-            seatMapStyles = window.getComputedStyle(seatMap);
-        }
-
-        data = {
-            carriageSectionStyles: {
-                display: carriageStyles['display'],
-                flexDirection: carriageStyles['flex-direction'],
-                gridTemplateColumns: carriageStyles['grid-template-columns'],
-                gridTemplateRows: carriageStyles['grid-template-rows'],
-                width: carriageStyles['width'],
-                height: carriageStyles['height'],
-            },
-            seatMapStyles: {
-                display: seatMapStyles['display'],
-                gridTemplateColumns: seatMapStyles['grid-template-columns'],
-                flexWrap: seatMapStyles['flex-wrap'],
-                width: seatMapStyles['width'],
-                height: seatMapStyles['height'],
-            },
-            seatMapChildrenCount: seatMap ? seatMap.children.length : 0,
-            parentCarriagesContainerStyles: {
-                display: window.getComputedStyle(carriageSection.parentElement)['display'],
-                flexDirection: window.getComputedStyle(carriageSection.parentElement)['flex-direction'],
-                gridTemplateColumns: window.getComputedStyle(carriageSection.parentElement)['grid-template-columns'],
-            }
-        };
-    } else {
-        data = {
-            error: ".carriage-section not found."
-        };
-    }
-
-    return data;
-}
-
-/**
- * Gets carriage container styles
- */
-function getCarriagesContainerStyles() {
-    const carriagesContainer = document.querySelector('div#carriages-container');
-    let data = {};
-
-    if (carriagesContainer) {
-        const containerStyles = window.getComputedStyle(carriagesContainer);
-        data = {
-            carriagesContainerStyles: {
-                display: containerStyles['display'],
-                flexDirection: containerStyles['flex-direction'],
-                gridTemplateColumns: containerStyles['grid-template-columns'],
-                width: containerStyles['width'],
-                height: containerStyles['height'],
-            },
-            carriageSectionsCount: carriagesContainer.children.length
-        };
-    } else {
-        data = {
-            error: "div#carriages-container not found."
-        };
-    }
-    return data;
 }

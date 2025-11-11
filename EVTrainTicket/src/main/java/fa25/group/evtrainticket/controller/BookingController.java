@@ -76,11 +76,9 @@ public class BookingController {
                     .filter(s -> "AVAILABLE".equals(s.getStatus().toString()))
                     .count();
 
-            long bookedSeats = totalSeats - availableSeats;
 
             model.addAttribute("totalSeats", totalSeats);
             model.addAttribute("availableSeats", availableSeats);
-            model.addAttribute("bookedSeats", bookedSeats);
 
         } catch (Exception e) {
             model.addAttribute("error", "Lỗi khi tải sơ đồ ghế: " + e.getMessage());
