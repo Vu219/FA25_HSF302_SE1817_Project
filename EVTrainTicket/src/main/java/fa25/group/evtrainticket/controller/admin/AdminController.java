@@ -495,6 +495,25 @@ public class AdminController {
         return "redirect:/admin/train";
     }
 
+    @GetMapping("/train/view/{trainID}")
+    public ModelAndView viewTrainDetails(@PathVariable("trainID") Integer trainID,
+                                         HttpSession session,
+                                         RedirectAttributes redirectAttributes) {
+        if (!isAdmin(session)) return new ModelAndView("redirect:/error");
+
+        Train train = trainService.getTrainById(trainID);
+        if (train == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy tàu ID: " + trainID);
+            return new ModelAndView("redirect:/admin/train");
+        }
+
+        Map<String, Object> seatStats = trainService.getSeatStatsByTrain(trainID);
+        ModelAndView mav = createAdminView("admin/view-train", "train", session);
+        mav.addObject("train", train);
+        mav.addObject("seatStats", seatStats);
+        return mav;
+    }
+
     /**
      * ================================== CARRIAGE TYPE =====================================
      */
@@ -923,6 +942,28 @@ public class AdminController {
             return "redirect:/admin/stations/edit/" + station.getStationID();
         }
     }
+
+    @GetMapping("/stations/view/{stationID}")
+    public ModelAndView viewStationDetails(@PathVariable("stationID") Integer stationID,
+                                           HttpSession session,
+                                           RedirectAttributes redirectAttributes) {
+        ModelAndView mav = createAdminView("admin/view-station", "stations", session);
+        if (mav.getViewName().startsWith("redirect")) return mav;
+
+        try {
+            Station station = stationService.getStationsByID(stationID);
+            List<Schedule> schedules = stationService.getSchedulesForStation(stationID);
+
+            mav.addObject("station", station);
+            mav.addObject("schedules", schedules);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy ga ID: " + stationID);
+            return new ModelAndView("redirect:/admin/stations");
+        }
+
+        return mav;
+    }
+
 
     /*====================== USER ============================*/
     @GetMapping("/users")

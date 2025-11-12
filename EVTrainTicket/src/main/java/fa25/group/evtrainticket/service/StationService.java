@@ -1,5 +1,6 @@
 package fa25.group.evtrainticket.service;
 
+import fa25.group.evtrainticket.entity.Schedule;
 import fa25.group.evtrainticket.entity.Station;
 
 import java.util.List;
@@ -10,4 +11,5 @@ public interface StationService {
     Station saveStation(Station station);
     Station updateStation(Integer stationID, Station newStationData);
     void deleteStation(Integer stationID);
+    List<Schedule> getSchedulesForStation(Integer stationID);
 }

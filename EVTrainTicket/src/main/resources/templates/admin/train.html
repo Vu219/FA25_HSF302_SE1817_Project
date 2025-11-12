@@ -85,6 +85,9 @@
                             <a th:href="@{'/admin/train/edit/' + ${train.trainID}}" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Sửa</a>
                             <a th:href="@{'/admin/train/delete/' + ${train.trainID}}" class="btn btn-danger btn-sm"
                                onclick="return confirm('Bạn có chắc chắn muốn xóa tàu này không?');"><i class="fas fa-trash"></i> Xóa</a>
+                            <a th:href="@{'/admin/train/view/' + ${train.trainID}}" class="btn btn-info btn-sm">
+                                <i class="fa fa-eye"></i> View
+                            </a>
                         </div>
                     </td>
                 </tr>

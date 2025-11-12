@@ -1,7 +1,6 @@
 package fa25.group.evtrainticket.service.Impl;
 
-import fa25.group.evtrainticket.entity.Schedule;
-import fa25.group.evtrainticket.entity.Train;
+import fa25.group.evtrainticket.entity.*;
 import fa25.group.evtrainticket.repository.ScheduleRepository;
 import fa25.group.evtrainticket.repository.TrainRepository;
 import fa25.group.evtrainticket.service.TrainService;
@@ -11,7 +10,9 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,7 +29,7 @@ public class TrainServiceImpl implements TrainService {
         }
 
         List<Schedule> trainSchedules = new ArrayList<>();
-        if(train.getSchedules() != null && !train.getSchedules().isEmpty()) {
+        if(!"BẢO TRÌ".equalsIgnoreCase(train.getStatus()) && train.getSchedules() != null && !train.getSchedules().isEmpty()) {
             checkSchedules(train.getSchedules(), null);
             for (Schedule s : train.getSchedules()) {
                 Schedule dbSchedule = scheduleRepository.findById(s.getScheduleID())
@@ -78,7 +79,7 @@ public class TrainServiceImpl implements TrainService {
         train.setNotes(trainDetails.getNotes());
 
         // Gán schedule mới
-        if (trainDetails.getSchedules() != null && !trainDetails.getSchedules().isEmpty()) {
+        if (!"BẢO TRÌ".equalsIgnoreCase(train.getStatus()) && trainDetails.getSchedules() != null && !trainDetails.getSchedules().isEmpty()) {
             List<Schedule> newSchedules = trainDetails.getSchedules().stream()
                     .filter(s -> s.getScheduleID() != null)
                     .map(s -> scheduleRepository.findById(s.getScheduleID())
@@ -97,7 +98,10 @@ public class TrainServiceImpl implements TrainService {
 
     @Override
     public void deleteTrain(Integer id) {
-        trainRepository.deleteById(id);
+        Train train = trainRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Train not found"));
+        train.getSchedules().forEach(schedule -> schedule.setTrain(null));
+        trainRepository.delete(train);
     }
 
     @Override
@@ -169,4 +173,44 @@ public class TrainServiceImpl implements TrainService {
         }
     }
 
+    @Override
+    public Map<String, Object> getSeatStatsByTrain(Integer trainId) {
+        Train train = trainRepository.findById(trainId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tàu ID: " + trainId));
+
+        int totalSeats = 0;
+        int availableSeats = 0;
+        int bookedSeats = 0;
+
+        // Map chứa thống kê theo loại toa
+        List<Map<String, Object>> carriageTypeStats = new ArrayList<>();
+
+        for (Carriage carriage : train.getCarriages()) {
+            CarriageType type = carriage.getCarriageType();
+            List<Seat> seats = carriage.getSeats();
+
+            int total = seats.size();
+            int available = (int) seats.stream().filter(Seat::getIsAvailable).count();
+            int booked = total - available;
+
+            totalSeats += total;
+            availableSeats += available;
+            bookedSeats += booked;
+
+            Map<String, Object> typeStat = new HashMap<>();
+            typeStat.put("carriageType", type.getTypeName());
+            typeStat.put("total", total);
+            typeStat.put("available", available);
+            typeStat.put("booked", booked);
+            carriageTypeStats.add(typeStat);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalSeats", totalSeats);
+        result.put("availableSeats", availableSeats);
+        result.put("bookedSeats", bookedSeats);
+        result.put("carriageTypeStats", carriageTypeStats);
+
+        return result;
+    }
 }
