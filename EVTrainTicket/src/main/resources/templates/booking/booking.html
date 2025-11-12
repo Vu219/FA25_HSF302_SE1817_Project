@@ -102,14 +102,14 @@
                                                                    class="seat available selectable"
                                                                    th:title="${seat.seatNumber + ' - ' + seat.seatTypeName + ' - ' + seat.price + ' VNĐ'}">
                                                                 <span th:text="${seat.seatNumber}">01</span>
-                                                                <span class="seat-price" th:text="${(seat.price / 1000) + 'k'}"></span>
+                                                                <span class="seat-price" th:text="${#numbers.formatDecimal(seat.price, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}"></span>
                                                             </label>
                                                         </div>
 
                                                         <div th:if="${seat.status.name() == 'BOOKED'}" class="seat booked"
                                                              th:title="${seat.seatNumber + ' - Đã đặt'}">
                                                             <span th:text="${seat.seatNumber}">01</span>
-                                                            <span class="seat-price" th:text="${(seat.price / 1000) + 'k'}"></span>
+                                                            <span class="seat-price" th:text="${#numbers.formatDecimal(seat.price, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}"></span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -135,7 +135,7 @@
                                                                    class="seat available selectable"
                                                                    th:title="${seat.seatNumber + ' - ' + seat.seatTypeName + ' - ' + seat.price + ' VNĐ'}">
                                                                 <span th:text="${seat.seatNumber}">03</span>
-                                                                <span class="seat-price" th:text="${(seat.price / 1000) + 'k'}"></span>
+                                                                <span class="seat-price" th:text="${#numbers.formatDecimal(seat.price, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}"></span>
                                                             </label>
                                                         </div>
 

@@ -33,33 +33,38 @@ public class SeatServiceImpl implements SeatService {
 
     @Override
     public List<CarriageLayoutDto> getSeatLayout(int scheduleId) {
-        // Bước A: Lấy tất cả ghế vật lý
+        // Bước A: Lấy schedule để có basePrice
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new RuntimeException("Schedule not found with ID: " + scheduleId));
+
+        // Bước B: Lấy tất cả ghế vật lý
         List<Seat> allSeats = seatRepository.findByCarriage_Train_Schedules_ScheduleID(scheduleId);
 
         if (allSeats.isEmpty()) {
             return new ArrayList<>();
         }
 
-        // Bước B: Chuyển đổi Entity sang DTO
+        // Bước C: Chuyển đổi Entity sang DTO với giá được tính toán
         Map<Integer, List<seatDto>> seatsByCarriageId = new HashMap<>();
         Map<Integer, Carriage> carriageMap = new HashMap<>();
 
         for (Seat seat : allSeats) {
+            // TÍNH TOÁN GIÁ VÉ THỰC TẾ
+            BigDecimal finalPrice = calculateSeatPrice(schedule, seat);
+
             seatDto dto = new seatDto();
             dto.setSeatID(seat.getSeatID());
             dto.setSeatNumber(seat.getSeatNumber());
             dto.setRowNumber(seat.getRowNumber());
             dto.setColumnNum(seat.getColumnNum());
-            dto.setPrice(BigDecimal.valueOf(100000.0)); // Cần sửa logic giá sau này
+            dto.setPrice(finalPrice); // SỬA: Dùng giá đã tính toán
             dto.setSeatTypeName(seat.getSeatType().getTypeName());
             dto.setCarriageNumber(seat.getCarriage().getCarriageNumber());
 
-
             // Kiểm tra ghế có hỏng vật lý không
             if (Boolean.TRUE.equals(seat.getIsAvailable())) {
-                dto.setStatus(SeatStatus.AVAILABLE); // Dùng Enum
+                dto.setStatus(SeatStatus.AVAILABLE);
             } else {
-                // Nếu ghế hỏng -> Coi như đã đặt (BOOKED) để hiện đỏ/xám
                 dto.setStatus(SeatStatus.BOOKED);
             }
 
@@ -101,7 +106,13 @@ public class SeatServiceImpl implements SeatService {
         return layoutResult;
     }
 
+    private BigDecimal calculateSeatPrice(Schedule schedule, Seat seat) {
+        BigDecimal basePrice = schedule.getBasePrice();
+        BigDecimal seatMultiplier = seat.getSeatType().getPriceMultiplier();
+        BigDecimal carriageMultiplier = seat.getCarriage().getCarriageType().getPriceMultiplier();
 
+        return basePrice.multiply(seatMultiplier).multiply(carriageMultiplier);
+    }
 
     private seatDto convertToDto(Seat seat) {
         seatDto dto = new seatDto();
