@@ -20,4 +20,6 @@ public interface SeatRepository extends JpaRepository<Seat, Integer> {
     Seat findBySeatNumberAndCarriage_CarriageID(String seatNumber, Integer carriageId);
 
     boolean existsBySeatIDAndSeatNumber(Integer seatID, String seatNumber);
+
+    List<Seat> findByCarriage_Train_Schedules_ScheduleID(Integer scheduleId);
 }

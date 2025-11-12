@@ -790,3 +790,12 @@ header {
     margin: 0;
     color: #aaa;
 }
+
+.booking-page-container {
+    margin-top: 80px; /* Tạo khoảng cách với header cố định */
+}
+
+/* Đảm bảo footer đồng bộ */
+.site-footer {
+    margin-top: 40px;
+}

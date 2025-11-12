@@ -1,5 +1,7 @@
 package fa25.group.evtrainticket.service.Impl;
 
+import fa25.group.evtrainticket.dto.BookingResponseDto;
+import fa25.group.evtrainticket.mapper.BookingMapper;
 import fa25.group.evtrainticket.repository.*;
 import fa25.group.evtrainticket.dto.BookingRequestDto;
 import fa25.group.evtrainticket.entity.*;
@@ -8,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -30,6 +33,9 @@ public class BookingServiceImpl implements BookingService {
 
     @Autowired
     private TicketRepository ticketRepository;
+
+    @Autowired
+    private BookingMapper bookingMapper;
 
     @Override
     public Booking findByBookingCode(String bookingCode) {
@@ -64,7 +70,7 @@ public class BookingServiceImpl implements BookingService {
             Schedule schedule = scheduleRepository.findById(bookingRequest.getScheduleId())
                     .orElseThrow(() -> new RuntimeException("Schedule not found with ID: " + bookingRequest.getScheduleId()));
 
-            // 3. Validate seat availability
+            // 3. Validate seat availability (Physical check only)
             List<Seat> selectedSeats = new ArrayList<>();
             double totalAmount = 0.0;
 
@@ -72,13 +78,17 @@ public class BookingServiceImpl implements BookingService {
                 Seat seat = seatRepository.findById(seatId)
                         .orElseThrow(() -> new RuntimeException("Seat not found with ID: " + seatId));
 
+                // Check if seat is PHYSICALLY broken/unavailable
                 if (!seat.getIsAvailable()) {
-                    throw new RuntimeException("Seat " + seat.getSeatNumber() + " is not available");
+                    throw new RuntimeException("Seat " + seat.getSeatNumber() + " is currently under maintenance");
                 }
+
+                // TODO: Ideally, add a check here using TicketRepository to ensure
+                // the seat isn't already booked for this specific ScheduleID.
 
                 selectedSeats.add(seat);
 
-                // Calculate price (base price * seat type multiplier * carriage type multiplier)
+                // Calculate price
                 double seatPrice = schedule.getBasePrice().doubleValue() *
                         seat.getSeatType().getPriceMultiplier().doubleValue() *
                         seat.getCarriage().getCarriageType().getPriceMultiplier().doubleValue();
@@ -94,10 +104,9 @@ public class BookingServiceImpl implements BookingService {
             booking.setStatus("PENDING");
             booking.setNotes(bookingRequest.getNotes());
 
-            // Save booking first to get the ID
             booking = bookingRepository.save(booking);
 
-            // 5. Create tickets and mark seats as unavailable
+            // 5. Create tickets
             List<Ticket> tickets = new ArrayList<>();
             for (Seat seat : selectedSeats) {
                 Ticket ticket = new Ticket();
@@ -113,12 +122,8 @@ public class BookingServiceImpl implements BookingService {
 
                 tickets.add(ticket);
 
-                // Mark seat as unavailable
-                seat.setIsAvailable(false);
-                seatRepository.save(seat);
             }
 
-            // Save all tickets
             ticketRepository.saveAll(tickets);
             booking.setTickets(tickets);
 
@@ -218,16 +223,32 @@ public class BookingServiceImpl implements BookingService {
 
         for (Ticket ticket : tickets) {
             ticket.setStatus("CANCELLED");
-            Seat seat = ticket.getSeat();
-            if (seat != null) {
-                seat.setIsAvailable(true);
-                seatRepository.save(seat); // Lưu lại trạng thái ghế
-            }
+
         }
 
         return bookingRepository.save(booking);
     }
+    @Override
+    public List<BookingResponseDto> getUserBookingsWithFilter(Integer userId, String status, LocalDate fromDate, LocalDate toDate) {
+        // 1. Convert LocalDate (from HTML) to LocalDateTime (for Database)
+        LocalDateTime startDateTime = null;
+        LocalDateTime endDateTime = null;
 
+        if (fromDate != null) {
+            startDateTime = fromDate.atStartOfDay(); // 00:00:00
+        }
+
+        if (toDate != null) {
+            endDateTime = toDate.atTime(23, 59, 59); // 23:59:59
+        }
+
+        // 2. Call the Repository
+        List<Booking> bookings = bookingRepository.findFilteredBookings(userId, status, startDateTime, endDateTime);
+
+        // 3. Convert to DTOs using your Mapper
+        // Your BookingMapper has a method 'toDtoList' that returns List<BookingResponseDto>
+        return bookingMapper.toDtoList(bookings);
+    }
     @Override
     public boolean validateSeatAvailability(Integer scheduleId, List<Integer> seatIds) {
         // Implementation details...

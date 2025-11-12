@@ -52,8 +52,8 @@
                         <th><i class="fas fa-calendar"></i> Khởi hành</th>
                         <th><i class="fas fa-calendar-check"></i> Đến</th>
                         <th><i class="fas fa-road"></i> Khoảng cách</th>
+                        <th><i class="fas fa-pause-circle"></i> Thời gian dừng</th>
                         <th><i class="fas fa-dollar-sign"></i> Giá</th>
-                        <th><i class="fas fa-info-circle"></i> Trạng thái</th>
                         <th><i class="fas fa-cog"></i> Hành động</th>
                     </tr>
                 </thead>
@@ -99,16 +99,15 @@
                             <i class="fas fa-road"></i>
                             <span th:text="${schedule.distanceKm} + ' km'"></span>
                         </td>
+                        <td data-label="Stop Duration">
+                            <i class="fas fa-pause-circle"></i>
+                            <span th:if="${schedule.stopDuration != null}" th:text="${schedule.stopDuration} + ' phút'"></span>
+                            <span th:if="${schedule.stopDuration == null}" style="color: #6c757d;">-</span>
+                        </td>
                         <td data-label="Price">
                             <strong style="color: var(--admin-success);">
                                 <span th:text="${#numbers.formatDecimal(schedule.basePrice, 0, 'COMMA', 0, 'POINT')}"></span> VNĐ
                             </strong>
-                        </td>
-                        <td data-label="Status">
-                            <span th:class="${schedule.status == 'ACTIVE' ? 'badge badge-success' :
-                                           (schedule.status == 'INACTIVE' ? 'badge badge-warning' : 'badge badge-danger')}"
-                                  th:text="${schedule.status}">
-                            </span>
                         </td>
                         <td data-label="Actions">
                             <div class="action-buttons">

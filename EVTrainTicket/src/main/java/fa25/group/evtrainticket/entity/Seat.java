@@ -1,6 +1,7 @@
 package fa25.group.evtrainticket.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import fa25.group.evtrainticket.dto.SeatStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -43,4 +44,7 @@ public class Seat {
     @OneToMany(mappedBy = "seat", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Ticket> tickets = new ArrayList<>();
+
+    @Transient // Không lưu vào DB
+    private SeatStatus status = SeatStatus.AVAILABLE;
 }

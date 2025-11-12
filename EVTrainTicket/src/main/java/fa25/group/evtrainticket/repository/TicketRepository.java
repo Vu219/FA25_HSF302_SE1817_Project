@@ -27,6 +27,11 @@ public interface TicketRepository extends JpaRepository<Ticket, Integer> {
     @Query("SELECT t FROM Ticket t WHERE t.schedule.scheduleID = ?1 AND t.status IN ?2")
     List<Ticket> findByScheduleScheduleIDAndBookingStatusIn(Integer scheduleId, List<String> statuses);
 
+    // --- ADD THIS METHOD ---
+    @Query("SELECT t.seat.seatID FROM Ticket t WHERE t.schedule.scheduleID = :scheduleId AND t.status IN :statuses")
+    List<Integer> findBookedSeatIds(@Param("scheduleId") Integer scheduleId, @Param("statuses") List<String> statuses);
+    // -----------------------
+
     @Query("SELECT COUNT(t) FROM Ticket t JOIN t.booking b WHERE CAST(b.bookingDate AS date) BETWEEN :startDate AND :endDate")
     long countTickets(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 

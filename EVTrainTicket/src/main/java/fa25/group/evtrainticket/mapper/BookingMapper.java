@@ -120,7 +120,6 @@ public class BookingMapper {
         if (schedule.getArrivalStation() != null) {
             dto.setDestination(schedule.getArrivalStation().getName());
         }
-        dto.setStatus(schedule.getStatus());
 
         // Add train name
         if (schedule.getTrain() != null) {

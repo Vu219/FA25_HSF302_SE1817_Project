@@ -56,8 +56,7 @@ public class ScheduleController {
                     "arrivalStation", schedule.getArrivalStation().getName(),
                     "departureTime", schedule.getDepartureTime().toString(),
                     "arrivalTime", schedule.getArrivalTime().toString(),
-                    "basePrice", schedule.getBasePrice().doubleValue(),
-                    "status", schedule.getStatus()
+                    "basePrice", schedule.getBasePrice().doubleValue()
             );
             return ResponseEntity.ok(response);
         } catch (Exception e) {

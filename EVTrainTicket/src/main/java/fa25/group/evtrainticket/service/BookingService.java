@@ -1,7 +1,10 @@
 package fa25.group.evtrainticket.service;
 
 import fa25.group.evtrainticket.dto.BookingRequestDto;
+import fa25.group.evtrainticket.dto.BookingResponseDto;
 import fa25.group.evtrainticket.entity.Booking;
+
+import java.time.LocalDate;
 import java.util.List;
 
 public interface BookingService {
@@ -46,4 +49,5 @@ public interface BookingService {
     boolean validateSeatAvailability(Integer scheduleId, List<Integer> seatIds);
 
     double calculateBookingPrice(BookingRequestDto bookingRequest);
+    List<BookingResponseDto> getUserBookingsWithFilter(Integer userId, String status, LocalDate fromDate, LocalDate toDate);
 }
