@@ -28,7 +28,7 @@ public class TrainServiceImpl implements TrainService {
         }
 
         List<Schedule> trainSchedules = new ArrayList<>();
-        if(train.getSchedules() != null && !train.getSchedules().isEmpty()) {
+        if(!"BẢO TRÌ".equalsIgnoreCase(train.getStatus()) && train.getSchedules() != null && !train.getSchedules().isEmpty()) {
             checkSchedules(train.getSchedules(), null);
             for (Schedule s : train.getSchedules()) {
                 Schedule dbSchedule = scheduleRepository.findById(s.getScheduleID())
@@ -78,7 +78,7 @@ public class TrainServiceImpl implements TrainService {
         train.setNotes(trainDetails.getNotes());
 
         // Gán schedule mới
-        if (trainDetails.getSchedules() != null && !trainDetails.getSchedules().isEmpty()) {
+        if (!"BẢO TRÌ".equalsIgnoreCase(train.getStatus()) && trainDetails.getSchedules() != null && !trainDetails.getSchedules().isEmpty()) {
             List<Schedule> newSchedules = trainDetails.getSchedules().stream()
                     .filter(s -> s.getScheduleID() != null)
                     .map(s -> scheduleRepository.findById(s.getScheduleID())
@@ -97,7 +97,10 @@ public class TrainServiceImpl implements TrainService {
 
     @Override
     public void deleteTrain(Integer id) {
-        trainRepository.deleteById(id);
+        Train train = trainRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Train not found"));
+        train.getSchedules().forEach(schedule -> schedule.setTrain(null));
+        trainRepository.delete(train);
     }
 
     @Override

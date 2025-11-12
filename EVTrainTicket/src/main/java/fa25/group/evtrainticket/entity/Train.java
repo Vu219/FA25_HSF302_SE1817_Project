@@ -45,7 +45,7 @@ public class Train {
     @JsonIgnore
     private List<Carriage> carriages = new ArrayList<>();
 
-    @OneToMany(mappedBy = "train", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "train", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Schedule> schedules = new ArrayList<>();
 
