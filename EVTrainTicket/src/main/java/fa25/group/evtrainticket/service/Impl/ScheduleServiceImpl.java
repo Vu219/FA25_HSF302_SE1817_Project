@@ -57,6 +57,11 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     @Override
+    public List<Schedule> saveAll(List<Schedule> schedules) {
+        return scheduleRepository.saveAll(schedules);
+    }
+
+    @Override
     public void deleteSchedule(Integer id) {
         scheduleRepository.deleteById(id);
     }

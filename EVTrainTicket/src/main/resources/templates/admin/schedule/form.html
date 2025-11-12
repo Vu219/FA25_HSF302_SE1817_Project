@@ -101,6 +101,9 @@
                        class="form-control"
                        onchange="calculateArrivalTime()"
                        required>
+                <small style="color: #dc3545; margin-top: 5px; display: block;">
+                    <i class="fas fa-info-circle"></i> Chỉ được chọn ngày từ ngày mai trở đi
+                </small>
             </div>
 
             <div class="form-group">
@@ -162,6 +165,7 @@
                 </div>
             </div>
         </div>
+
 
         <div class="form-actions">
             <button type="submit" class="btn btn-success">
@@ -341,6 +345,14 @@
 
     // Initialize on page load
     window.addEventListener('DOMContentLoaded', function() {
+        // Set minimum date to tomorrow (không cho phép hôm nay và quá khứ)
+        const departureDateInput = document.getElementById('departureDate');
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const minDate = tomorrow.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+        departureDateInput.setAttribute('min', minDate);
+
         // Check if schedule was pre-selected (edit mode)
         if (document.getElementById('departureStation').value &&
             document.getElementById('arrivalStation').value) {

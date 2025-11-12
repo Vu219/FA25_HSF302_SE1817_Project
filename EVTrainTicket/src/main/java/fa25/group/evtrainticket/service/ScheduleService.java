@@ -14,6 +14,7 @@ public interface ScheduleService {
     List<Schedule> getAllSchedules();
     Schedule getScheduleById(Integer id);
     Schedule saveSchedule(Schedule schedule);
+    List<Schedule> saveAll(List<Schedule> schedules);
     void deleteSchedule(Integer id);
 
     List<Schedule> findSchedulesByStationsAndDate(Station departureStation, Station arrivalStation, LocalDateTime startOfDay, LocalDateTime endOfDay);
