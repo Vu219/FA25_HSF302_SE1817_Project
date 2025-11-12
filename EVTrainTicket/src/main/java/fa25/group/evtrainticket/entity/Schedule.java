@@ -1,5 +1,6 @@
 package fa25.group.evtrainticket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -30,7 +31,7 @@ public class Schedule {
     private Station arrivalStation;
 
     @ManyToOne
-    @JoinColumn(name = "TrainID", nullable = false)
+    @JoinColumn(name = "TrainID", nullable = true)
     private Train train;
 
     @ManyToOne

@@ -1,40 +1,290 @@
 <section>
     <div class="form-container">
         <h2><i class="fas fa-edit"></i> Cập nhật tàu</h2>
-
         <form th:action="@{/admin/train/edit}" th:object="${train}" method="post" style="margin-top: 20px;">
             <div class="form-group">
                 <label for="trainID">Mã tàu:</label>
                 <input type="text" id="trainID" th:field="*{trainID}" readonly>
             </div>
+
             <div class="form-group">
-                <label for="trainNumber">Số tàu:</label>
-                <input type="text" id="trainNumber" th:field="*{trainNumber}" required>
+                <label for="trainNumber">Số tàu: <span style="color: red;">*</span></label>
+                <input type="text" id="trainNumber" th:field="*{trainNumber}" required
+                       placeholder="Ví dụ: SE1, SE2...">
             </div>
+
             <div class="form-group">
-                <label for="trainName">Tên tàu:</label>
-                <input type="text" id="trainName" th:field="*{trainName}" required>
+                <label for="trainName">Tên tàu: <span style="color: red;">*</span></label>
+                <input type="text" id="trainName" th:field="*{trainName}" required
+                       placeholder="Ví dụ: Thống Nhất, Sài Gòn...">
             </div>
+
             <div class="form-group">
-                <label for="capacity">Sức chứa:</label>
-                <input type="number" id="capacity" th:field="*{capacity}" required min="1">
+                <label for="capacity">Sức chứa: <span style="color: red;">*</span></label>
+                <input type="number" id="capacity" th:field="*{capacity}" required min="1"
+                       placeholder="Số lượng hành khách tối đa">
             </div>
+
             <div class="form-group">
-                <label for="status">Trạng thái:</label>
+                <label for="status">Trạng thái: <span style="color: red;">*</span></label>
                 <select id="status" th:field="*{status}">
                     <option value="Hoạt động">Hoạt động</option>
                     <option value="Không hoạt động">Không hoạt động</option>
                     <option value="Bảo trì">Bảo trì</option>
                 </select>
             </div>
+
+            <!-- Hidden inputs để lưu các scheduleID đã chọn -->
+            <input type="hidden" id="existingSchedule1" th:value="${train.schedules != null && train.schedules.size() > 0 ? train.schedules[0].scheduleID : ''}">
+            <input type="hidden" id="existingSchedule2" th:value="${train.schedules != null && train.schedules.size() > 1 ? train.schedules[1].scheduleID : ''}">
+            <input type="hidden" id="existingSchedule3" th:value="${train.schedules != null && train.schedules.size() > 2 ? train.schedules[2].scheduleID : ''}">
+
+            <div class="schedule-section" id="schedule1-section">
+                <div class="schedule-label">📍 Lịch trình 1:</div>
+                <div class="form-group">
+                    <select id="schedule1" name="scheduleIds" class="schedule-dropdown">
+                        <option value="">Chọn lịch trình cho tàu</option>
+                        <option th:each="s : ${scheduleList}"
+                                th:value="${s.scheduleID}"
+                                th:text="|${s.departureStation.name} → ${s.arrivalStation.name} (${#temporals.format(s.departureTime, 'dd/MM/yyyy HH:mm')} - ${#temporals.format(s.arrivalTime, 'dd/MM/yyyy HH:mm')})|"
+                                th:data-departure-station="${s.departureStation.stationID}"
+                                th:data-arrival-station="${s.arrivalStation.stationID}"
+                                th:data-departure-time="${s.departureTime}"
+                                th:data-arrival-time="${s.arrivalTime}"
+                                th:data-departure-name="${s.departureStation.name}"
+                                th:data-arrival-name="${s.arrivalStation.name}">
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="schedule-section" id="schedule2-section" style="display: none;">
+                <div class="schedule-label">📍 Lịch trình 2:</div>
+                <div class="form-group">
+                    <select id="schedule2" name="scheduleIds" class="schedule-dropdown" disabled>
+                        <option value="">Chọn lịch trình cho tàu</option>
+                        <option th:each="s : ${scheduleList}"
+                                th:value="${s.scheduleID}"
+                                th:text="|${s.departureStation.name} → ${s.arrivalStation.name} (${#temporals.format(s.departureTime, 'dd/MM/yyyy HH:mm')} - ${#temporals.format(s.arrivalTime, 'dd/MM/yyyy HH:mm')})|"
+                                th:data-departure-station="${s.departureStation.stationID}"
+                                th:data-arrival-station="${s.arrivalStation.stationID}"
+                                th:data-departure-time="${s.departureTime}"
+                                th:data-arrival-time="${s.arrivalTime}"
+                                th:data-departure-name="${s.departureStation.name}"
+                                th:data-arrival-name="${s.arrivalStation.name}">
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="schedule-section" id="schedule3-section" style="display: none;">
+                <div class="schedule-label">📍 Lịch trình 3:</div>
+                <div class="form-group">
+                    <select id="schedule3" name="scheduleIds" class="schedule-dropdown" disabled>
+                        <option value="">Chọn lịch trình cho tàu</option>
+                        <option th:each="s : ${scheduleList}"
+                                th:value="${s.scheduleID}"
+                                th:text="|${s.departureStation.name} → ${s.arrivalStation.name} (${#temporals.format(s.departureTime, 'dd/MM/yyyy HH:mm')} - ${#temporals.format(s.arrivalTime, 'dd/MM/yyyy HH:mm')})|"
+                                th:data-departure-station="${s.departureStation.stationID}"
+                                th:data-arrival-station="${s.arrivalStation.stationID}"
+                                th:data-departure-time="${s.departureTime}"
+                                th:data-arrival-time="${s.arrivalTime}"
+                                th:data-departure-name="${s.departureStation.name}"
+                                th:data-arrival-name="${s.arrivalStation.name}">
+                        </option>
+                    </select>
+                </div>
+            </div>
+
             <div class="form-group">
                 <label for="notes">Ghi chú:</label>
-                <textarea id="notes" th:field="*{notes}" rows="3"></textarea>
+                <textarea id="notes" th:field="*{notes}" rows="3"
+                          placeholder="Thông tin thêm về tàu..."></textarea>
             </div>
+
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Cập nhật tàu</button>
-                <a th:href="@{/admin/train}" class="btn btn-secondary"><i class="fas fa-times"></i> Hủy</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Cập nhật tàu
+                </button>
+                <a th:href="@{/admin/train}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Hủy
+                </a>
             </div>
         </form>
     </div>
 </section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const schedule1 = document.getElementById('schedule1');
+        const schedule2 = document.getElementById('schedule2');
+        const schedule3 = document.getElementById('schedule3');
+
+        const section2 = document.getElementById('schedule2-section');
+        const section3 = document.getElementById('schedule3-section');
+
+        const existingSchedule1 = document.getElementById('existingSchedule1').value;
+        const existingSchedule2 = document.getElementById('existingSchedule2').value;
+        const existingSchedule3 = document.getElementById('existingSchedule3').value;
+
+        if (existingSchedule1) {
+            schedule1.value = existingSchedule1;
+            document.getElementById('schedule1-section').classList.add('filled');
+            section2.style.display = 'block';
+            schedule2.disabled = false;
+            filterSchedule2Options();
+
+            if (existingSchedule2) {
+                schedule2.value = existingSchedule2;
+                document.getElementById('schedule2-section').classList.add('filled');
+                section3.style.display = 'block';
+                schedule3.disabled = false;
+                filterSchedule3Options();
+
+                if (existingSchedule3) {
+                    schedule3.value = existingSchedule3;
+                    document.getElementById('schedule3-section').classList.add('filled');
+                }
+            }
+        }
+
+        schedule1.addEventListener('change', function() {
+            if (this.value) {
+                section2.style.display = 'block';
+                schedule2.disabled = false;
+                document.getElementById('schedule1-section').classList.add('filled');
+
+                schedule2.value = '';
+                schedule3.value = '';
+                section3.style.display = 'none';
+                schedule3.disabled = true;
+                document.getElementById('schedule2-section').classList.remove('filled');
+                document.getElementById('schedule3-section').classList.remove('filled');
+
+                filterSchedule2Options();
+            } else {
+                section2.style.display = 'none';
+                section3.style.display = 'none';
+                schedule2.disabled = true;
+                schedule3.disabled = true;
+                schedule2.value = '';
+                schedule3.value = '';
+                document.getElementById('schedule1-section').classList.remove('filled');
+                document.getElementById('schedule2-section').classList.remove('filled');
+                document.getElementById('schedule3-section').classList.remove('filled');
+            }
+        });
+
+        schedule2.addEventListener('change', function() {
+            if (this.value) {
+                const validation = validateScheduleChain(schedule1, schedule2);
+                if (!validation.valid) {
+                    alert(validation.message);
+                    this.value = '';
+                    return;
+                }
+
+                section3.style.display = 'block';
+                schedule3.disabled = false;
+                document.getElementById('schedule2-section').classList.add('filled');
+                schedule3.value = '';
+                document.getElementById('schedule3-section').classList.remove('filled');
+
+                filterSchedule3Options();
+            } else {
+                section3.style.display = 'none';
+                schedule3.disabled = true;
+                schedule3.value = '';
+                document.getElementById('schedule2-section').classList.remove('filled');
+                document.getElementById('schedule3-section').classList.remove('filled');
+            }
+        });
+
+        schedule3.addEventListener('change', function() {
+            if (this.value) {
+                // Validate
+                const validation = validateScheduleChain(schedule2, schedule3);
+                if (!validation.valid) {
+                    alert(validation.message);
+                    this.value = '';
+                    return;
+                }
+
+                document.getElementById('schedule3-section').classList.add('filled');
+            } else {
+                document.getElementById('schedule3-section').classList.remove('filled');
+            }
+        });
+
+        function filterSchedule2Options() {
+            const selectedOption1 = schedule1.options[schedule1.selectedIndex];
+            const arrivalStation1 = selectedOption1.getAttribute('data-arrival-station');
+
+            Array.from(schedule2.options).forEach(option => {
+                if (option.value === '') return; // Skip placeholder
+
+                const departureStation = option.getAttribute('data-departure-station');
+                if (departureStation === arrivalStation1 && option.value !== schedule1.value) {
+                    option.style.display = 'block';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+        }
+
+        function filterSchedule3Options() {
+            const selectedOption2 = schedule2.options[schedule2.selectedIndex];
+            const arrivalStation2 = selectedOption2.getAttribute('data-arrival-station');
+
+            Array.from(schedule3.options).forEach(option => {
+                if (option.value === '') return; // Skip placeholder
+
+                const departureStation = option.getAttribute('data-departure-station');
+                if (departureStation === arrivalStation2 &&
+                    option.value !== schedule1.value &&
+                    option.value !== schedule2.value) {
+                    option.style.display = 'block';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+        }
+
+        function validateScheduleChain(prevSelect, nextSelect) {
+            const prevOption = prevSelect.options[prevSelect.selectedIndex];
+            const nextOption = nextSelect.options[nextSelect.selectedIndex];
+
+            const prevArrival = prevOption.getAttribute('data-arrival-station');
+            const nextDeparture = nextOption.getAttribute('data-departure-station');
+
+            const prevArrivalName = prevOption.getAttribute('data-arrival-name');
+            const nextDepartureName = nextOption.getAttribute('data-departure-name');
+
+            // Validate ga đến = ga khởi hành
+            if (prevArrival !== nextDeparture) {
+                return {
+                    valid: false,
+                    message: `Ga đến của lịch trình trước (${prevArrivalName}) phải trùng với ga khởi hành của lịch trình sau (${nextDepartureName})!`
+                };
+            }
+
+            // Validate thời gian
+            const prevArrivalTime = new Date(prevOption.getAttribute('data-arrival-time'));
+            const nextDepartureTime = new Date(nextOption.getAttribute('data-departure-time'));
+
+            if (nextDepartureTime <= prevArrivalTime) {
+                const formatDateTime = (date) => {
+                    return date.toLocaleDateString('vi-VN') + ' ' +
+                        date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                };
+
+                return {
+                    valid: false,
+                    message: `Thời gian khởi hành của lịch trình sau (${formatDateTime(nextDepartureTime)}) phải sau thời gian đến của lịch trình trước (${formatDateTime(prevArrivalTime)})!`
+                };
+            }
+
+            return { valid: true };
+        }
+    });
+</script>

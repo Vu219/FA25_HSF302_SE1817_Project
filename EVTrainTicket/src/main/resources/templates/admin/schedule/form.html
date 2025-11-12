@@ -12,19 +12,19 @@
         </h3>
 
         <div class="form-grid">
-            <div class="form-group">
-                <label for="train">
-                    <i class="fas fa-train"></i> Tàu <span>*</span>
-                </label>
-                <select id="train" name="train.id" class="form-control" required>
-                    <option value="" disabled th:selected="${schedule.train == null}">Chọn Tàu</option>
-                    <option th:each="train : ${trains}"
-                            th:value="${train.trainID}"
-                            th:text="${train.trainName}"
-                            th:selected="${schedule.train != null and schedule.train.trainID == train.trainID}">
-                    </option>
-                </select>
-            </div>
+<!--            <div class="form-group">-->
+<!--                <label for="train">-->
+<!--                    <i class="fas fa-train"></i> Tàu <span>*</span>-->
+<!--                </label>-->
+<!--                <select id="train" name="train.id" class="form-control" >-->
+<!--                    <option value="" disabled th:selected="${schedule.train == null}">Chọn Tàu</option>-->
+<!--                    <option th:each="train : ${trains}"-->
+<!--                            th:value="${train.trainID}"-->
+<!--                            th:text="${train.trainName}"-->
+<!--                            th:selected="${schedule.train != null and schedule.train.trainID == train.trainID}">-->
+<!--                    </option>-->
+<!--                </select>-->
+<!--            </div>-->
 
             <div class="form-group">
                 <label for="status">

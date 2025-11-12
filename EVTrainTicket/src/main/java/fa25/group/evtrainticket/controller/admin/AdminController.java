@@ -22,6 +22,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin")
@@ -96,7 +98,7 @@ public class AdminController {
         mav.addObject("schedule", new Schedule());
         mav.addObject("stations", stationService.getAllStations());
         mav.addObject("routes", routeService.getAllRoutes());
-        mav.addObject("trains", trainService.getAllTrains());
+//        mav.addObject("trains", trainService.getAllTrains());
         mav.addObject("errorMessage", model.asMap().get("errorMessage"));
         return mav;
     }
@@ -115,7 +117,7 @@ public class AdminController {
         mav.addObject("schedule", schedule);
         mav.addObject("stations", stationService.getAllStations());
         mav.addObject("routes", routeService.getAllRoutes());
-        mav.addObject("trains", trainService.getAllTrains());
+//        mav.addObject("trains", trainService.getAllTrains());
         mav.addObject("errorMessage", model.asMap().get("errorMessage"));
         return mav;
     }
@@ -127,7 +129,7 @@ public class AdminController {
                                  @RequestParam("departureTime") String departureTime,
                                  @RequestParam("arrivalDate") String arrivalDate,
                                  @RequestParam("arrivalTime") String arrivalTime,
-                                 @RequestParam("train.id") Integer trainId,
+//                                 @RequestParam("train.id") Integer trainId,
                                  @RequestParam("distanceKm") Double distanceKm,
                                  @RequestParam("estimatedTime") Integer estimatedTime,
                                  @RequestParam("basePrice") BigDecimal basePrice,
@@ -138,10 +140,10 @@ public class AdminController {
         try {
             Station departureStation = stationService.getStationsByID(departureStationId);
             Station arrivalStation = stationService.getStationsByID(arrivalStationId);
-            Train train = trainService.getTrainById(trainId);
+//            Train train = trainService.getTrainById(trainId);
 
-            if (departureStation == null || arrivalStation == null || train == null) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Ga hoặc Tàu không tồn tại.");
+            if (departureStation == null || arrivalStation == null ) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Ga không tồn tại.");
                 return "redirect:/admin/schedules/new";
             }
             if (departureStationId.equals(arrivalStationId)) {
@@ -177,7 +179,7 @@ public class AdminController {
 
             schedule.setDepartureStation(departureStation);
             schedule.setArrivalStation(arrivalStation);
-            schedule.setTrain(train);
+//            schedule.setTrain(train);
             schedule.setDepartureTime(fullDepartureTime);
             schedule.setArrivalTime(fullArrivalTime);
 
@@ -207,7 +209,7 @@ public class AdminController {
                                  @RequestParam("departureTime") String departureTime,
                                  @RequestParam("arrivalDate") String arrivalDate,
                                  @RequestParam("arrivalTime") String arrivalTime,
-                                 @RequestParam("train.id") Integer trainId,
+//                                 @RequestParam("train.id") Integer trainId,
                                  @RequestParam("distanceKm") Double distanceKm,
                                  @RequestParam("estimatedTime") Integer estimatedTime,
                                  @RequestParam("basePrice") BigDecimal basePrice,
@@ -224,10 +226,10 @@ public class AdminController {
 
             Station departureStation = stationService.getStationsByID(departureStationId);
             Station arrivalStation = stationService.getStationsByID(arrivalStationId);
-            Train train = trainService.getTrainById(trainId);
+//            Train train = trainService.getTrainById(trainId);
 
-            if (departureStation == null || arrivalStation == null || train == null) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Ga hoặc Tàu không tồn tại.");
+            if (departureStation == null || arrivalStation == null) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Ga không tồn tại.");
                 return "redirect:/admin/schedules/" + id + "/edit";
             }
             if (departureStationId.equals(arrivalStationId)) {
@@ -263,7 +265,7 @@ public class AdminController {
 
             existingSchedule.setDepartureStation(departureStation);
             existingSchedule.setArrivalStation(arrivalStation);
-            existingSchedule.setTrain(train);
+//            existingSchedule.setTrain(train);
             existingSchedule.setDepartureTime(fullDepartureTime);
             existingSchedule.setArrivalTime(fullArrivalTime);
 
@@ -316,17 +318,42 @@ public class AdminController {
         if (mav.getViewName().startsWith("redirect")) return mav;
 
         mav.addObject("train", new Train());
+        mav.addObject("scheduleList", scheduleService.getAllSchedules());
         mav.addObject("errorMessage", model.asMap().get("errorMessage"));
         return mav;
     }
 
     @PostMapping("/train/create")
-    public String createTrain(@ModelAttribute("train") Train train, HttpSession session, RedirectAttributes redirectAttributes) {
+    public String createTrain(
+            @RequestParam(value = "scheduleIds", required = false) List<Integer> scheduleIds,
+            @ModelAttribute("train") Train train,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
         if (!isAdmin(session)) return "redirect:/error";
+
         try {
+            // Set schedules từ scheduleIds
+            if (scheduleIds != null && !scheduleIds.isEmpty()) {
+                List<Schedule> schedules = scheduleIds.stream()
+                        .filter(Objects::nonNull) // lọc phần tử null
+                        .map(id -> {
+                            Schedule s = new Schedule();
+                            s.setScheduleID(id);
+                            return s;
+                        })
+                        .collect(Collectors.toList());
+                train.setSchedules(schedules);
+            }
+
             trainService.createTrain(train);
             redirectAttributes.addFlashAttribute("successMessage", "Chuyến tàu đã được thêm thành công");
             return "redirect:/admin/train";
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            redirectAttributes.addFlashAttribute("train", train);
+            redirectAttributes.addFlashAttribute("selectedSchedules", scheduleIds);
+            return "redirect:/admin/train/create";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi thêm: " + e.getMessage());
             return "redirect:/admin/train/create";
@@ -345,17 +372,40 @@ public class AdminController {
         if (mav.getViewName().startsWith("redirect")) return mav;
 
         mav.addObject("train", trainToEdit);
+        mav.addObject("scheduleList", scheduleService.getAllSchedules());
         mav.addObject("errorMessage", model.asMap().get("errorMessage"));
         return mav;
     }
 
     @PostMapping("/train/edit")
-    public String editTrain(@ModelAttribute("train") Train train, HttpSession session, RedirectAttributes redirectAttributes) {
+    public String editTrain(
+            @RequestParam(value = "scheduleIds", required = false) List<Integer> scheduleIds,
+            @ModelAttribute("train") Train train,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
         if (!isAdmin(session)) return "redirect:/error";
+
         try {
+            // Set schedules từ scheduleIds
+            if(scheduleIds != null && !scheduleIds.isEmpty()) {
+                List<Schedule> schedules = scheduleIds.stream()
+                        .filter(Objects::nonNull) // lọc phần tử null
+                        .map(id -> {
+                            Schedule s = new Schedule();
+                            s.setScheduleID(id);
+                            return s;
+                        })
+                        .collect(Collectors.toList());
+                train.setSchedules(schedules);
+            }
+
             trainService.updateTrain(train.getTrainID(), train);
             redirectAttributes.addFlashAttribute("successMessage", "Chuyến tàu đã được cập nhật thành công");
             return "redirect:/admin/train";
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/admin/train/edit/" + train.getTrainID();
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi cập nhật: " + e.getMessage());
             return "redirect:/admin/train/edit/" + train.getTrainID();
