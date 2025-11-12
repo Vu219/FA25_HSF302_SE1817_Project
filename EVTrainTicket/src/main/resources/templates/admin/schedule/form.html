@@ -145,6 +145,28 @@
         </div>
 
         <h3 style="color: var(--admin-primary); margin: 30px 0 15px 0;">
+            <i class="fas fa-redo"></i> Lịch trình khứ hồi (tùy chọn)
+        </h3>
+
+        <div class="form-grid">
+            <div class="form-group" style="padding: 15px; background: #f0f8ff; border-radius: 5px; border-left: 4px solid #17a2b8; display: flex; align-items: center; gap: 12px;">
+                <input type="checkbox"
+                       id="createReturnTrip"
+                       value="true"
+                       checked
+                       style="width: 20px; height: 20px; cursor: pointer; accent-color: #17a2b8;">
+                <label for="createReturnTrip" style="margin: 0; cursor: pointer; flex: 1;">
+                    <div style="font-weight: 500; color: #17a2b8; margin-bottom: 3px;">
+                        <i class="fas fa-redo"></i> Tự động tạo lịch trình khứ hồi
+                    </div>
+                    <div style="font-size: 0.85em; color: #666;">
+                        <i class="fas fa-info-circle"></i> Khởi hành 3 giờ sau khi đến tại ga đích
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <h3 style="color: var(--admin-primary); margin: 30px 0 15px 0;">
             <i class="fas fa-dollar-sign"></i> Giá vé
         </h3>
 
@@ -373,6 +395,31 @@
             trainSelect.addEventListener('change', function() {
                 // Recalculate arrival time when train speed might change
                 calculateArrivalTime();
+            });
+        }
+    });
+
+    // Handle form submission to ensure checkbox value is sent correctly
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const createReturnTripCheckbox = document.getElementById('createReturnTrip');
+                const hiddenInput = form.querySelector('input[type="hidden"][name="createReturnTrip"]');
+
+                // Remove old hidden input if exists
+                if (hiddenInput) {
+                    hiddenInput.remove();
+                }
+
+                // Create new hidden input with correct value based on checkbox state
+                const newHiddenInput = document.createElement('input');
+                newHiddenInput.type = 'hidden';
+                newHiddenInput.name = 'createReturnTrip';
+                newHiddenInput.value = createReturnTripCheckbox.checked ? 'true' : 'false';
+                form.appendChild(newHiddenInput);
+
+                console.log('Form submit - createReturnTrip:', newHiddenInput.value);
             });
         }
     });

@@ -130,7 +130,10 @@ public class AdminController {
                                  @RequestParam("estimatedTime") Integer estimatedTime,
                                  @RequestParam("basePrice") BigDecimal basePrice,
                                  @RequestParam(value = "stopDuration", required = false) Integer stopDuration,
+                                 @RequestParam(value = "createReturnTrip", required = false, defaultValue = "false") String createReturnTripStr,
                                  HttpSession session, RedirectAttributes redirectAttributes) {
+        // Convert String to Boolean
+        Boolean createReturnTrip = "true".equalsIgnoreCase(createReturnTripStr);
         if (!isAdmin(session)) return "redirect:/error";
 
         try {
@@ -206,40 +209,42 @@ public class AdminController {
 
             scheduleService.saveSchedule(schedule);
 
-            // ===== TỰ ĐỘNG TẠO LỊCH TRÌNH NGƯỢC LẠI (KHỨ HỒI) =====
-            try {
-                java.util.Map<String, Object> returnRouteData = routeService.calculateRouteDistance(arrivalStation, departureStation);
+            // ===== TỰ ĐỘNG TẠO LỊCH TRÌNH NGƯỢC LẠI (KHỨ HỒI) - NẾU ĐƯỢC CHỌN =====
+            if (createReturnTrip) {
+                try {
+                    java.util.Map<String, Object> returnRouteData = routeService.calculateRouteDistance(arrivalStation, departureStation);
 
-                if (returnRouteData.get("distance_km") != null) {
-                    Schedule returnSchedule = new Schedule();
+                    if (returnRouteData.get("distance_km") != null) {
+                        Schedule returnSchedule = new Schedule();
 
-                    Long returnRouteId = (Long) returnRouteData.get("routeId");
-                    if (returnRouteId != null) {
-                        Route returnDirectRoute = routeService.getRouteById(returnRouteId);
-                        returnSchedule.setRoute(returnDirectRoute);
+                        Long returnRouteId = (Long) returnRouteData.get("routeId");
+                        if (returnRouteId != null) {
+                            Route returnDirectRoute = routeService.getRouteById(returnRouteId);
+                            returnSchedule.setRoute(returnDirectRoute);
+                        }
+
+                        returnSchedule.setDepartureStation(arrivalStation);
+                        returnSchedule.setArrivalStation(departureStation);
+
+                        LocalDateTime returnDepartureTime = fullArrivalTime.plusHours(3);
+                        returnSchedule.setDepartureTime(returnDepartureTime);
+
+                        Double returnDistance = (Double) returnRouteData.get("distance_km");
+                        Double defaultSpeed = 60.0;
+                        int returnTravelMinutes = Math.round((float) ((returnDistance / defaultSpeed) * 60));
+                        int returnTotalMinutes = returnTravelMinutes + (stopDuration != null ? stopDuration : 0);
+                        LocalDateTime returnArrivalTime = returnDepartureTime.plusMinutes(returnTotalMinutes);
+                        returnSchedule.setArrivalTime(returnArrivalTime);
+
+                        BigDecimal returnPrice = BigDecimal.valueOf(Math.round(returnDistance * 700));
+                        returnSchedule.setBasePrice(returnPrice);
+                        returnSchedule.setStopDuration(stopDuration);
+
+                        scheduleService.saveSchedule(returnSchedule);
                     }
-
-                    returnSchedule.setDepartureStation(arrivalStation);
-                    returnSchedule.setArrivalStation(departureStation);
-
-                    LocalDateTime returnDepartureTime = fullArrivalTime.plusHours(3);
-                    returnSchedule.setDepartureTime(returnDepartureTime);
-
-                    Double returnDistance = (Double) returnRouteData.get("distance_km");
-                    Double defaultSpeed = 60.0;
-                    int returnTravelMinutes = Math.round((float) ((returnDistance / defaultSpeed) * 60));
-                    int returnTotalMinutes = returnTravelMinutes + (stopDuration != null ? stopDuration : 0);
-                    LocalDateTime returnArrivalTime = returnDepartureTime.plusMinutes(returnTotalMinutes);
-                    returnSchedule.setArrivalTime(returnArrivalTime);
-
-                    BigDecimal returnPrice = BigDecimal.valueOf(Math.round(returnDistance * 700));
-                    returnSchedule.setBasePrice(returnPrice);
-                    returnSchedule.setStopDuration(stopDuration);
-
-                    scheduleService.saveSchedule(returnSchedule);
+                } catch (Exception e) {
+                    System.err.println("Không thể tạo lịch trình khứ hồi: " + e.getMessage());
                 }
-            } catch (Exception e) {
-                System.err.println("Không thể tạo lịch trình khứ hồi: " + e.getMessage());
             }
 
             redirectAttributes.addFlashAttribute("successMessage", "Tạo lịch trình thành công!");
