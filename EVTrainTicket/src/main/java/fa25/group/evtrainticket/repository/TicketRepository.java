@@ -17,20 +17,12 @@ public interface TicketRepository extends JpaRepository<Ticket, Integer> {
     List<Ticket> findByBookingBookingCode(String bookingCode);
     Optional<Ticket> findByTicketCode(String ticketCode);
     List<Ticket> findByBooking(Booking booking);
-
-    @Query("SELECT t FROM Ticket t WHERE t.booking.bookingID = ?1 AND t.status = ?2")
-    List<Ticket> findByBookingIdAndStatus(Integer bookingId, String status);
-
-    @Query("SELECT t FROM Ticket t WHERE t.booking.bookingCode = ?1 AND t.status = ?2")
-    List<Ticket> findByBookingCodeAndStatus(String bookingCode, String status);
-
-    @Query("SELECT t FROM Ticket t WHERE t.schedule.scheduleID = ?1 AND t.status IN ?2")
-    List<Ticket> findByScheduleScheduleIDAndBookingStatusIn(Integer scheduleId, List<String> statuses);
-
     // --- ADD THIS METHOD ---
     @Query("SELECT t.seat.seatID FROM Ticket t WHERE t.schedule.scheduleID = :scheduleId AND t.status IN :statuses")
     List<Integer> findBookedSeatIds(@Param("scheduleId") Integer scheduleId, @Param("statuses") List<String> statuses);
     // -----------------------
+
+    boolean existsByTicketCode(String ticketCode);
 
     @Query("SELECT COUNT(t) FROM Ticket t JOIN t.booking b WHERE CAST(b.bookingDate AS date) BETWEEN :startDate AND :endDate")
     long countTickets(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
@@ -40,4 +32,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Integer> {
 
     @Query("SELECT COUNT(t) FROM Ticket t JOIN Carriage c JOIN CarriageType ct WHERE ct.typeName = 'Toa phổ thông'")
     long countEconomyTickets();
+
+
+
 }

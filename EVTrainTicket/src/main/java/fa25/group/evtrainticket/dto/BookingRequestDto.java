@@ -17,7 +17,9 @@ public class BookingRequestDto {
     private String userPhone;
     private Integer scheduleId;
     private List<Integer> selectedSeatIds;
-    private String ticketType;
+    private List<PassengerDto> passengers; // thông tin khách đi cùng người đặt vé
+
+    //    private String ticketType;
     private String paymentMethod;
     private String cardNumber;
     private String cardHolderName;
