@@ -11,12 +11,11 @@ import fa25.group.evtrainticket.repository.TicketRepository;
 import fa25.group.evtrainticket.service.SeatService;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -27,81 +26,82 @@ public class SeatServiceImpl implements SeatService {
     private final SeatRepository seatRepository;
     private final ScheduleRepository scheduleRepository;
     private final CarriageRepository carriageRepository;
-    private final TicketRepository ticketRepository;
+
+
+    @Autowired
+    private TicketRepository ticketRepository;
 
     @Override
     public List<CarriageLayoutDto> getSeatLayout(int scheduleId) {
-        Schedule schedules = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new RuntimeException("Schedule not found"));
-        Train train = schedules.getTrain();
-        BigDecimal basePrice = schedules.getBasePrice();
+        // Bước A: Lấy tất cả ghế vật lý
+        List<Seat> allSeats = seatRepository.findByCarriage_Train_Schedules_ScheduleID(scheduleId);
 
-        List<String> occupiedStatuses = List.of("PENDING", "CONFIRMED", "COMPLETED", "PAID");
+        if (allSeats.isEmpty()) {
+            return new ArrayList<>();
+        }
 
-        List<Ticket> occupiedTickets = ticketRepository.findByScheduleScheduleIDAndBookingStatusIn(scheduleId, occupiedStatuses);
+        // Bước B: Chuyển đổi Entity sang DTO
+        Map<Integer, List<seatDto>> seatsByCarriageId = new HashMap<>();
+        Map<Integer, Carriage> carriageMap = new HashMap<>();
 
-        Set<Integer> occupiedSeats = occupiedTickets.stream()
-                .map(ticket -> ticket.getSeat().getSeatID())
-                .collect(Collectors.toSet());
+        for (Seat seat : allSeats) {
+            seatDto dto = new seatDto();
+            dto.setSeatID(seat.getSeatID());
+            dto.setSeatNumber(seat.getSeatNumber());
+            dto.setRowNumber(seat.getRowNumber());
+            dto.setColumnNum(seat.getColumnNum());
+            dto.setPrice(BigDecimal.valueOf(100000.0)); // Cần sửa logic giá sau này
+            dto.setSeatTypeName(seat.getSeatType().getTypeName());
+            dto.setCarriageNumber(seat.getCarriage().getCarriageNumber());
 
-        List<Carriage> carriages = carriageRepository.findByTrainTrainIDOrderByPositionAsc(train.getTrainID());
-        List<CarriageLayoutDto> carriageLayouts = new ArrayList<>();
 
-        for (Carriage carriage : carriages) {
-            List<Seat> seatsInCarriage = seatRepository.findByCarriageCarriageIDOrderByRowNumberAscColumnNumAsc(carriage.getCarriageID());
-            List<seatDto> seatDTOs = new ArrayList<>();
-
-            for (Seat seat : seatsInCarriage) {
-                SeatStatus seatStatus;
-
-                // --- FIX 2: Check Physical Availability AND Booking Status ---
-                if (!seat.getIsAvailable()) {
-                    // If seat is physically broken/maintenance
-                    seatStatus = SeatStatus.BOOKED; // Or a specific UNAVAILABLE status if you have one
-                } else if (occupiedSeats.contains(seat.getSeatID())) {
-                    // If seat has an active ticket
-                    seatStatus = SeatStatus.BOOKED;
-                } else {
-                    seatStatus = SeatStatus.AVAILABLE;
-                }
-
-                BigDecimal finalPrice = basePrice.multiply(carriage.getCarriageType().getPriceMultiplier())
-                        .multiply(seat.getSeatType().getPriceMultiplier());
-
-                seatDTOs.add(new seatDto(seat, finalPrice, seatStatus));
+            // Kiểm tra ghế có hỏng vật lý không
+            if (Boolean.TRUE.equals(seat.getIsAvailable())) {
+                dto.setStatus(SeatStatus.AVAILABLE); // Dùng Enum
+            } else {
+                // Nếu ghế hỏng -> Coi như đã đặt (BOOKED) để hiện đỏ/xám
+                dto.setStatus(SeatStatus.BOOKED);
             }
 
-            CarriageLayoutDto carriageLayout = new CarriageLayoutDto(
-                    carriage.getCarriageID(),
-                    carriage.getCarriageNumber(),
-                    carriage.getCarriageType().getTypeName(),
-                    carriage.getTotalSeats(),
-                    seatDTOs
-            );
-            carriageLayouts.add(carriageLayout);
+            int carriageId = seat.getCarriage().getCarriageID();
+            seatsByCarriageId.computeIfAbsent(carriageId, k -> new ArrayList<>()).add(dto);
+            carriageMap.putIfAbsent(carriageId, seat.getCarriage());
         }
-        return carriageLayouts;
+
+        List<String> bookedStatuses = Arrays.asList("PAID", "BOOKED", "PENDING", "PROCESSING", "PENDING_PAYMENT", "ACTIVE");
+        List<Integer> bookedSeatIds = ticketRepository.findBookedSeatIds(scheduleId, bookedStatuses);
+
+        List<CarriageLayoutDto> layoutResult = new ArrayList<>();
+
+        for (Map.Entry<Integer, List<seatDto>> entry : seatsByCarriageId.entrySet()) {
+            Integer carriageId = entry.getKey();
+            List<seatDto> seatDtos = entry.getValue();
+            Carriage carriageInfo = carriageMap.get(carriageId);
+
+            // --- CẬP NHẬT TRẠNG THÁI TỪ DB VÉ ---
+            for (seatDto sDto : seatDtos) {
+                if (bookedSeatIds.contains(sDto.getSeatID())) {
+                    sDto.setStatus(SeatStatus.BOOKED); // [QUAN TRỌNG] Dùng Enum
+                }
+            }
+
+            CarriageLayoutDto carriageLayout = new CarriageLayoutDto();
+            carriageLayout.setCarriageId(carriageId);
+            carriageLayout.setCarriageNumber(carriageInfo.getCarriageNumber());
+            carriageLayout.setCarriageTypeName(carriageInfo.getCarriageType().getTypeName());
+            carriageLayout.setTotalSeats(seatDtos.size());
+            carriageLayout.setSeats(seatDtos);
+
+            layoutResult.add(carriageLayout);
+        }
+
+
+        // Sắp xếp theo chuỗi ký tự (String) -> Chấp nhận cả "C2", "Toa 1", v.v.
+        layoutResult.sort(Comparator.comparing(CarriageLayoutDto::getCarriageNumber));
+        return layoutResult;
     }
 
-    @Override
-    public List<seatDto> getSeatsByScheduleId(Integer scheduleId) {
-        Schedule schedule = scheduleRepository.findById(scheduleId).orElse(null);
-        if (schedule == null) {
-            return List.of();
-        }
-        List<Seat> seats = seatRepository.findByCarriage_Train_TrainID(schedule.getTrain().getTrainID());
-        return seats.stream().map(this::convertToDto).collect(Collectors.toList());
-    }
 
-    @Override
-    public List<seatDto> getAvailableSeatsByScheduleId(Integer scheduleId) {
-        Schedule schedule = scheduleRepository.findById(scheduleId).orElse(null);
-        if (schedule == null) {
-            return List.of();
-        }
-        List<Seat> availableSeats = seatRepository.findByCarriage_Train_TrainIDAndIsAvailableTrue(schedule.getTrain().getTrainID());
-        return availableSeats.stream().map(this::convertToDto).collect(Collectors.toList());
-    }
 
     private seatDto convertToDto(Seat seat) {
         seatDto dto = new seatDto();

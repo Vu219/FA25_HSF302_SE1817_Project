@@ -122,9 +122,6 @@ public class BookingServiceImpl implements BookingService {
 
                 tickets.add(ticket);
 
-                // --- REMOVED LOGIC HERE ---
-                // DO NOT set seat.setIsAvailable(false).
-                // The seat is physically still there for other schedules.
             }
 
             ticketRepository.saveAll(tickets);
