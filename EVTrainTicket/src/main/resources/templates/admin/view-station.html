@@ -14,6 +14,7 @@
                 <th>Thời gian khởi hành</th>
                 <th>Ga đến</th>
                 <th>Thời gian đến</th>
+                <th>Thời gian dừng tại ga</th>
             </tr>
             </thead>
             <tbody>
@@ -23,6 +24,7 @@
                 <td th:text="${#temporals.format(schedule.departureTime, 'dd/MM/yyyy HH:mm')}"></td>
                 <td th:text="${schedule.arrivalStation.name}"></td>
                 <td th:text="${#temporals.format(schedule.arrivalTime, 'dd/MM/yyyy HH:mm')}"></td>
+                <td th:text="${schedule.stopDuration + ' phút'}"></td>
             </tr>
             </tbody>
         </table>
