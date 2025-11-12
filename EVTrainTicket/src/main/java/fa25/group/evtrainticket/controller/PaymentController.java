@@ -118,66 +118,54 @@ public class PaymentController {
      * When payment is completed by external merchant, call this endpoint
      */
     @PostMapping("/complete/{bookingCode}")
-    public ResponseEntity<?> completePayment(@PathVariable String bookingCode) {
+    public ResponseEntity<?> completePaymentDemo(@PathVariable String bookingCode) {
         try {
-            // Simulate payment completion - in real system this would be called by payment merchant
+            // 1. Tìm Booking theo Code (Thay vì lấy từ Session)
             Booking booking = bookingService.getBookingByCode(bookingCode);
 
             if (booking == null) {
-                return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "error", "Booking not found with code: " + bookingCode
-                ));
+                return ResponseEntity.badRequest().body(Map.of("success", false, "error", "Không tìm thấy đơn hàng"));
             }
 
-            if (!"PENDING".equals(booking.getStatus())) {
-                return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "error", "Booking is not in PENDING status. Current status: " + booking.getStatus()
-                ));
+            // 2. Nếu vé đã thanh toán rồi -> Trả về thành công luôn (Tránh lỗi khi F5)
+            if ("CONFIRMED".equals(booking.getStatus())) {
+                return ResponseEntity.ok(Map.of("success", true, "message", "Đã thanh toán trước đó"));
             }
 
-            // Activate all tickets for this booking
+            // 3. Kích hoạt vé (Chuyển từ PENDING -> ACTIVE)
             List<Ticket> tickets = ticketService.activateTicketsForBooking(bookingCode);
 
-            // Create Payment entity
+            // 4. Tạo lịch sử thanh toán giả (Để hiện lên trang Lịch sử vé)
             Payment payment = new Payment();
             payment.setBooking(booking);
             payment.setAmount(booking.getTotalAmount());
-            payment.setPaymentMethod("DEMO_PAYMENT");
+
+            // Set cứng tên phương thức để hiển thị cho đẹp
+            payment.setPaymentMethod("QR_PAY_DEMO");
+
             payment.setPaymentDate(LocalDateTime.now());
-            payment.setTransactionCode(generateTransactionCode());
-            payment.setStatus("COMPLETED");
-            payment.setNotes("Payment completed via external merchant");
+            payment.setTransactionCode("DEMO_" + System.currentTimeMillis()); // Mã giao dịch giả
+            payment.setStatus("SUCCESS");
+            payment.setNotes("Thanh toán giả lập thành công");
+
             paymentRepository.save(payment);
 
-            // Update booking status
+            // 5. Cập nhật trạng thái đơn hàng
             booking.setStatus("CONFIRMED");
             bookingService.updateBooking(booking);
 
+            // 6. Trả về kết quả
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("message", "Payment completed and tickets activated successfully");
             response.put("bookingCode", bookingCode);
-            response.put("ticketCount", tickets.size());
-            response.put("bookingStatus", "CONFIRMED");
-
-            // Include ticket codes in response
-            List<String> ticketCodes = tickets.stream()
-                .map(Ticket::getTicketCode)
-                .toList();
-            response.put("ticketCodes", ticketCodes);
 
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "error", "Failed to complete payment: " + e.getMessage()
-            ));
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of("success", false, "error", e.getMessage()));
         }
     }
-
     /**
      * Generate unique transaction code
      */

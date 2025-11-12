@@ -138,7 +138,14 @@
         <p>&copy; 2025 EVTrainTicket. All rights reserved.</p>
     </div>
 </footer>
+<script th:inline="javascript">
+    // Gán mã vé từ Server vào biến toàn cục window để file JS bên ngoài đọc được
+    // Nếu bookingCode null thì gán chuỗi rỗng ''
+    window.CURRENT_BOOKING_CODE = /*[[${bookingCode}]]*/ '';
 
+    // Log ra để kiểm tra xem có dữ liệu chưa
+    console.log("🔍 SERVER DATA:", window.CURRENT_BOOKING_CODE);
+</script>
 <script th:src="@{/js/payment.js}"></script>
 </body>
 </html>

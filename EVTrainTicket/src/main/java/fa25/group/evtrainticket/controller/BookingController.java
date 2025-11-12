@@ -1,26 +1,25 @@
 package fa25.group.evtrainticket.controller;
 
+import fa25.group.evtrainticket.dto.BookingRequestDto;
+import fa25.group.evtrainticket.dto.BookingResponseDto;
 import fa25.group.evtrainticket.dto.CarriageLayoutDto;
 import fa25.group.evtrainticket.dto.seatDto;
+import fa25.group.evtrainticket.entity.Booking;
 import fa25.group.evtrainticket.entity.Schedule;
 import fa25.group.evtrainticket.entity.Seat;
 import fa25.group.evtrainticket.entity.User;
+import fa25.group.evtrainticket.mapper.BookingMapper;
 import fa25.group.evtrainticket.repository.ScheduleRepository;
 import fa25.group.evtrainticket.service.BookingService;
-import fa25.group.evtrainticket.dto.BookingRequestDto;
-import fa25.group.evtrainticket.dto.BookingResponseDto; // <--- ADDED THIS IMPORT
-
-import fa25.group.evtrainticket.mapper.BookingMapper;
 import fa25.group.evtrainticket.service.ScheduleService;
 import fa25.group.evtrainticket.service.SeatService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import jakarta.servlet.http.HttpSession;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
@@ -152,33 +151,60 @@ public class BookingController {
 
     @GetMapping("/payment")
     public String paymentPage(
-            @RequestParam(name = "bookingCode", required = false) String bookingCode, // 1. Check URL Param
+            @RequestParam(name = "bookingCode", required = false) String bookingCode,
             HttpSession session,
             Model model) {
 
-        // 2. If URL param is missing, try getting it from Session (fallback for new bookings)
-        if (bookingCode == null) {
+        // 1. BẢO MẬT: Kiểm tra user đã đăng nhập chưa
+        User currentUser = (User) session.getAttribute("user");
+        if (currentUser == null) {
+            // Lưu lại link để login xong quay lại đúng trang thanh toán này
+            String currentUrl = "/payment" + (bookingCode != null ? "?bookingCode=" + bookingCode : "");
+            session.setAttribute("redirectUrl", currentUrl);
+            return "redirect:/login";
+        }
+
+        // 2. LOGIC LẤY MÃ: Ưu tiên URL -> Fallback Session
+        if (bookingCode == null || bookingCode.isEmpty()) {
             bookingCode = (String) session.getAttribute("currentBookingCode");
         }
 
-        // 3. If both are missing, then redirect
+        // Nếu vẫn không có mã -> Về trang chủ
         if (bookingCode == null) {
-            return "redirect:/booking";
+            return "redirect:/home";
         }
 
         try {
-            var booking = bookingService.getBookingByCode(bookingCode);
+            Booking booking = bookingService.getBookingByCode(bookingCode);
 
-            // Safety check: If DB returns null
+            // 3. CHECK DỮ LIỆU: Vé có tồn tại không?
             if (booking == null) {
-                return "redirect:/booking";
+                return "redirect:/home?error=booking_not_found";
             }
 
+            // 4. BẢO MẬT QUYỀN SỞ HỮU (QUAN TRỌNG)
+            // Tránh trường hợp User A gõ mã vé của User B để xem
+            // (Giả sử User Entity có hàm getId hoặc getUserID)
+            if (!booking.getUser().getUserID().equals(currentUser.getUserID())) {
+                return "redirect:/home?error=unauthorized";
+            }
+
+            // 5. CHECK TRẠNG THÁI VÉ
+            // Nếu vé không phải đang chờ (PENDING), tức là đã xong hoặc hủy -> Sang lịch sử
+            if (!"PENDING".equals(booking.getStatus())) {
+                return "redirect:/booking/history";
+            }
+
+            // 6. Đẩy dữ liệu sang View
             model.addAttribute("booking", booking);
-            model.addAttribute("bookingCode", bookingCode);
+            model.addAttribute("bookingCode", bookingCode); // Cần thiết cho JS gọi API
+            model.addAttribute("totalAmount", booking.getTotalAmount());
+
             return "payment";
+
         } catch (Exception e) {
-            return "redirect:/booking";
+            e.printStackTrace(); // Log lỗi để debug
+            return "redirect:/home?error=system_error";
         }
     }
 
@@ -314,20 +340,6 @@ public class BookingController {
         }
     }
 
-//    @PostMapping("/api/booking/check-price")
-//    @ResponseBody
-//    public ResponseEntity<?> checkPrice(@RequestBody BookingRequestDto bookingRequest) {
-//        try { //NOSONAR
-//            double price = bookingService.calculateBookingPrice(bookingRequest);
-//            return ResponseEntity.ok(Map.of(
-//                    "totalAmount", price
-//            ));
-//        } catch (Exception e) {
-//            return ResponseEntity.badRequest().body(Map.of(
-//                    "error", "Failed to calculate price: " + e.getMessage()
-//            ));
-//        }
-//    }
 
     @PostMapping("/booking/select-seats")
     public String passengerInfoPage(@RequestParam(name = "scheduleId") Integer scheduleId,
