@@ -36,4 +36,5 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
             @Param("fromDate") LocalDateTime fromDate,
             @Param("toDate") LocalDateTime toDate
     );
+
 }

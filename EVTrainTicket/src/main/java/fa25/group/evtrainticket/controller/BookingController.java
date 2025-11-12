@@ -2,22 +2,28 @@ package fa25.group.evtrainticket.controller;
 
 import fa25.group.evtrainticket.dto.CarriageLayoutDto;
 import fa25.group.evtrainticket.dto.seatDto;
+import fa25.group.evtrainticket.entity.User;
 import fa25.group.evtrainticket.service.BookingService;
 import fa25.group.evtrainticket.dto.BookingRequestDto;
+import fa25.group.evtrainticket.dto.BookingResponseDto; // <--- ADDED THIS IMPORT
 
 import fa25.group.evtrainticket.mapper.BookingMapper;
 import fa25.group.evtrainticket.service.ScheduleService;
-import fa25.group.evtrainticket.service.SeatService; // <-- ĐÃ THÊM IMPORT
+import fa25.group.evtrainticket.service.SeatService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors; // <-- ĐÃ THÊM IMPORT
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -25,48 +31,39 @@ public class BookingController {
     private final BookingService bookingService;
     private final BookingMapper bookingMapper;
     private final ScheduleService scheduleService;
-    private final SeatService seatService; // <-- ĐÃ THÊM INJECT
+    private final SeatService seatService;
 
     // Web pages
     @GetMapping("/booking")
     public String bookingPage(@RequestParam(name = "scheduleId", required = false) Integer scheduleId,
                               Model model) {
 
-        // 1. Nếu không có scheduleId, chỉ hiển thị trang (HTML sẽ tự báo "Vui lòng chọn chuyến")
         if (scheduleId == null) {
             return "booking/booking";
         }
 
-        // 2. Nếu CÓ scheduleId, tải tất cả dữ liệu (Logic được chuyển từ SeatLayoutController)
         try {
-            // Get schedule information
             var schedule = scheduleService.getScheduleById(scheduleId);
             if (schedule == null) {
                 model.addAttribute("error", "Không tìm thấy lịch trình tàu với ID: " + scheduleId);
                 return "booking/booking";
             }
 
-            // Get seat layout data (Quan trọng)
             List<CarriageLayoutDto> carriageLayouts = seatService.getSeatLayout(scheduleId);
 
-            // Prepare seat layout data for display (Nhóm ghế theo hàng)
             for (CarriageLayoutDto carriage : carriageLayouts) {
-                // Group seats by row for better layout
                 Map<Integer, List<seatDto>> seatsByRow = carriage.getSeats()
                         .stream()
-                        .filter(s -> s.getRowNumber() != null) // Lọc các ghế có rowNumber
+                        .filter(s -> s.getRowNumber() != null)
                         .collect(Collectors.groupingBy(seatDto::getRowNumber));
 
                 carriage.setSeatsByRow(seatsByRow);
-                // Bạn có thể tính maxColumns nếu cần, nhưng HTML gốc không dùng
             }
 
-            // 3. Gửi tất cả dữ liệu sang file HTML
             model.addAttribute("schedule", schedule);
             model.addAttribute("carriageLayouts", carriageLayouts);
             model.addAttribute("scheduleId", scheduleId);
 
-            // Calculate summary statistics
             int totalSeats = carriageLayouts.stream()
                     .mapToInt(c -> c.getSeats().size())
                     .sum();
@@ -84,7 +81,6 @@ public class BookingController {
             model.addAttribute("error", "Lỗi khi tải sơ đồ ghế: " + e.getMessage());
         }
 
-        // 4. Trả về file HTML
         return "booking/booking";
     }
 
@@ -94,25 +90,22 @@ public class BookingController {
                                           @RequestParam(required = false) String status,
                                           Model model) {
         if (bookingCode == null || bookingCode.isEmpty()) {
-            // Redirect to booking page if no booking code provided
             return "redirect:booking/booking";
         }
 
         try {
-            // Get booking details
             var booking = bookingService.getBookingByCode(bookingCode);
             if (booking == null) { //NOSONAR
                 model.addAttribute("error", "Booking not found with code: " + bookingCode);
                 return "booking/booking-confirmation";
             }
 
-            // Add booking details to model
             model.addAttribute("booking", booking);
             model.addAttribute("bookingCode", bookingCode);
             model.addAttribute("status", status);
 
-            // Check if payment is already completed
-            boolean isCompleted = "CONFIRMED".equals(booking.getStatus()) || "COMPLETED".equals(booking.getStatus());
+            // Check strictly for COMPLETED to allow the 'Pay Now' button to show for CONFIRMED bookings
+            boolean isCompleted = "COMPLETED".equals(booking.getStatus());
             model.addAttribute("paymentCompleted", isCompleted);
 
         } catch (Exception e) {
@@ -123,23 +116,60 @@ public class BookingController {
     }
 
     @GetMapping("/booking/history")
-    public String bookingHistoryPage(HttpSession session, Model model) {
-        var user = session.getAttribute("user");
-        if (user != null) {
-            model.addAttribute("user", user);
+    public String bookingHistoryPage(
+            HttpSession session,
+            Model model,
+            @RequestParam(name = "status", required = false) String status,
+            @RequestParam(name = "fromDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(name = "toDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate
+    ) {
+        User user = (User) session.getAttribute("user");
+
+        if (user == null) {
+            return "redirect:/login";
         }
+        model.addAttribute("user", user);
+
+        // --- FIX: Changed from BookingRequestDto to BookingResponseDto ---
+        List<BookingResponseDto> bookings;
+
+        bookings = bookingService.getUserBookingsWithFilter(user.getUserID(), status, fromDate, toDate);
+
+        model.addAttribute("bookings", bookings);
+
+        model.addAttribute("selectedStatus", status);
+        model.addAttribute("selectedFromDate", fromDate);
+        model.addAttribute("selectedToDate", toDate);
+
         return "booking/booking-history";
     }
 
+    // In BookingController.java
+
     @GetMapping("/payment")
-    public String paymentPage(HttpSession session, Model model) {
-        String bookingCode = (String) session.getAttribute("currentBookingCode");
+    public String paymentPage(
+            @RequestParam(name = "bookingCode", required = false) String bookingCode, // 1. Check URL Param
+            HttpSession session,
+            Model model) {
+
+        // 2. If URL param is missing, try getting it from Session (fallback for new bookings)
         if (bookingCode == null) {
-            return "redirect:/booking"; // Redirect to booking if no booking in session
+            bookingCode = (String) session.getAttribute("currentBookingCode");
+        }
+
+        // 3. If both are missing, then redirect
+        if (bookingCode == null) {
+            return "redirect:/booking";
         }
 
         try {
             var booking = bookingService.getBookingByCode(bookingCode);
+
+            // Safety check: If DB returns null
+            if (booking == null) {
+                return "redirect:/booking";
+            }
+
             model.addAttribute("booking", booking);
             model.addAttribute("bookingCode", bookingCode);
             return "payment";
@@ -168,7 +198,6 @@ public class BookingController {
             var booking = bookingService.createAnonymousPendingBooking(bookingRequest);
             var response = bookingMapper.toDto(booking);
 
-            // Store booking code in session for payment flow
             session.setAttribute("currentBookingCode", booking.getBookingCode());
 
             return ResponseEntity.ok(response);
@@ -252,23 +281,15 @@ public class BookingController {
         }
     }
 
-    @PostMapping("/api/booking/cancel/{bookingId}")
-    @ResponseBody
-    public ResponseEntity<?> cancelBooking(@PathVariable(name = "bookingId") Integer bookingId) {
-        try { //NOSONAR
-            var booking = bookingService.cancelBooking(bookingId);
-            var response = bookingMapper.toDto(booking);
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "message", "Booking cancelled successfully",
-                    "booking", response
-            ));
+    @PostMapping("/booking/cancel")
+    public String cancelBooking(@RequestParam("bookingId") Integer bookingId, RedirectAttributes redirectAttributes) {
+        try {
+            bookingService.cancelBooking(bookingId);
+            redirectAttributes.addFlashAttribute("successMessage", "Hủy vé thành công!");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "Booking cancellation failed: " + e.getMessage()
-            ));
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi hủy vé: " + e.getMessage());
         }
+        return "redirect:/booking/history";
     }
 
     @GetMapping("/api/booking/validate-seats")
@@ -317,31 +338,24 @@ public class BookingController {
         }
     }
 
-    // --- ĐÂY LÀ PHẦN ĐÃ SỬA ---
-    // 1. Đã đổi thành @PostMapping
-    // 2. Đã đổi đường dẫn thành "/booking/select-seats" (khớp với form)
     @PostMapping("/booking/select-seats")
     public String passengerInfoPage(@RequestParam(name = "scheduleId") Integer scheduleId,
-                                    // 3. Đã đổi tên param thành "selectedSeats" (khớp với form)
                                     @RequestParam(name = "selectedSeats") List<Integer> seatIds,
                                     Model model) {
         try {
-            // Validate schedule and seats
             var schedule = scheduleService.getScheduleById(scheduleId);
             if (schedule == null) {
                 return "redirect:/booking?error=Schedule not found";
             }
 
-            // Get all seats for the schedule
             var seats = scheduleService.getSeatsByScheduleId(scheduleId);
 
-            // Add data to model
             model.addAttribute("schedule", schedule);
-            model.addAttribute("seatIds", seatIds); // Giữ nguyên tên "seatIds" cho trang passenger-info
+            model.addAttribute("seatIds", seatIds);
             model.addAttribute("selectedSeatsCount", seatIds.size());
-            model.addAttribute("seats", seats); // Added seats to the model
+            model.addAttribute("seats", seats);
 
-            return "passenger-info"; // Chuyển hướng đến trang "passenger-info.html"
+            return "passenger-info";
         } catch (Exception e) {
             return "redirect:/booking?error=" + e.getMessage();
         }

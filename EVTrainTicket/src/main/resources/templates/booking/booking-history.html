@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lịch sử đặt vé - EV Train Ticket</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/booking-history.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -14,117 +13,204 @@
 
 <header>
     <nav class="navbar container">
-        <a th:href="@{/home}" class="logo">
-            <i class="fas fa-train"></i> EVTrainTicket
-        </a>
-        <div class="nav-links" th:if="${session.user == null}">
-            <a th:href="@{/login}">Đăng nhập</a>
-            <a th:href="@{/register}">Đăng ký</a>
-        </div>
-
-        <div class="user-info" th:if="${session.user != null}">
-            <p>Xin chào, <strong th:text="${session.user.fullName}"></strong>!</p>
-
-            <a th:href="@{/booking/history}" class="admin-nav-link" style="background-color: #28a745; border-color: #28a745;">
-                <i class="fas fa-history"></i> Vé của tôi
-            </a>
-
-            <a th:if="${session.user.role == 'ADMIN'}" th:href="@{/admin}" class="admin-nav-link">
-                <i class="fas fa-cogs"></i> Quản trị
-            </a>
-
-            <form th:action="@{/logout}" method="get" style="margin: 0;">
-                <button type="submit">
-                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                </button>
-            </form>
-        </div>
+        <a th:href="@{/home}" class="logo"><i class="fas fa-train"></i> EVTrainTicket</a>
     </nav>
 </header>
 
 <main>
     <div class="container main-container">
+
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
         <div class="row">
             <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2><i class="fas fa-history"></i> Vé của tôi</h2>
-                    <a th:href="@{/home}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Đặt vé mới
-                    </a>
+                    <a th:href="@{/home}" class="btn btn-primary"><i class="fas fa-plus"></i> Đặt vé mới</a>
                 </div>
 
                 <div class="card mb-4">
                     <div class="card-body">
-                        <div class="row">
+                        <form th:action="@{/booking/history}" method="get" class="row">
                             <div class="col-md-3">
                                 <label class="form-label">Trạng thái</label>
-                                <select id="status-filter" class="form-select">
-                                    <option value="">Tất cả</option>
-                                    <option value="CONFIRMED">Đã xác nhận</option>
-                                    <option value="CANCELLED">Đã hủy</option>
-                                    <option value="COMPLETED">Đã hoàn tất</option>
+                                <select name="status" class="form-select">
+                                    <option value="" th:selected="${selectedStatus == null}">Tất cả</option>
+                                    <option value="CONFIRMED" th:selected="${selectedStatus == 'CONFIRMED'}">Đã xác nhận</option>
+                                    <option value="PENDING" th:selected="${selectedStatus == 'PENDING'}">Đang chờ</option>
+                                    <option value="CANCELLED" th:selected="${selectedStatus == 'CANCELLED'}">Đã hủy</option>
+                                    <option value="COMPLETED" th:selected="${selectedStatus == 'COMPLETED'}">Đã hoàn tất</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Từ ngày</label>
-                                <input type="date" id="from-date" class="form-control">
+                                <input type="date" name="fromDate" class="form-control" th:value="${selectedFromDate}">
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Đến ngày</label>
-                                <input type="date" id="to-date" class="form-control">
+                                <input type="date" name="toDate" class="form-control" th:value="${selectedToDate}">
                             </div>
-                            <div class="col-md-3">
-                                <label class="form-label">&nbsp;</label>
-                                <div>
-                                    <button class="btn btn-outline-primary" onclick="applyFilters()">
-                                        <i class="fas fa-filter"></i> Lọc
-                                    </button>
-                                    <button class="btn btn-outline-secondary" onclick="clearFilters()">
-                                        <i class="fas fa-times"></i> Xóa lọc
-                                    </button>
-                                </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="submit" class="btn btn-outline-primary me-2"><i class="fas fa-filter"></i> Lọc</button>
+                                <a th:href="@{/booking/history}" class="btn btn-outline-secondary"><i class="fas fa-times"></i> Xóa</a>
                             </div>
-                        </div>
+                        </form>
                     </div>
                 </div>
 
                 <div id="bookings-container">
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
+
+                    <div th:if="${#lists.isEmpty(bookings)}" class="alert alert-info text-center">
+                        <h5>Không tìm thấy vé nào</h5>
+                        <p>Bạn chưa có lịch sử đặt vé hoặc không tìm thấy kết quả phù hợp.</p>
+                    </div>
+
+                    <div th:each="booking : ${bookings}" class="card booking-card mb-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="journey-info">
+                                        <div class="row" th:with="firstTicket=${booking.tickets[0]}">
+                                            <div class="col-md-6">
+                                                <h6 class="mb-1">
+                                                    <i class="fas fa-train text-primary"></i>
+                                                    <span th:text="${firstTicket.schedule.trainName}">Tàu SE1</span>
+                                                </h6>
+                                                <p class="mb-0">
+                                                    <strong th:text="${firstTicket.schedule.origin}">Hanoi</strong>
+                                                    <i class="fas fa-arrow-right mx-2"></i>
+                                                    <strong th:text="${firstTicket.schedule.destination}">HCM</strong>
+                                                </p>
+                                                <small class="text-muted">
+                                                    <span th:text="${#temporals.format(firstTicket.schedule.departureTime, 'dd/MM/yyyy HH:mm')}"></span>
+                                                </small>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p class="mb-1"><strong>Mã đặt vé:</strong> <span th:text="${booking.bookingCode}">BK123</span></p>
+                                                <p class="mb-1"><strong>Số vé:</strong> <span th:text="${#lists.size(booking.tickets)} + ' ghế'"></span></p>
+                                                <p class="mb-0"><strong>Tổng:</strong> <span class="text-success" th:text="${#numbers.formatDecimal(booking.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></span></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4 text-end">
+                                    <div class="mb-2">
+                                        <span class="badge status-badge"
+                                              th:text="${booking.status}"
+                                              th:classappend="${booking.status == 'CONFIRMED' ? 'bg-success' :
+                                                               (booking.status == 'CANCELLED' ? 'bg-danger' :
+                                                               (booking.status == 'PENDING' ? 'bg-warning' : 'bg-primary'))}">
+                                        </span>
+                                    </div>
+                                    <small class="text-muted d-block mb-2">
+                                        Đặt ngày: <span th:text="${#temporals.format(booking.bookingDate, 'dd/MM/yyyy')}"></span>
+                                    </small>
+
+                                    <div th:id="'tickets-' + ${booking.bookingCode}" style="display: none;">
+                                        <table class="table table-bordered table-sm table-hover mt-3">
+                                            <thead class="table-light">
+                                            <tr>
+                                                <th>Mã vé</th>
+                                                <th>Ghế</th>
+                                                <th>Toa</th>
+                                                <th>Loại ghế</th>
+                                                <th>Giá vé</th>
+                                                <th>Trạng thái</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <tr th:each="t : ${booking.tickets}">
+                                                <td th:text="${t.ticketCode}">TK01</td>
+                                                <td class="fw-bold text-primary" th:text="${t.seatNumber}">1A</td>
+                                                <td th:text="${t.carriageName}">Toa 1</td>
+                                                <td th:text="${t.seatType}">Mềm</td>
+                                                <td th:text="${#numbers.formatDecimal(t.price, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></td>
+                                                <td>
+                                                    <span class="badge"
+                                                          th:text="${t.status}"
+                                                          th:classappend="${t.status == 'ACTIVE' ? 'bg-success' : 'bg-secondary'}">
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="btn-group-vertical">
+                                        <button class="btn btn-outline-primary btn-sm view-details-btn"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#bookingModal"
+                                                th:data-code="${booking.bookingCode}"
+                                                th:data-status="${booking.status}"
+                                                th:data-amount="${#numbers.formatDecimal(booking.totalAmount, 0, 'COMMA', 0, 'POINT')}"
+                                                th:data-train="${booking.tickets[0].schedule.trainName}"
+                                                th:data-origin="${booking.tickets[0].schedule.origin}"
+                                                th:data-dest="${booking.tickets[0].schedule.destination}"
+                                                th:data-time="${#temporals.format(booking.tickets[0].schedule.departureTime, 'dd/MM/yyyy HH:mm')}"
+                                                th:data-ticket-source="'tickets-' + ${booking.bookingCode}"
+                                                onclick="populateModal(this)">
+                                            <i class="fas fa-eye"></i> Xem chi tiết
+                                        </button>
+
+                                        <form th:if="${booking.status == 'CONFIRMED' or booking.status == 'PENDING'}"
+                                              th:action="@{/booking/cancel}" method="post"
+                                              onsubmit="return confirm('Bạn có chắc chắn muốn hủy vé này không?');"
+                                              style="display: inline;">
+                                            <input type="hidden" name="bookingId" th:value="${booking.bookingId}">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm mt-1 w-100">
+                                                <i class="fas fa-times"></i> Hủy vé
+                                            </button>
+                                        </form>
+
+                                        <a th:if="${booking.status == 'PENDING'}"
+                                           th:href="@{/payment(bookingCode=${booking.bookingCode})}"
+                                           class="btn btn-success btn-sm mt-1">
+                                            <i class="fas fa-credit-card"></i> Thanh toán
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <p class="mt-2">Đang tải vé của bạn...</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
+    <div class="modal fade" id="bookingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="bookingModalLabel">
-                        <i class="fas fa-ticket-alt"></i> Chi tiết đặt vé
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title"><i class="fas fa-ticket-alt"></i> Chi tiết đặt vé: <span id="modalBookingCode"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body" id="modal-booking-details">
-                    <!-- Content will be dynamically inserted here by renderBookingModal -->
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <p><strong>Tàu:</strong> <span id="modalTrain"></span></p>
+                            <p><strong>Hành trình:</strong> <span id="modalRoute"></span></p>
                         </div>
-                        <p class="mt-2">Đang tải thông tin...</p>
+                        <div class="col-6">
+                            <p><strong>Khởi hành:</strong> <span id="modalTime"></span></p>
+                            <p><strong>Tổng tiền:</strong> <span id="modalAmount" class="text-success fw-bold"></span></p>
+                        </div>
+                    </div>
+
+                    <h6 class="border-bottom pb-2"><i class="fas fa-list"></i> Danh sách vé</h6>
+                    <div id="modalTicketContent">
                     </div>
                 </div>
-                <div class="modal-footer" id="booking-modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times"></i> Đóng
-                    </button>
-                    <button type="button" class="btn btn-primary" onclick="printBooking()">
-                        <i class="fas fa-print"></i> In vé
-                    </button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="window.print()">In vé</button>
                 </div>
             </div>
         </div>
@@ -132,416 +218,40 @@
 </main>
 
 <footer class="site-footer">
-    <div class="footer-container container">
-
-        <div class="footer-column">
-            <h3><i class="fas fa-train"></i> EVTrainTicket</h3>
-            <p>Trải nghiệm hành trình an toàn, tiện lợi và đáng nhớ cùng đường sắt Việt Nam. Đặt vé ngay hôm nay!</p>
-        </div>
-
-        <div class="footer-column">
-            <h4>Liên kết nhanh</h4>
-            <ul>
-                <li><a th:href="@{/home}"><i class="fas fa-home"></i> Trang chủ</a></li>
-                <li><a th:href="@{/booking/history}"><i class="fas fa-history"></i> Vé của tôi</a></li>
-                <li th:if="${session.user != null AND session.user.role == 'ADMIN'}">
-                    <a th:href="@{/admin}"><i class="fas fa-cogs"></i> Quản trị</a>
-                </li>
-            </ul>
-        </div>
-
-        <div class="footer-column">
-            <h4>Liên hệ</h4>
-            <ul>
-                <li><i class="fas fa-map-marker-alt"></i> Lô E2a-7 - Đường D1 - Khu Công Nghệ Cao - TP. Thủ Đức - TP. HCM </li>
-                <li><i class="fas fa-phone"></i> (024) 1234 5678</li>
-                <li><i class="fas fa-envelope"></i> support@evtrainticket.vn</li>
-            </ul>
-        </div>
-
-        <div class="footer-column">
-            <h4>Theo dõi chúng tôi</h4>
-            <div class="social-links">
-                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                <a href="#" aria-label="Youtube"><i class="fab fa-youtube"></i></a>
-            </div>
-        </div>
-    </div>
-
-    <div class="footer-bottom">
-        <p>&copy; 2025 EVTrainTicket. All rights reserved.</p>
-    </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-<script th:inline="javascript">
-    let allBookings = [];
-    let filteredBookings = [];
-    const currentUserId = /*[[${session.user != null ? session.user.userID : 0}]]*/ 0;
-    const currentUserEmail = /*[[${session.user != null ? session.user.email : ''}]]*/ '';
 
-    document.addEventListener('DOMContentLoaded', function() {
-        if (currentUserId === 0 && !currentUserEmail) {
-            // Not logged in - redirect to login
-            window.location.href = '/login';
-            return;
-        }
-        loadBookings();
-    });
+<script>
+    function populateModal(button) {
+        // 1. Read summary data
+        const code = button.getAttribute('data-code');
+        const train = button.getAttribute('data-train');
+        const origin = button.getAttribute('data-origin');
+        const dest = button.getAttribute('data-dest');
+        const time = button.getAttribute('data-time');
+        const amount = button.getAttribute('data-amount');
 
-    function loadBookings() {
-        // Fetch by user ID if available, otherwise by email
-        const endpoint = currentUserId > 0
-            ? `/api/booking/user/${currentUserId}`
-            : `/api/booking/email/${encodeURIComponent(currentUserEmail)}`;
+        // 2. Update Summary Text
+        document.getElementById('modalBookingCode').textContent = code;
+        document.getElementById('modalTrain').textContent = train;
+        document.getElementById('modalRoute').textContent = origin + ' -> ' + dest;
+        document.getElementById('modalTime').textContent = time;
+        document.getElementById('modalAmount').textContent = amount + ' VNĐ';
 
-        fetch(endpoint)
-            .then(response => response.json())
-            .then(data => {
-                if (Array.isArray(data)) {
-                    allBookings = data;
-                    filteredBookings = [...allBookings];
-                    renderBookings();
-                } else {
-                    throw new Error(data.message || 'Failed to load bookings');
-                }
-            })
-            .catch(error => {
-                console.error('Error loading bookings:', error);
-                document.getElementById('bookings-container').innerHTML = `
-                        <div class="alert alert-warning">
-                            <h5>Không tìm thấy vé</h5>
-                            <p>Bạn chưa đặt vé nào, hoặc đã có lỗi xảy ra.</p>
-                            <a href="/static" class="btn btn-primary">Đặt chuyến đầu tiên</a>
-                        </div>
-                    `;
-            });
-    }
+        // 3. COPY TICKET LIST
+        const sourceId = button.getAttribute('data-ticket-source');
+        const sourceDiv = document.getElementById(sourceId);
+        const targetDiv = document.getElementById('modalTicketContent');
 
-    function renderBookings() {
-        const container = document.getElementById('bookings-container');
-
-        if (filteredBookings.length === 0) {
-            container.innerHTML = `
-                    <div class="alert alert-info">
-                        <h5>No Bookings Found</h5>
-                        <p>No bookings match your current filters.</p>
-                    </div>
-                `;
-            return;
-        }
-
-        const bookingsHtml = filteredBookings.map(booking => {
-            const statusClass = getStatusClass(booking.status);
-            const ticketCount = booking.tickets ? booking.tickets.length : 0;
-
-            // Get schedule from first ticket (all tickets in a booking have the same schedule)
-            const schedule = booking.tickets && booking.tickets.length > 0 ? booking.tickets[0].schedule : null;
-
-            if (!schedule) {
-                return ''; // Skip bookings without schedule info
-            }
-
-            return `
-                    <div class="card booking-card mb-3">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <div class="journey-info">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <h6 class="mb-1">
-                                                    <i class="fas fa-train text-primary"></i>
-                                                    ${schedule.trainName || 'N/A'}
-                                                </h6>
-                                                <p class="mb-0">
-                                                    <strong>${schedule.origin || 'N/A'}</strong>
-                                                    <i class="fas fa-arrow-right mx-2"></i>
-                                                    <strong>${schedule.destination || 'N/A'}</strong>
-                                                </p>
-                                                <small class="text-muted">
-                                                    ${new Date(schedule.departureTime).toLocaleDateString()} •
-                                                    ${new Date(schedule.departureTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                                                </small>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <p class="mb-1">
-                                                    <strong>Mã đặt vé:</strong> ${booking.bookingCode}
-                                                </p>
-                                                <p class="mb-1">
-                                                    <strong>Số vé:</strong> ${ticketCount} ${ticketCount === 1 ? 'ghế' : 'ghế'}
-                                                </p>
-                                                <p class="mb-0">
-                                                    <strong>Tổng:</strong> <span class="text-success">${booking.totalAmount.toLocaleString()} VNĐ</span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4 text-end">
-                                    <div class="mb-2">
-                                        <span class="badge ${statusClass} status-badge">${booking.status}</span>
-                                    </div>
-                                    <small class="text-muted d-block mb-2">
-                                        Đặt ngày: ${new Date(booking.bookingDate).toLocaleDateString()}
-                                    </small>
-                                    <div class="btn-group-vertical" role="group">
-                                        <button class="btn btn-outline-primary btn-sm view-details-btn" data-booking-code="${booking.bookingCode}">
-                                            <i class="fas fa-eye"></i> Xem chi tiết
-                                        </button>
-                                        ${booking.status === 'CONFIRMED' || booking.status === 'PENDING' ? `
-                                            <button class="btn btn-outline-danger btn-sm mt-1 cancel-booking-btn" data-booking-id="${booking.bookingId}">
-                                                <i class="fas fa-times"></i> Hủy vé
-                                            </button>
-                                        ` : ''}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-        }).join('');
-
-        container.innerHTML = bookingsHtml;
-
-        // Attach event listeners to all buttons
-        container.querySelectorAll('.view-details-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const bookingCode = this.dataset.bookingCode;
-                showBookingDetails(bookingCode);
-            });
-        });
-
-        container.querySelectorAll('.cancel-booking-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const bookingId = parseInt(this.dataset.bookingId);
-                cancelBooking(bookingId);
-            });
-        });
-    }
-
-    function getStatusClass(status) {
-        switch (status) {
-            case 'CONFIRMED': return 'bg-success';
-            case 'CANCELLED': return 'bg-danger';
-            case 'COMPLETED': return 'bg-primary';
-            default: return 'bg-secondary';
-        }
-    }
-
-    function showBookingDetails(bookingCode) {
-        fetch(`/api/booking/${bookingCode}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.bookingId) {
-                    renderBookingModal(data);
-                    const modal = new bootstrap.Modal(document.getElementById('bookingModal'));
-                    modal.show();
-                } else {
-                    alert('Error loading booking details');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error loading booking details');
-            });
-    }
-
-    function renderBookingModal(booking) {
-        // Safely extract schedule from first ticket
-        const schedule = booking && booking.tickets && booking.tickets.length > 0 && booking.tickets[0].schedule
-            ? booking.tickets[0].schedule
-            : null;
-
-        if (!schedule) {
-            alert('Thông tin lịch trình không khả dụng');
-            return;
-        }
-
-        // Safe property access for all schedule fields
-        const trainName = schedule && schedule.trainName ? schedule.trainName : 'N/A';
-        const origin = schedule && schedule.origin ? schedule.origin : 'N/A';
-        const destination = schedule && schedule.destination ? schedule.destination : 'N/A';
-        const departureTime = schedule && schedule.departureTime ? new Date(schedule.departureTime).toLocaleString('vi-VN') : 'N/A';
-        const arrivalTime = schedule && schedule.arrivalTime ? new Date(schedule.arrivalTime).toLocaleString('vi-VN') : 'N/A';
-
-        // Safe property access for booking fields
-        const bookingCode = booking && booking.bookingCode ? booking.bookingCode : 'N/A';
-        const userFullName = booking && booking.userFullName ? booking.userFullName : 'N/A';
-        const userEmail = booking && booking.userEmail ? booking.userEmail : 'N/A';
-        const status = booking && booking.status ? booking.status : 'UNKNOWN';
-        const totalAmount = booking && booking.totalAmount ? booking.totalAmount.toLocaleString() : '0';
-
-        const ticketsHtml = booking.tickets && booking.tickets.length > 0
-            ? booking.tickets.map(ticket => `
-                <tr>
-                    <td>${ticket.ticketCode || 'N/A'}</td>
-                    <td>${ticket.seatNumber || 'N/A'}</td>
-                    <td>${ticket.carriageName || 'N/A'}</td>
-                    <td>${ticket.seatType || 'N/A'}</td>
-                    <td>${ticket.price ? ticket.price.toLocaleString() : '0'} VNĐ</td>
-                    <td><span class="badge bg-success">${ticket.status || 'N/A'}</span></td>
-                </tr>
-            `).join('')
-            : '<tr><td colspan="6" class="text-center">Không có thông tin vé</td></tr>';
-
-        // Safe payment access
-        const hasPayment = booking && booking.payments && booking.payments.length > 0;
-        const payment = hasPayment ? booking.payments[0] : null;
-        const transactionCode = payment && payment.transactionCode ? payment.transactionCode : 'Chưa có';
-        const paymentMethod = payment && payment.paymentMethod ? payment.paymentMethod.replace('_', ' ') : 'N/A';
-        const paymentAmount = payment && payment.amount ? payment.amount.toLocaleString() : totalAmount;
-        const paymentStatus = payment && payment.status ? payment.status : 'Chưa thanh toán';
-
-        const html = `
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-info-circle"></i> Thông tin chuyến đi</h6>
-                        <table class="table table-sm">
-                            <tr><td><strong>Tàu:</strong></td><td>${trainName}</td></tr>
-                            <tr><td><strong>Từ:</strong></td><td>${origin}</td></tr>
-                            <tr><td><strong>Đến:</strong></td><td>${destination}</td></tr>
-                            <tr><td><strong>Khởi hành:</strong></td><td>${departureTime}</td></tr>
-                            <tr><td><strong>Đến nơi:</strong></td><td>${arrivalTime}</td></tr>
-                        </table>
-                    </div>
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-user"></i> Thông tin đặt vé</h6>
-                        <table class="table table-sm">
-                            <tr><td><strong>Mã đặt vé:</strong></td><td>${bookingCode}</td></tr>
-                            <tr><td><strong>Hành khách:</strong></td><td>${userFullName}</td></tr>
-                            <tr><td><strong>Email:</strong></td><td>${userEmail}</td></tr>
-                            <tr><td><strong>Trạng thái:</strong></td><td><span class="badge ${getStatusClass(status)}">${status}</span></td></tr>
-                            <tr><td><strong>Tổng tiền:</strong></td><td><strong>${totalAmount} VNĐ</strong></td></tr>
-                        </table>
-                    </div>
-                </div>
-
-                <h6 class="mt-4"><i class="fas fa-ticket-alt"></i> Chi tiết vé</h6>
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Mã vé</th>
-                                <th>Ghế</th>
-                                <th>Toa</th>
-                                <th>Loại</th>
-                                <th>Giá</th>
-                                <th>Trạng thái</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${ticketsHtml}
-                        </tbody>
-                    </table>
-                </div>
-
-                <h6 class="mt-4"><i class="fas fa-credit-card"></i> Thông tin thanh toán</h6>
-                <div class="row">
-                    <div class="col-md-6">
-                        <p><strong>Mã giao dịch:</strong> ${transactionCode}</p>
-                        <p><strong>Phương thức:</strong> ${paymentMethod}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <p><strong>Số tiền:</strong> ${paymentAmount} VNĐ</p>
-                        <p><strong>Trạng thái:</strong> <span class="badge bg-success">${paymentStatus}</span></p>
-                    </div>
-                </div>
-            `;
-
-        const modalElement = document.getElementById('modal-booking-details');
-        if (modalElement) {
-            modalElement.innerHTML = html;
+        if (sourceDiv && targetDiv) {
+            // Copy the HTML from the hidden div to the modal
+            targetDiv.innerHTML = sourceDiv.innerHTML;
         } else {
-            console.error("Error: Element with ID 'modal-booking-details' not found.");
-            alert('Không thể hiển thị chi tiết đặt vé. Vui lòng thử lại.');
+            targetDiv.innerHTML = '<p class="text-muted">Không có thông tin chi tiết vé.</p>';
         }
-
-        const footerElement = document.getElementById('booking-modal-footer');
-        if (footerElement) {
-            let footerHtml = `
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times"></i> Đóng
-                </button>
-            `;
-
-            // Tùy vào trạng thái, hiển thị nút phù hợp
-            if (booking.status === 'CONFIRMED' || booking.status === 'COMPLETED') {
-                footerHtml += `
-                    <button type="button" class="btn btn-primary" onclick="printBooking()">
-                        <i class="fas fa-print"></i> In vé
-                    </button>
-                `;
-            } else if (booking.status === 'PENDING') {
-                // Sử dụng <a> thay vì <button> để chuyển hướng
-                footerHtml += `
-                    <a href="/payment?bookingCode=${booking.bookingCode}" class="btn btn-success">
-                        <i class="fas fa-credit-card"></i> Thanh toán ngay
-                    </a>
-                `;
-            }
-            // Nếu là CANCELLED, không thêm nút nào khác.
-
-            footerElement.innerHTML = footerHtml;
-        }
-    }
-
-    function cancelBooking(bookingId) {
-        if (confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
-            fetch(`/api/booking/cancel/${bookingId}`, {
-                method: 'POST'
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.bookingId) {
-                        alert('Booking cancelled successfully');
-                        loadBookings(); // Reload the bookings list
-                    } else {
-                        alert('Error cancelling booking: ' + (data.message || 'Unknown error'));
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error cancelling booking');
-                });
-        }
-    }
-
-    function applyFilters() {
-        const status = document.getElementById('status-filter').value;
-        const fromDate = document.getElementById('from-date').value;
-        const toDate = document.getElementById('to-date').value;
-
-        filteredBookings = allBookings.filter(booking => {
-            // Status filter
-            if (status && booking.status !== status) return false;
-
-            // Date filters
-            const bookingDate = new Date(booking.bookingDate).toISOString().split('T')[0];
-            if (fromDate && bookingDate < fromDate) return false;
-            if (toDate && bookingDate > toDate) return false;
-
-            return true;
-        });
-
-        renderBookings();
-    }
-
-    function clearFilters() {
-        document.getElementById('status-filter').value = '';
-        document.getElementById('from-date').value = '';
-        document.getElementById('to-date').value = '';
-        filteredBookings = [...allBookings];
-        renderBookings();
-    }
-
-    function printBooking() {
-        window.print();
     }
 </script>
+
 </body>
 </html>
-
-
