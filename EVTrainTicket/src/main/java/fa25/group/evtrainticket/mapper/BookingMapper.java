@@ -68,6 +68,11 @@ public class BookingMapper {
         dto.setStatus(ticket.getStatus());
         dto.setPrice(ticket.getPrice());
 
+        // --- [QUAN TRỌNG] THÊM 2 DÒNG NÀY ---
+        dto.setPassengerName(ticket.getPassengerName()); // Map tên hành khách
+        dto.setTicketType(ticket.getTicketType());       // Map loại vé
+        // ------------------------------------
+
         // Add seat information
         if (ticket.getSeat() != null) {
             dto.setSeatNumber(ticket.getSeat().getSeatNumber());
@@ -87,7 +92,6 @@ public class BookingMapper {
 
         return dto;
     }
-
     private BookingResponseDto.PaymentDto toPaymentDto(Payment payment) {
         if (payment == null) {
             return null;

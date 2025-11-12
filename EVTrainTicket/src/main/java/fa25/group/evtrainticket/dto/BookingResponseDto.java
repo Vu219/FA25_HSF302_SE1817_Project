@@ -47,6 +47,8 @@ public class BookingResponseDto {
         private Double price;
         private String status;
         private ScheduleDto schedule;
+        private String passengerName;
+        private String ticketType;
     }
 
     @Data

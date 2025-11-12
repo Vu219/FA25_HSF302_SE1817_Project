@@ -145,27 +145,54 @@
                                             <thead class="table-light">
                                             <tr>
                                                 <th>Mã vé</th>
+                                                <th>Hành khách</th>
+                                                <th>Loại vé</th>
                                                 <th>Ghế</th>
                                                 <th>Toa</th>
-                                                <th>Loại ghế</th>
                                                 <th>Giá vé</th>
+                                                <th>Thanh toán</th>
                                                 <th>Trạng thái</th>
                                             </tr>
                                             </thead>
                                             <tbody>
-                                            <tr th:each="t : ${booking.tickets}">
-                                                <td th:text="${t.ticketCode}">TK01</td>
-                                                <td class="fw-bold text-primary" th:text="${t.seatNumber}">1A</td>
-                                                <td th:text="${t.carriageName}">Toa 1</td>
-                                                <td th:text="${t.seatType}">Mềm</td>
-                                                <td th:text="${#numbers.formatDecimal(t.price, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></td>
-                                                <td>
-                                                    <span class="badge"
-                                                          th:text="${t.status}"
-                                                          th:classappend="${t.status == 'ACTIVE' ? 'bg-success' : 'bg-secondary'}">
-                                                    </span>
-                                                </td>
-                                            </tr>
+                                                <tr th:each="t : ${booking.tickets}">
+                                                    <td th:text="${t.ticketCode}">TK01</td>
+                                                    <td class="fw-bold text-dark" th:text="${t.passengerName}">Tên khách
+                                                    </td>
+
+                                                    <td>
+                                                        <span class="badge bg-light text-dark border"
+                                                              th:switch="${t.ticketType}">
+                                                            <span th:case="'ADULT'">Người lớn</span>
+                                                            <span th:case="'CHILD'">Trẻ em</span>
+                                                            <span th:case="'ELDERLY'">Người cao tuổi</span>
+                                                            <span th:case="*">[[${t.ticketType}]]</span>
+                                                        </span>
+                                                    </td>
+
+                                                    <td class="fw-bold text-primary" th:text="${t.seatNumber}">1A</td>
+                                                    <td th:text="${t.carriageName}">Toa 1</td>
+                                                    <td th:text="${#numbers.formatDecimal(t.price, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></td>
+
+                                                    <td>
+                                                        <span class="badge bg-info text-dark"
+                                                              th:if="${not #lists.isEmpty(booking.payments)}"
+                                                              th:text="${booking.payments[0].paymentMethod}">
+                                                        </span>
+
+                                                        <span class="text-muted fst-italic"
+                                                              style="font-size: 0.8rem;" th:if="${#lists.isEmpty(booking.payments)}">
+                                                                 -
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge"
+                                                              th:classappend="${t.status == 'ACTIVE' ? 'bg-success' :
+                                                                             (t.status == 'CANCELLED' ? 'bg-danger' : 'bg-secondary')}"
+                                                              th:text="${t.status}">
+                                                        </span>
+                                                    </td>
+                                                </tr>
                                             </tbody>
                                         </table>
                                     </div>
