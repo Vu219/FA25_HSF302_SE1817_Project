@@ -31,12 +31,15 @@ public class SeatServiceImpl implements SeatService {
 
     @Override
     public List<CarriageLayoutDto> getSeatLayout(int scheduleId) {
-        Schedule schedules = scheduleRepository.findById(scheduleId).orElseThrow(() -> new RuntimeException("Schedule not found"));
+        Schedule schedules = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new RuntimeException("Schedule not found"));
         Train train = schedules.getTrain();
         BigDecimal basePrice = schedules.getBasePrice();
 
-        List<String> occupiedStatuses = List.of("pending", "confirmed");
+        List<String> occupiedStatuses = List.of("PENDING", "CONFIRMED", "COMPLETED", "PAID");
+
         List<Ticket> occupiedTickets = ticketRepository.findByScheduleScheduleIDAndBookingStatusIn(scheduleId, occupiedStatuses);
+
         Set<Integer> occupiedSeats = occupiedTickets.stream()
                 .map(ticket -> ticket.getSeat().getSeatID())
                 .collect(Collectors.toSet());
@@ -49,9 +52,22 @@ public class SeatServiceImpl implements SeatService {
             List<seatDto> seatDTOs = new ArrayList<>();
 
             for (Seat seat : seatsInCarriage) {
-                SeatStatus seatStatus = occupiedSeats.contains(seat.getSeatID()) ? SeatStatus.BOOKED : SeatStatus.AVAILABLE;
+                SeatStatus seatStatus;
+
+                // --- FIX 2: Check Physical Availability AND Booking Status ---
+                if (!seat.getIsAvailable()) {
+                    // If seat is physically broken/maintenance
+                    seatStatus = SeatStatus.BOOKED; // Or a specific UNAVAILABLE status if you have one
+                } else if (occupiedSeats.contains(seat.getSeatID())) {
+                    // If seat has an active ticket
+                    seatStatus = SeatStatus.BOOKED;
+                } else {
+                    seatStatus = SeatStatus.AVAILABLE;
+                }
+
                 BigDecimal finalPrice = basePrice.multiply(carriage.getCarriageType().getPriceMultiplier())
                         .multiply(seat.getSeatType().getPriceMultiplier());
+
                 seatDTOs.add(new seatDto(seat, finalPrice, seatStatus));
             }
 
@@ -71,30 +87,20 @@ public class SeatServiceImpl implements SeatService {
     public List<seatDto> getSeatsByScheduleId(Integer scheduleId) {
         Schedule schedule = scheduleRepository.findById(scheduleId).orElse(null);
         if (schedule == null) {
-            return List.of(); // Return empty list if schedule not found
+            return List.of();
         }
-
-        // Get all seats for the train associated with this schedule
         List<Seat> seats = seatRepository.findByCarriage_Train_TrainID(schedule.getTrain().getTrainID());
-
-        return seats.stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+        return seats.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
     @Override
     public List<seatDto> getAvailableSeatsByScheduleId(Integer scheduleId) {
         Schedule schedule = scheduleRepository.findById(scheduleId).orElse(null);
         if (schedule == null) {
-            return List.of(); // Return empty list if schedule not found
+            return List.of();
         }
-
-        // Get available seats for the train associated with this schedule
         List<Seat> availableSeats = seatRepository.findByCarriage_Train_TrainIDAndIsAvailableTrue(schedule.getTrain().getTrainID());
-
-        return availableSeats.stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+        return availableSeats.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
     private seatDto convertToDto(Seat seat) {
@@ -115,7 +121,8 @@ public class SeatServiceImpl implements SeatService {
 
     @Override
     public Seat getSeatById(Integer id) {
-        return seatRepository.findById(id).orElseThrow(() -> new RuntimeException("Ghế tàu với ID:" + id + " không tồn tại"));
+        return seatRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Ghế tàu với ID:" + id + " không tồn tại"));
     }
 
     @Override

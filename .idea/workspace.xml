@@ -6,14 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="16cecea9-2573-43d7-b3e2-546081883d27" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/controller/BookingController.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/controller/BookingController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/dto/CarriageLayoutDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/dto/CarriageLayoutDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/dto/seatDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/dto/seatDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/repository/SeatRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/repository/SeatRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/service/Impl/ScheduleServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/service/Impl/ScheduleServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/service/ScheduleService.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/service/ScheduleService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/static/css/booking.css" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/static/css/booking.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/templates/booking/booking.html" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/templates/booking/booking.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/repository/BookingRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/repository/BookingRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/repository/TicketRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/repository/TicketRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/service/Impl/SeatServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/service/Impl/SeatServiceImpl.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,12 +32,12 @@
     &quot;assignee&quot;: &quot;lamphuoc-nguyen&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/Vu219/FA25_HSF302_SE1817_Project.git",
-    "accountId": "755b3937-2cac-443c-8430-15ca59095a7b"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Vu219/FA25_HSF302_SE1817_Project.git&quot;,
+    &quot;accountId&quot;: &quot;755b3937-2cac-443c-8430-15ca59095a7b&quot;
   }
-}]]></component>
+}</component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
   &quot;isMigrated&quot;: true
@@ -74,7 +69,7 @@
     "git-widget-placeholder": "main",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/acer/Desktop/FA25_HSF302_SE1817_Project",
+    "last_opened_file_path": "C:/Users/acer/Documents/FA25_HSF302_SE1817_Project",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -129,6 +124,7 @@
       <workItem from="1762348079742" duration="599000" />
       <workItem from="1762741224903" duration="39000" />
       <workItem from="1762792358060" duration="3270000" />
+      <workItem from="1762914442235" duration="3051000" />
     </task>
     <servers />
   </component>
