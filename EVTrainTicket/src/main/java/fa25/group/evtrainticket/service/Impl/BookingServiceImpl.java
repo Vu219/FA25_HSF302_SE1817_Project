@@ -11,7 +11,7 @@ import fa25.group.evtrainticket.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import fa25.group.evtrainticket.utils.TicketUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -39,6 +39,7 @@ public class BookingServiceImpl implements BookingService {
     @Autowired
     private BookingMapper bookingMapper;
 
+
     @Override
     public Booking findByBookingCode(String bookingCode) {
         return bookingRepository.findByBookingCode(bookingCode).orElse(null);
@@ -54,6 +55,20 @@ public class BookingServiceImpl implements BookingService {
         return bookingRepository.save(booking);
     }
 
+    private String generateUniqueTicketCode() {
+        String code;
+        boolean isDuplicate;
+        do {
+            // Sinh mã ngẫu nhiên (VD: A8B9C2)
+            code = TicketUtils.generateRandomCode();
+
+            // Kiểm tra trong DB xem có chưa (gọi Repository)
+            isDuplicate = ticketRepository.existsByTicketCode(code);
+
+        } while (isDuplicate); // Nếu trùng thì quay lại sinh mã khác
+
+        return code;
+    }
 
     @Override
     @Transactional
@@ -108,34 +123,56 @@ public class BookingServiceImpl implements BookingService {
                         .orElseThrow(() -> new RuntimeException("Không tìm thấy ghế với ID: " + seatId));
                 selectedSeats.add(seat);
 
+                // 1. Parse loại vé an toàn
                 TicketType ticketType;
                 try {
-                    ticketType = TicketType.valueOf(passenger.getTicketType());
+                    // Chuyển về chữ in hoa để tránh lỗi case-sensitive (child vs CHILD)
+                    ticketType = TicketType.valueOf(passenger.getTicketType().toUpperCase());
                 } catch (Exception e) {
-                    ticketType = TicketType.ADULT;
+                    ticketType = TicketType.ADULT; // Mặc định là người lớn nếu lỗi
                 }
 
-                // Tính giá cho từng vé (giống như trong calculateBookingPrice)
+                // 2. Tính giá vé
                 double baseSeatPrice = schedule.getBasePrice().doubleValue() *
                         seat.getSeatType().getPriceMultiplier().doubleValue() *
                         seat.getCarriage().getCarriageType().getPriceMultiplier().doubleValue();
 
                 double finalTicketPrice = baseSeatPrice * ticketType.getPriceMultiplier();
 
+                // 3. Tạo Ticket Object
                 Ticket ticket = new Ticket();
                 ticket.setBooking(booking);
                 ticket.setSchedule(schedule);
                 ticket.setSeat(seat);
                 ticket.setPassengerName(passenger.getFullName());
-                ticket.setPassengerIDCard(passenger.getIdCard());
                 ticket.setPrice(finalTicketPrice);
                 ticket.setTicketType(ticketType.name());
-                ticket.setTicketCode(generateTicketCode());
+                ticket.setTicketCode(generateUniqueTicketCode()); // Hàm random không trùng
                 ticket.setStatus("PENDING");
+
+                // 4. XỬ LÝ CCCD (LOGIC ĐÃ TỐI ƯU)
+                String idCard = passenger.getIdCard();
+
+                // Sử dụng Enum ticketType để so sánh chuẩn xác hơn
+                if (ticketType == TicketType.CHILD) {
+                    // Nếu là TRẺ EM:
+                    // Kiểm tra nếu null hoặc rỗng thì gán null (nếu DB cho phép) hoặc chuỗi mặc định
+                    if (idCard == null || idCard.trim().isEmpty()) {
+                        ticket.setPassengerIDCard(null); // Lưu ý: DB phải allow NULL. Nếu không thì điền "TRE_EM"
+                    } else {
+                        ticket.setPassengerIDCard(idCard); // Nếu họ vẫn nhập thì cứ lưu
+                    }
+                } else {
+                    // Nếu là NGƯỜI LỚN / NGƯỜI GIÀ: Bắt buộc phải có ID
+                    if (idCard == null || idCard.trim().isEmpty()) {
+                        throw new RuntimeException("Vui lòng nhập số CMND/CCCD cho hành khách: " + passenger.getFullName());
+                    }
+                    ticket.setPassengerIDCard(idCard);
+                }
 
                 tickets.add(ticket);
 
-                // Khóa ghế
+                // 5. Khóa ghế
                 seat.setIsAvailable(false);
                 seatRepository.save(seat);
             }

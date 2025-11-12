@@ -38,7 +38,7 @@ public class Ticket {
     @Column(name = "TicketType", nullable = false, length = 50, columnDefinition = "nvarchar(50)")
     private String ticketType;
 
-    @Column(name = "TicketCode", nullable = false, length = 50)
+    @Column(name = "TicketCode", nullable = false, length = 50,unique = true)
     private String ticketCode;
 
     @Column(name = "Status", nullable = false, length = 50, columnDefinition = "nvarchar(50)")

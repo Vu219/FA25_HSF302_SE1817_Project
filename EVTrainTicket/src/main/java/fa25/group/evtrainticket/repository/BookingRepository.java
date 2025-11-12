@@ -20,8 +20,6 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
     List<Booking> findByUserEmail(String email);
     List<Booking> findByUserUserIDOrderByBookingDateDesc(Integer userID);
-    List<Booking> findByUserEmailOrderByBookingDateDesc(String email);
-    List<Booking> findByStatus(String status);
 
     @Query(
             "SELECT b FROM Booking b WHERE b.user.userID = :userId " +

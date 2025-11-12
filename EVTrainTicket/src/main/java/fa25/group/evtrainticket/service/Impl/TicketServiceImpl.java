@@ -4,6 +4,7 @@ import fa25.group.evtrainticket.repository.TicketRepository;
 import fa25.group.evtrainticket.entity.Booking;
 import fa25.group.evtrainticket.entity.Ticket;
 import fa25.group.evtrainticket.service.TicketService;
+import fa25.group.evtrainticket.utils.TicketUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,30 @@ public class TicketServiceImpl implements TicketService {
     @Autowired
     private TicketRepository ticketRepository;
 
+    public String generateUniqueTicketCode() {
+        String code;
+        boolean isDuplicate;
+        do {
+            code = TicketUtils.generateRandomCode();
+            // Kiểm tra trong DB xem có trùng không
+            isDuplicate = ticketRepository.existsByTicketCode(code);
+        } while (isDuplicate);
+
+        return code;
+    }
+
+    @Override
+    @Transactional
+    public Ticket save(Ticket ticket) {
+        // KIỂM TRA: Nếu là vé mới (chưa có code) thì mới sinh code
+        if (ticket.getTicketCode() == null || ticket.getTicketCode().trim().isEmpty()) {
+            String uniqueCode = generateUniqueTicketCode();
+            ticket.setTicketCode(uniqueCode);
+        }
+
+        // Nếu vé đã có code (update), giữ nguyên code cũ
+        return ticketRepository.save(ticket);
+    }
     @Override
     @Transactional
     public List<Ticket> activateTickets(Integer bookingId) {
@@ -59,11 +84,6 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public List<Ticket> findByBooking(Booking booking) {
         return ticketRepository.findByBooking(booking);
-    }
-
-    @Override
-    public Ticket save(Ticket ticket) {
-        return ticketRepository.save(ticket);
     }
 
     @Override

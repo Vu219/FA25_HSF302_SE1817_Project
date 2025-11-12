@@ -11,11 +11,37 @@
 </head>
 <body>
 
+
 <header>
     <nav class="navbar container">
-        <a th:href="@{/home}" class="logo"><i class="fas fa-train"></i> EVTrainTicket</a>
+        <a th:href="@{/home}" class="logo">
+            <i class="fas fa-train"></i> EVTrainTicket
+        </a>
+        <div class="nav-links" th:if="${session.user == null}">
+            <a th:href="@{/login}">Đăng nhập</a>
+            <a th:href="@{/register}">Đăng ký</a>
+        </div>
+
+        <div class="user-info" th:if="${session.user != null}">
+            <p>Xin chào, <strong th:text="${session.user.fullName}"></strong>!</p>
+
+            <a th:href="@{/booking/history}" class="admin-nav-link" style="background-color: #28a745; border-color: #28a745;">
+                <i class="fas fa-history"></i> Vé của tôi
+            </a>
+
+            <a th:if="${session.user.role == 'ADMIN'}" th:href="@{/admin}" class="admin-nav-link">
+                <i class="fas fa-cogs"></i> Quản trị
+            </a>
+
+            <form th:action="@{/logout}" method="get" style="margin: 0;">
+                <button type="submit">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </button>
+            </form>
+        </div>
     </nav>
 </header>
+
 
 <main>
     <div class="container main-container">

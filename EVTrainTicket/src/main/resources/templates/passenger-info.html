@@ -8,214 +8,40 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <style>
-        body {
-            background-color: #f4f7fa;
-        }
-
-        .passenger-container {
-            max-width: 900px;
-            margin: 120px auto 40px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .page-header {
-            text-align: center;
-            color: #333;
-            border-bottom: 2px solid var(--secondary-color);
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-
-        .page-header h2 {
-            margin: 0;
-        }
-
-        .page-header p {
-            margin: 10px 0 0 0;
-            color: #666;
-        }
-
-        .schedule-summary {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 4px;
-            margin-bottom: 30px;
-        }
-
-        .schedule-summary h3 {
-            margin-top: 0;
-            color: #333;
-        }
-
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin: 10px 0;
-            padding: 8px 0;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        .info-label {
-            font-weight: 600;
-            color: #666;
-        }
-
-        .info-value {
-            color: #333;
-        }
-
-        .passenger-form {
-            margin-top: 30px;
-        }
-
-        .form-section {
-            margin-bottom: 30px;
-            padding: 20px;
-            background-color: #f8f9fa;
-            border-radius: 4px;
-        }
-
-        .form-section h4 {
-            margin-top: 0;
-            margin-bottom: 20px;
-            color: #333;
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 10px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 15px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-
-        .form-group label {
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: #333;
-        }
-
-        .form-group label span.required {
-            color: red;
-        }
-
-        .form-group input,
-        .form-group select {
-            padding: 10px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25);
-        }
-
-        .seats-info {
-            background-color: #e7f3ff;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
-
-        .seats-info h5 {
-            margin-top: 0;
-            color: #333;
-        }
-
-        .seats-info p {
-            margin: 5px 0;
-            color: #666;
-        }
-
-        .action-buttons {
-            display: flex;
-            justify-content: space-between;
-            gap: 20px;
-            margin-top: 30px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-back {
-            background-color: #6c757d;
-            color: white;
-        }
-
-        .btn-back:hover {
-            background-color: #5a6268;
-        }
-
-        .btn-submit {
-            background-color: #28a745;
-            color: white;
-        }
-
-        .btn-submit:hover {
-            background-color: #218838;
-        }
-
-        .btn:disabled {
-            background-color: #6c757d;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        .error-message {
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
-            padding: 12px 20px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            display: none;
-        }
-
-        .success-message {
-            background-color: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
-            padding: 12px 20px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            .passenger-container {
-                margin: 80px 20px 20px 20px;
-                padding: 20px;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-        }
+        /* ... (Giữ nguyên Style của bạn) ... */
+        body { background-color: #f4f7fa; }
+        .passenger-container { max-width: 900px; margin: 120px auto 40px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+        .page-header { text-align: center; color: #333; border-bottom: 2px solid var(--secondary-color); padding-bottom: 20px; margin-bottom: 30px; }
+        .page-header h2 { margin: 0; }
+        .page-header p { margin: 10px 0 0 0; color: #666; }
+        .schedule-summary { background-color: #f8f9fa; padding: 20px; border-radius: 4px; margin-bottom: 30px; }
+        .schedule-summary h3 { margin-top: 0; color: #333; }
+        .info-row { display: flex; justify-content: space-between; margin: 10px 0; padding: 8px 0; border-bottom: 1px solid #dee2e6; }
+        .info-label { font-weight: 600; color: #666; }
+        .info-value { color: #333; }
+        .passenger-form { margin-top: 30px; }
+        .form-section { margin-bottom: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 4px; }
+        .form-section h4 { margin-top: 0; margin-bottom: 20px; color: #333; border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        .form-group label { font-weight: 600; margin-bottom: 5px; color: #333; }
+        .form-group label span.required { color: red; }
+        .form-group input, .form-group select { padding: 10px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25); }
+        .seats-info { background-color: #e7f3ff; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+        .seats-info h5 { margin-top: 0; color: #333; }
+        .seats-info p { margin: 5px 0; color: #666; }
+        .action-buttons { display: flex; justify-content: space-between; gap: 20px; margin-top: 30px; }
+        .btn { flex: 1; padding: 15px 30px; border: none; border-radius: 4px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-back { background-color: #6c757d; color: white; }
+        .btn-back:hover { background-color: #5a6268; }
+        .btn-submit { background-color: #28a745; color: white; }
+        .btn-submit:hover { background-color: #218838; }
+        .btn:disabled { background-color: #6c757d; cursor: not-allowed; opacity: 0.6; }
+        .error-message { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 12px 20px; border-radius: 4px; margin-bottom: 20px; display: none; }
+        .success-message { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 12px 20px; border-radius: 4px; margin-bottom: 20px; display: none; }
+        @media (max-width: 768px) { .passenger-container { margin: 80px 20px 20px 20px; padding: 20px; } .form-row { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -232,16 +58,12 @@
 
         <div class="user-info" th:if="${session.user != null}">
             <p>Xin chào, <strong th:text="${session.user.fullName}"></strong>!</p>
-
-            <a th:href="@{/booking/history}" class="admin-nav-link"
-               style="background-color: #28a745; border-color: #28a745;">
+            <a th:href="@{/booking/history}" class="admin-nav-link" style="background-color: #28a745; border-color: #28a745;">
                 <i class="fas fa-history"></i> Vé của tôi
             </a>
-
             <a th:if="${session.user.role == 'ADMIN'}" th:href="@{/admin}" class="admin-nav-link">
                 <i class="fas fa-cogs"></i> Quản trị
             </a>
-
             <form th:action="@{/logout}" method="get" style="margin: 0;">
                 <button type="submit">
                     <i class="fas fa-sign-out-alt"></i> Đăng xuất
@@ -261,7 +83,6 @@
         <div id="error-message" class="error-message"></div>
         <div id="success-message" class="success-message"></div>
 
-        <!-- Schedule Summary -->
         <div class="schedule-summary" th:if="${schedule != null}">
             <h3><i class="fas fa-info-circle"></i> Thông tin chuyến tàu</h3>
             <div class="info-row">
@@ -286,7 +107,6 @@
             </div>
         </div>
 
-        <!-- Passenger Form -->
         <form id="passengerForm" class="passenger-form">
             <div class="form-section">
                 <h4><i class="fas fa-user"></i> Thông tin liên hệ</h4>
@@ -319,7 +139,7 @@
                     <div class="form-group">
                         <label for="identityCard">CMND/CCCD<span class="required">*</span></label>
                         <input type="text" id="identityCard" name="identityCard"
-                               placeholder="001234567890" required>
+                               placeholder="001234567890">
                     </div>
                 </div>
 
@@ -327,35 +147,32 @@
                     <label for="contactTicketType">Loại vé <span class="required">*</span></label>
                     <select id="contactTicketType" class="passenger-tickettype" required>
                         <option value="ADULT" selected>Người lớn</option>
-                        <option value="CHILD">Trẻ em</option>
                         <option value="ELDERLY">Người trên 60 tuổi</option>
                     </select>
                 </div>
             </div>
 
-            <div class="form-section" id="passenger-details-section">
+            <div class="form-section" id="passenger-details-section" th:if="${selectedSeatsCount > 1}">
                 <h4><i class="fas fa-users"></i> Thông tin hành khách đi cùng</h4>
                 <p th:if="${selectedSeatsCount > 1}">
-                    Bạn đã chọn <strong th:text="${selectedSeatsCount}"></strong> ghế. Vui lòng nhập thông tin cho từng
-                    hành khách.<br>
-                    <span>(Đã bao gôm cả thông tin của người đặt vé bên trên !)</span>
+                    Bạn đã chọn <strong th:text="${selectedSeatsCount}"></strong> ghế. Vui lòng nhập thông tin cho từng hành khách.
+                    <br><span>(Đã bao gồm cả thông tin của người đặt vé bên trên !)</span>
                 </p>
 
-                <!-- thông tin người đặt vé cũng lf thông tin của 1 vé luôn rồi -->
                 <div th:each="i : ${#numbers.sequence(1, selectedSeatsCount - 1)}" class="passenger-block">
                     <h5 th:text="${'Hành khách đi cùng thứ ' + i}">Hành khách 1</h5>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label th:for="${'passengerFullName_' + i}">Họ và tên <span
-                                    class="required">*</span></label>
+                            <label th:for="${'passengerFullName_' + i}">Họ và tên <span class="required">*</span></label>
                             <input type="text" th:id="${'passengerFullName_' + i}"
                                    class="passenger-fullname" placeholder="Nguyễn Văn B" required>
                         </div>
+
                         <div class="form-group">
                             <label th:for="${'passengerIdCard_' + i}">CMND/CCCD <span class="required">*</span></label>
                             <input type="text" th:id="${'passengerIdCard_' + i}"
-                                   class="passenger-idcard" placeholder="001234567890" required>
+                                   class="passenger-idcard" placeholder="001234567890">
                         </div>
                     </div>
                     <div class="form-group">
@@ -373,8 +190,7 @@
                 <h4><i class="fas fa-sticky-note"></i> Ghi chú (không bắt buộc)</h4>
                 <div class="form-group full-width">
                     <label for="notes">Ghi chú thêm:</label>
-                    <input type="text" id="notes" name="notes"
-                           placeholder="Yêu cầu đặc biệt hoặc ghi chú khác...">
+                    <input type="text" id="notes" name="notes" placeholder="Yêu cầu đặc biệt hoặc ghi chú khác...">
                 </div>
             </div>
 
@@ -392,28 +208,17 @@
                             </ul>
                         </li>
                     </ul>
-                    <p class="total-note">
-                        <i class="fas fa-check-circle"></i> Tổng số tiền (đã áp dụng giảm giá) sẽ được hiển thị chi tiết <strong>phía cuối trang</strong>.
-                    </p>
-                    <p class="warning-note">
-                        <i class="fas fa-exclamation-triangle"></i> <strong>Quan trọng:</strong> Vui lòng mang theo giấy tờ (CCCD/Giấy khai sinh/Hộ chiếu) để nhân viên soát vé xác minh các vé được giảm giá khi lên tàu.
-                    </p>
+                    <p class="total-note"><i class="fas fa-check-circle"></i> Tổng số tiền sẽ được hiển thị chi tiết <strong>phía cuối trang</strong>.</p>
+                    <p class="warning-note"><i class="fas fa-exclamation-triangle"></i> <strong>Quan trọng:</strong> Vui lòng mang theo giấy tờ để xác minh.</p>
                 </div>
             </div>
-            <!-- Hidden fields -->
-            <input type="hidden" id="scheduleId" name="scheduleId"
-                   th:value="${schedule != null ? schedule.scheduleID : ''}">
-            <input type="hidden" id="seatIds" name="seatIds"
-                   th:value="${seatIds != null ? #strings.listJoin(seatIds, ','): ''}">
 
-            <!-- Action buttons -->
+            <input type="hidden" id="scheduleId" name="scheduleId" th:value="${schedule != null ? schedule.scheduleID : ''}">
+            <input type="hidden" id="seatIds" name="seatIds" th:value="${seatIds != null ? #strings.listJoin(seatIds, ','): ''}">
+
             <div class="action-buttons">
-                <button type="button" class="btn btn-back" onclick="goBack()">
-                    <i class="fas fa-arrow-left"></i> Quay lại
-                </button>
-                <button type="submit" class="btn btn-submit" id="submitBtn">
-                    <i class="fas fa-check"></i> Xác nhận và thanh toán
-                </button>
+                <button type="button" class="btn btn-back" onclick="goBack()"><i class="fas fa-arrow-left"></i> Quay lại</button>
+                <button type="submit" class="btn btn-submit" id="submitBtn"><i class="fas fa-check"></i> Xác nhận và thanh toán</button>
             </div>
         </form>
     </div>
@@ -421,52 +226,21 @@
 
 <footer class="site-footer">
     <div class="footer-container container">
-
         <div class="footer-column">
             <h3><i class="fas fa-train"></i> EVTrainTicket</h3>
-            <p>Trải nghiệm hành trình an toàn, tiện lợi và đáng nhớ cùng đường sắt Việt Nam. Đặt vé ngay hôm nay!</p>
-        </div>
-
-        <div class="footer-column">
-            <h4>Liên kết nhanh</h4>
-            <ul>
-                <li><a th:href="@{/home}"><i class="fas fa-home"></i> Trang chủ</a></li>
-                <li><a th:href="@{/booking/history}"><i class="fas fa-history"></i> Vé của tôi</a></li>
-                <li th:if="${session.user != null and session.user.role == 'ADMIN'}">
-                    <a th:href="@{/admin}"><i class="fas fa-cogs"></i> Quản trị</a>
-                </li>
-            </ul>
-        </div>
-
-        <div class="footer-column">
-            <h4>Liên hệ</h4>
-            <ul>
-                <li><i class="fas fa-map-marker-alt"></i> Lô E2a-7 - Đường D1 - Khu Công Nghệ Cao - TP. Thủ Đức - TP.
-                    HCM
-                </li>
-                <li><i class="fas fa-phone"></i> (024) 1234 5678</li>
-                <li><i class="fas fa-envelope"></i> support@evtrainticket.vn</li>
-            </ul>
-        </div>
-
-        <div class="footer-column">
-            <h4>Theo dõi chúng tôi</h4>
-            <div class="social-links">
-                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                <a href="#" aria-label="Youtube"><i class="fab fa-youtube"></i></a>
-            </div>
+            <p>Trải nghiệm hành trình an toàn, tiện lợi và đáng nhớ.</p>
         </div>
     </div>
-
-    <div class="footer-bottom">
-        <p>&copy; 2025 EVTrainTicket. All rights reserved.</p>
-    </div>
+    <div class="footer-bottom"><p>&copy; 2025 EVTrainTicket. All rights reserved.</p></div>
 </footer>
+
+<script th:inline="javascript">
+    window.SERVER_SCHEDULE_ID = /*[[${schedule != null ? schedule.scheduleID : 0}]]*/ 0;
+    window.SERVER_SEAT_IDS_STR = /*[[${seatIds != null ? #strings.listJoin(seatIds, ',') : ''}]]*/ '';
+    console.log("✅ HTML Data Ready:", window.SERVER_SCHEDULE_ID, window.SERVER_SEAT_IDS_STR);
+</script>
 
 <script th:src="@{/js/passenger-info.js}"></script>
 
 </body>
 </html>
-

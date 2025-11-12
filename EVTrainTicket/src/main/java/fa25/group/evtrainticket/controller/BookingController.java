@@ -135,7 +135,6 @@ public class BookingController {
         }
         model.addAttribute("user", user);
 
-        // --- FIX: Changed from BookingRequestDto to BookingResponseDto ---
         List<BookingResponseDto> bookings;
 
         bookings = bookingService.getUserBookingsWithFilter(user.getUserID(), status, fromDate, toDate);
