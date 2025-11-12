@@ -118,10 +118,6 @@
                         <i class="fas fa-train"></i>
                         <span th:text="${schedule.train.trainName}"></span>
                     </h3>
-                    <span class="schedule-status"
-                          th:classappend="${schedule.status == 'ACTIVE' ? 'status-active' : 'status-inactive'}"
-                          th:text="${schedule.status}">
-                    </span>
                 </div>
                 <div class="schedule-route">
                     <div class="route-point">
