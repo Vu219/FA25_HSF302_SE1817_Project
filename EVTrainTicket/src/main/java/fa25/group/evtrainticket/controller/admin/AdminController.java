@@ -129,11 +129,10 @@ public class AdminController {
                                  @RequestParam("departureTime") String departureTime,
                                  @RequestParam("arrivalDate") String arrivalDate,
                                  @RequestParam("arrivalTime") String arrivalTime,
-//                                 @RequestParam("train.id") Integer trainId,
                                  @RequestParam("distanceKm") Double distanceKm,
                                  @RequestParam("estimatedTime") Integer estimatedTime,
                                  @RequestParam("basePrice") BigDecimal basePrice,
-                                 @RequestParam("status") String status,
+                                 @RequestParam(value = "stopDuration", required = false) Integer stopDuration,
                                  HttpSession session, RedirectAttributes redirectAttributes) {
         if (!isAdmin(session)) return "redirect:/error";
 
@@ -182,18 +181,61 @@ public class AdminController {
 //            schedule.setTrain(train);
             schedule.setDepartureTime(fullDepartureTime);
             schedule.setArrivalTime(fullArrivalTime);
+            schedule.setStopDuration(stopDuration);
 
             // Tính basePrice = distance × 700
             Double finalDistance = (Double) routeData.get("distance_km");
             BigDecimal finalPrice = BigDecimal.valueOf(Math.round(finalDistance * 700));
             schedule.setBasePrice(finalPrice);
 
-            schedule.setStatus(status);
-            // origin & destination sẽ lấy từ getter
-            // distanceKm & estimatedTime sẽ lấy từ route.getter()
+            // ...existing code...
 
-            scheduleService.saveSchedule(schedule);
-            redirectAttributes.addFlashAttribute("successMessage", "Tạo lịch trình thành công!");
+            // ===== TỰ ĐỘNG TẠO LỊCH TRÌNH NGƯỢC LẠI (KHỨ HỒI) =====
+            try {
+                // Tính toán khoảng cách & thời gian cho lộ trình ngược
+                java.util.Map<String, Object> returnRouteData = routeService.calculateRouteDistance(arrivalStation, departureStation);
+
+                if (returnRouteData.get("distance_km") != null) {
+                    Schedule returnSchedule = new Schedule();
+
+                    // Set route ngược nếu tìm thấy
+                    Long returnRouteId = (Long) returnRouteData.get("routeId");
+                    if (returnRouteId != null) {
+                        Route returnDirectRoute = routeService.getRouteById(returnRouteId);
+                        returnSchedule.setRoute(returnDirectRoute);
+                    }
+
+                    // Hoán đổi ga đi và ga đến
+                    returnSchedule.setDepartureStation(arrivalStation);
+                    returnSchedule.setArrivalStation(departureStation);
+
+                    // Departure time = Arrival time cũ + 3 giờ
+                    LocalDateTime returnDepartureTime = fullArrivalTime.plusHours(3);
+                    returnSchedule.setDepartureTime(returnDepartureTime);
+
+                    // Tính arrival time cho lộ trình ngược
+                    // Distance × (1 / speed) × 60 = minutes
+                    Double returnDistance = (Double) returnRouteData.get("distance_km");
+                    Double defaultSpeed = 60.0;  // km/h default
+                    int returnTravelMinutes = Math.round((float) ((returnDistance / defaultSpeed) * 60));
+                    int returnTotalMinutes = returnTravelMinutes + (stopDuration != null ? stopDuration : 0);
+                    LocalDateTime returnArrivalTime = returnDepartureTime.plusMinutes(returnTotalMinutes);
+                    returnSchedule.setArrivalTime(returnArrivalTime);
+
+                    // Set thông tin khác
+                    BigDecimal returnPrice = BigDecimal.valueOf(Math.round(returnDistance * 700));
+                    returnSchedule.setBasePrice(returnPrice);
+                    returnSchedule.setStopDuration(stopDuration);
+                    // Không gán Train (train = null)
+
+                    scheduleService.saveSchedule(returnSchedule);
+                }
+            } catch (Exception e) {
+                // Nếu không thể tạo return schedule, không báo lỗi, log là đủ
+                System.err.println("Không thể tạo lịch trình khứ hồi: " + e.getMessage());
+            }
+
+            redirectAttributes.addFlashAttribute("successMessage", "Tạo lịch trình thành công! (Hệ thống đã tự động tạo lịch trình khứ hồi)");
             return "redirect:/admin/schedules";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi tạo: " + e.getMessage());
@@ -209,11 +251,10 @@ public class AdminController {
                                  @RequestParam("departureTime") String departureTime,
                                  @RequestParam("arrivalDate") String arrivalDate,
                                  @RequestParam("arrivalTime") String arrivalTime,
-//                                 @RequestParam("train.id") Integer trainId,
                                  @RequestParam("distanceKm") Double distanceKm,
                                  @RequestParam("estimatedTime") Integer estimatedTime,
                                  @RequestParam("basePrice") BigDecimal basePrice,
-                                 @RequestParam("status") String status,
+                                 @RequestParam(value = "stopDuration", required = false) Integer stopDuration,
                                  HttpSession session, RedirectAttributes redirectAttributes) {
         if (!isAdmin(session)) return "redirect:/error";
 
@@ -268,17 +309,67 @@ public class AdminController {
 //            existingSchedule.setTrain(train);
             existingSchedule.setDepartureTime(fullDepartureTime);
             existingSchedule.setArrivalTime(fullArrivalTime);
+            existingSchedule.setStopDuration(stopDuration);
 
             // Tính basePrice = distance × 700
             Double finalDistance = (Double) routeData.get("distance_km");
             BigDecimal finalPrice = BigDecimal.valueOf(Math.round(finalDistance * 700));
             existingSchedule.setBasePrice(finalPrice);
 
-            existingSchedule.setStatus(status);
-            // origin & destination sẽ lấy từ getter
-            // distanceKm & estimatedTime sẽ lấy từ route.getter()
+            // ...existing code...
 
-            scheduleService.saveSchedule(existingSchedule);
+            // ===== TỰ ĐỘNG CẬP NHẬT LỊCH TRÌNH NGƯỢC LẠI (KHỨ HỒI) NẾU CÓ =====
+            try {
+                LocalDateTime returnDepartureTime = fullArrivalTime.plusHours(3);
+
+                // Tìm schedule ngược lại: có departure_station = arr_station cũ, arrival_station = dep_station cũ
+                // Và departure time cách khoảng 3 giờ từ arrival time
+                List<Schedule> allSchedules = scheduleService.getAllSchedules();
+                Schedule returnScheduleToUpdate = allSchedules.stream()
+                        .filter(s -> !s.getScheduleID().equals(id))  // Khác với schedule hiện tại
+                        .filter(s -> s.getDepartureStation().getStationID().equals(arrivalStation.getStationID()))
+                        .filter(s -> s.getArrivalStation().getStationID().equals(departureStation.getStationID()))
+                        // Kiểm tra departure time cách khoảng 3 giờ từ arrival time (+/- 30 phút tolerance)
+                        .filter(s -> {
+                            long minutesDiff = java.time.temporal.ChronoUnit.MINUTES.between(fullArrivalTime, s.getDepartureTime());
+                            return Math.abs(minutesDiff - 180) < 30; // 180 phút = 3 giờ
+                        })
+                        .findFirst()
+                        .orElse(null);
+
+                if (returnScheduleToUpdate != null) {
+                    // Cập nhật return schedule
+                    java.util.Map<String, Object> returnRouteData = routeService.calculateRouteDistance(arrivalStation, departureStation);
+
+                    if (returnRouteData.get("distance_km") != null) {
+                        Long returnRouteId = (Long) returnRouteData.get("routeId");
+                        if (returnRouteId != null) {
+                            Route returnDirectRoute = routeService.getRouteById(returnRouteId);
+                            returnScheduleToUpdate.setRoute(returnDirectRoute);
+                        } else {
+                            returnScheduleToUpdate.setRoute(null);
+                        }
+
+                        returnScheduleToUpdate.setDepartureTime(returnDepartureTime);
+
+                        Double returnDistance = (Double) returnRouteData.get("distance_km");
+                        Double defaultSpeed = 60.0;
+                        int returnTravelMinutes = Math.round((float) ((returnDistance / defaultSpeed) * 60));
+                        int returnTotalMinutes = returnTravelMinutes + (stopDuration != null ? stopDuration : 0);
+                        LocalDateTime returnArrivalTime = returnDepartureTime.plusMinutes(returnTotalMinutes);
+                        returnScheduleToUpdate.setArrivalTime(returnArrivalTime);
+
+                        BigDecimal returnPrice = BigDecimal.valueOf(Math.round(returnDistance * 700));
+                        returnScheduleToUpdate.setBasePrice(returnPrice);
+                        returnScheduleToUpdate.setStopDuration(stopDuration);
+
+                        scheduleService.saveSchedule(returnScheduleToUpdate);
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Không thể cập nhật lịch trình khứ hồi: " + e.getMessage());
+            }
+
             redirectAttributes.addFlashAttribute("successMessage", "Cập nhật lịch trình thành công!");
             return "redirect:/admin/schedules";
         } catch (Exception e) {

@@ -377,7 +377,14 @@ public class DataInit implements CommandLineRunner {
             Route r2 = routeRepository.findByFromStationAndToStation(danang, hcm).orElse(null);
             Route r3 = routeRepository.findByFromStationAndToStation(hcm, hanoi).orElse(null);
 
+            // Lấy routes ngược
+            Route r1_return = routeRepository.findByFromStationAndToStation(danang, hanoi).orElse(null);
+            Route r2_return = routeRepository.findByFromStationAndToStation(hcm, danang).orElse(null);
+            Route r3_return = routeRepository.findByFromStationAndToStation(hanoi, hcm).orElse(null);
+
             if (r1 != null && r2 != null && r3 != null) {
+                List<Schedule> schedulesToSave = new ArrayList<>();
+
                 // Schedule 1: Hà Nội -> Đà Nẵng
                 Schedule s1 = new Schedule();
                 s1.setTrain(trains.get(0));
@@ -387,9 +394,26 @@ public class DataInit implements CommandLineRunner {
                 s1.setDepartureTime(now.plusDays(1).withHour(6).withMinute(0));
                 s1.setArrivalTime(now.plusDays(1).withHour(15).withMinute(30));
                 s1.setBasePrice(BigDecimal.valueOf(r1.getDistanceKm() * 700).setScale(0, java.math.RoundingMode.HALF_UP));
-                s1.setStatus("ACTIVE");
                 s1.setCreatedAt(now);
                 s1.setNotes("Chuyến tàu SE1");
+                s1.setStopDuration(10);
+                schedulesToSave.add(s1);
+
+                // Schedule 1 Return: Đà Nẵng -> Hà Nội (departure = s1 arrival + 3h)
+                Schedule s1_return = new Schedule();
+                if (r1_return != null) s1_return.setRoute(r1_return);
+                s1_return.setDepartureStation(danang);
+                s1_return.setArrivalStation(hanoi);
+                LocalDateTime s1_return_dep = s1.getArrivalTime().plusHours(3); // 15:30 + 3h = 18:30
+                s1_return.setDepartureTime(s1_return_dep);
+                double s1_return_distance = r1.getDistanceKm(); // Distance is same
+                int s1_return_travel = Math.round((float) ((s1_return_distance / 60.0) * 60)); // ~750/60*60 = 750 min
+                s1_return.setArrivalTime(s1_return_dep.plusMinutes(s1_return_travel + 10)); // +10 min stop
+                s1_return.setBasePrice(BigDecimal.valueOf(Math.round(s1_return_distance * 700)));
+                s1_return.setCreatedAt(now);
+                s1_return.setNotes("Chuyến tàu SE1 - Chiều về");
+                s1_return.setStopDuration(10);
+                schedulesToSave.add(s1_return);
 
                 // Schedule 2: Đà Nẵng -> Sài Gòn
                 Schedule s2 = new Schedule();
@@ -400,9 +424,26 @@ public class DataInit implements CommandLineRunner {
                 s2.setDepartureTime(now.plusDays(2).withHour(8).withMinute(0));
                 s2.setArrivalTime(now.plusDays(2).withHour(21).withMinute(20));
                 s2.setBasePrice(BigDecimal.valueOf(r2.getDistanceKm() * 700).setScale(0, java.math.RoundingMode.HALF_UP));
-                s2.setStatus("ACTIVE");
                 s2.setCreatedAt(now);
                 s2.setNotes("Chuyến tàu SE3");
+                s2.setStopDuration(15);
+                schedulesToSave.add(s2);
+
+                // Schedule 2 Return: Sài Gòn -> Đà Nẵng
+                Schedule s2_return = new Schedule();
+                if (r2_return != null) s2_return.setRoute(r2_return);
+                s2_return.setDepartureStation(hcm);
+                s2_return.setArrivalStation(danang);
+                LocalDateTime s2_return_dep = s2.getArrivalTime().plusHours(3);
+                s2_return.setDepartureTime(s2_return_dep);
+                double s2_return_distance = r2.getDistanceKm();
+                int s2_return_travel = Math.round((float) ((s2_return_distance / 60.0) * 60));
+                s2_return.setArrivalTime(s2_return_dep.plusMinutes(s2_return_travel + 15));
+                s2_return.setBasePrice(BigDecimal.valueOf(Math.round(s2_return_distance * 700)));
+                s2_return.setCreatedAt(now);
+                s2_return.setNotes("Chuyến tàu SE3 - Chiều về");
+                s2_return.setStopDuration(15);
+                schedulesToSave.add(s2_return);
 
                 // Schedule 3: Sài Gòn -> Hà Nội
                 Schedule s3 = new Schedule();
@@ -413,12 +454,29 @@ public class DataInit implements CommandLineRunner {
                 s3.setDepartureTime(now.plusDays(3).withHour(19).withMinute(30));
                 s3.setArrivalTime(now.plusDays(4).withHour(16).withMinute(0));
                 s3.setBasePrice(BigDecimal.valueOf(r3.getDistanceKm() * 700).setScale(0, java.math.RoundingMode.HALF_UP));
-                s3.setStatus("ACTIVE");
                 s3.setCreatedAt(now);
                 s3.setNotes("Chuyến tàu nhanh Sài Gòn - Hà Nội");
+                s3.setStopDuration(5);
+                schedulesToSave.add(s3);
 
-                scheduleRepository.saveAll(Arrays.asList(s1, s2, s3));
-                System.out.println("✅ Đã khởi tạo 3 lịch trình từ Routes");
+                // Schedule 3 Return: Hà Nội -> Sài Gòn
+                Schedule s3_return = new Schedule();
+                if (r3_return != null) s3_return.setRoute(r3_return);
+                s3_return.setDepartureStation(hanoi);
+                s3_return.setArrivalStation(hcm);
+                LocalDateTime s3_return_dep = s3.getArrivalTime().plusHours(3);
+                s3_return.setDepartureTime(s3_return_dep);
+                double s3_return_distance = r3.getDistanceKm();
+                int s3_return_travel = Math.round((float) ((s3_return_distance / 60.0) * 60));
+                s3_return.setArrivalTime(s3_return_dep.plusMinutes(s3_return_travel + 5));
+                s3_return.setBasePrice(BigDecimal.valueOf(Math.round(s3_return_distance * 700)));
+                s3_return.setCreatedAt(now);
+                s3_return.setNotes("Chuyến tàu nhanh Hà Nội - Sài Gòn - Chiều về");
+                s3_return.setStopDuration(5);
+                schedulesToSave.add(s3_return);
+
+                scheduleRepository.saveAll(schedulesToSave);
+                System.out.println("✅ Đã khởi tạo 6 lịch trình (3 chiều đi + 3 chiều về) từ Routes");
             }
         }
     }

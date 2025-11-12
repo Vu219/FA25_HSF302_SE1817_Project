@@ -47,14 +47,15 @@ public class Schedule {
     @Column(name = "BasePrice", nullable = false)
     private BigDecimal basePrice;
 
-    @Column(name = "Status", nullable = false, columnDefinition = "nvarchar(50)")
-    private String status = "ACTIVE";
 
     @Column(name = "CreatedAt", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "Notes", length = 500, columnDefinition = "nvarchar(500)")
     private String notes;
+
+    @Column(name = "StopDuration", nullable = true)
+    private Integer stopDuration;  // Thời gian dừng (phút): 5, 10, 15
 
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Ticket> tickets = new ArrayList<>();

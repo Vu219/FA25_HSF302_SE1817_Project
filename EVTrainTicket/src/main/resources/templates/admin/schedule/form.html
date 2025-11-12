@@ -12,32 +12,9 @@
         </h3>
 
         <div class="form-grid">
-<!--            <div class="form-group">-->
-<!--                <label for="train">-->
-<!--                    <i class="fas fa-train"></i> Tàu <span>*</span>-->
-<!--                </label>-->
-<!--                <select id="train" name="train.id" class="form-control" >-->
-<!--                    <option value="" disabled th:selected="${schedule.train == null}">Chọn Tàu</option>-->
-<!--                    <option th:each="train : ${trains}"-->
-<!--                            th:value="${train.trainID}"-->
-<!--                            th:text="${train.trainName}"-->
-<!--                            th:selected="${schedule.train != null and schedule.train.trainID == train.trainID}">-->
-<!--                    </option>-->
-<!--                </select>-->
-<!--            </div>-->
 
             <div class="form-group">
-                <label for="status">
-                    <i class="fas fa-toggle-on"></i> Trạng thái <span>*</span>
-                </label>
-                <select id="status" name="status" class="form-control" required>
-                    <option value="">Chọn Trạng thái</option>
-                    <option value="ACTIVE" th:selected="${schedule.status == 'ACTIVE'}">✅ ACTIVE</option>
-                    <option value="INACTIVE" th:selected="${schedule.status == 'INACTIVE'}">⏸️ INACTIVE</option>
-                    <option value="CANCELLED" th:selected="${schedule.status == 'CANCELLED'}">❌ CANCELLED</option>
-                </select>
-            </div>
-        </div>
+                <label for="stopDuration">
 
         <h3 style="color: var(--admin-primary); margin: 30px 0 15px 0;">
             <i class="fas fa-map-marked-alt"></i> Thông tin Tuyến
@@ -101,6 +78,18 @@
         </h3>
 
         <div class="form-grid">
+            <div class="form-group">
+                <label for="stopDuration">
+                    <i class="fas fa-pause-circle"></i> Thời gian dừng (phút) <span>*</span>
+                </label>
+                <select id="stopDuration" name="stopDuration" class="form-control" required onchange="calculateArrivalTime()">
+                    <option value="">Chọn thời gian dừng...</option>
+                    <option value="5" th:selected="${schedule.stopDuration == 5}">5 phút</option>
+                    <option value="10" th:selected="${schedule.stopDuration == 10}">10 phút</option>
+                    <option value="15" th:selected="${schedule.stopDuration == 15}">15 phút</option>
+                </select>
+            </div>
+        </div>
             <div class="form-group">
                 <label for="departureDate">
                     <i class="fas fa-calendar-day"></i> Ngày đi <span>*</span>
@@ -229,14 +218,16 @@
      * Tính giờ đến tự động
      * Công thức:
      *   - travel_time = distance_km / train_speed_kmph
-     *   - arrival_time = departure_time + travel_time
+     *   - stop_time = stopDuration (5, 10, 15)
+     *   - arrival_time = departure_time + travel_time + stop_time
      */
     function calculateArrivalTime() {
         const depDateInput = document.getElementById('departureDate').value;
         const depTimeInput = document.getElementById('departureTime').value;
         const distanceKm = parseFloat(document.getElementById('distanceKm').value) || 0;
+        const stopDurationInput = document.getElementById('stopDuration').value;
 
-        if (!depDateInput || !depTimeInput || distanceKm <= 0) {
+        if (!depDateInput || !depTimeInput || distanceKm <= 0 || !stopDurationInput) {
             document.getElementById('arrivalDate').value = '';
             document.getElementById('arrivalTime').value = '';
             document.getElementById('durationDisplay').value = '';
@@ -245,6 +236,7 @@
 
         // Lấy vận tốc tàu từ dropdown train đã chọn
         const trainSpeed = getSelectedTrainSpeed();
+        const stopDurationMinutes = parseInt(stopDurationInput) || 0;
 
         try {
             // Tạo departure datetime
@@ -253,8 +245,11 @@
             // Tính thời gian chạy (phút)
             const travelMinutes = (distanceKm / trainSpeed) * 60;
 
+            // Tổng thời gian = chạy + dừng
+            const totalMinutes = travelMinutes + stopDurationMinutes;
+
             // Tính arrival datetime
-            const arrDateTime = new Date(depDateTime.getTime() + travelMinutes * 60000);
+            const arrDateTime = new Date(depDateTime.getTime() + totalMinutes * 60000);
 
             // Format output
             const arrDate = arrDateTime.toISOString().split('T')[0];  // YYYY-MM-DD
@@ -264,9 +259,10 @@
             document.getElementById('arrivalDate').value = arrDate;
             document.getElementById('arrivalTime').value = arrTime;
 
-            // Update duration display
+            // Update duration display: thời gian chạy + thời gian dừng
             document.getElementById('durationDisplay').value = formatDuration(Math.round(travelMinutes)) +
-                ' (' + Math.round(travelMinutes) + ' phút)';
+                ' + ' + stopDurationMinutes + ' phút dừng = ' + formatDuration(Math.round(totalMinutes)) +
+                ' (' + Math.round(totalMinutes) + ' phút)';
 
             // Store estimated time in hidden input
             document.getElementById('estimatedTime').value = Math.round(travelMinutes);
