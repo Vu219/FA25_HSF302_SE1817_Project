@@ -11,11 +11,6 @@
 
 <!-- Main Content -->
 <main class="admin-container">
-
-    <div class="admin-header">
-        <h1><i class="fas fa-calendar-alt"></i>Quản lý lịch trình</h1>
-    </div>
-
     <!-- Alerts -->
     <div th:if="${param.success}" class="alert alert-success">
         <i class="fas fa-check-circle"></i>
@@ -37,40 +32,9 @@
         </div>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="icon" style="background: linear-gradient(135deg, #28a745 0%, #218838 100%);">
-                <i class="fas fa-calendar-check"></i>
-            </div>
-            <div class="info">
-                <h3 th:text="${schedules.size()}">0</h3>
-                <p>Tổng số lịch trình</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="icon" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);">
-                <i class="fas fa-train"></i>
-            </div>
-            <div class="info">
-                <h3>Active</h3>
-                <p>Running Today</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="icon" style="background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div class="info">
-                <h3>Upcoming</h3>
-                <p>This Week</p>
-            </div>
-        </div>
-    </div>
-
     <!-- Action Bar -->
     <div class="action-bar">
-        <h2><i class="fas fa-list"></i> Tất cả các lịch trình</h2>
+        <h2><i class="fas fa-calendar-alt"></i> Quản lý lịch trình</h2>
         <a th:href="@{/admin/schedules/new}" class="btn btn-primary">
             <i class="fas fa-plus-circle"></i> Thêm lịch trình mới
         </a>
@@ -169,11 +133,5 @@
     </div>
 
 </main>
-
-<!-- Footer -->
-<footer>
-    <p>&copy; 2025 EVTrainTicket. All rights reserved.</p>
-</footer>
-
 </body>
 </html>

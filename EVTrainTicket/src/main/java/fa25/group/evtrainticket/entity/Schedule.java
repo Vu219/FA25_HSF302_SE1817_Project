@@ -47,7 +47,6 @@ public class Schedule {
     @Column(name = "BasePrice", nullable = false)
     private BigDecimal basePrice;
 
-
     @Column(name = "CreatedAt", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 

@@ -138,13 +138,13 @@
         schedule2.addEventListener('change', function() {
             if (this.value) {
                 if (!validateScheduleChain(schedule1, schedule2)) {
-                    alert('Lỗi: Ga đến của lịch trình 1 phải trùng với ga khởi hành của lịch trình 2!');
+                    alert('Ga đến của lịch trình 1 phải trùng với ga khởi hành của lịch trình 2!');
                     this.value = '';
                     return;
                 }
 
                 if (!validateScheduleTime(schedule1, schedule2)) {
-                    alert('Lỗi: Thời gian khởi hành của lịch trình 2 phải sau thời gian đến của lịch trình 1!');
+                    alert('Thời gian khởi hành của lịch trình 2 phải sau thời gian đến của lịch trình 1!');
                     this.value = '';
                     return;
                 }
@@ -166,13 +166,13 @@
         schedule3.addEventListener('change', function() {
             if (this.value) {
                 if (!validateScheduleChain(schedule2, schedule3)) {
-                    alert('Lỗi: Ga đến của lịch trình 2 phải trùng với ga khởi hành của lịch trình 3!');
+                    alert('Ga đến của lịch trình 2 phải trùng với ga khởi hành của lịch trình 3!');
                     this.value = '';
                     return;
                 }
 
                 if (!validateScheduleTime(schedule2, schedule3)) {
-                    alert('Lỗi: Thời gian khởi hành của lịch trình 3 phải sau thời gian đến của lịch trình 2!');
+                    alert('Thời gian khởi hành của lịch trình 3 phải sau thời gian đến của lịch trình 2!');
                     this.value = '';
                     return;
                 }

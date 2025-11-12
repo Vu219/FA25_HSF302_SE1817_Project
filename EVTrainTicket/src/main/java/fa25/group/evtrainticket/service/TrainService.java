@@ -4,6 +4,7 @@ import fa25.group.evtrainticket.entity.Schedule;
 import fa25.group.evtrainticket.entity.Train;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface TrainService {
@@ -14,4 +15,6 @@ public interface TrainService {
     void deleteTrain(Integer id);
     Train findByTrainName(String trainName);
     void checkSchedules(List<Schedule> schedules, Integer trainId);
+    Map<String, Object> getSeatStatsByTrain(Integer trainId);
+
 }

@@ -1,6 +1,8 @@
 package fa25.group.evtrainticket.service.Impl;
 
+import fa25.group.evtrainticket.entity.Schedule;
 import fa25.group.evtrainticket.entity.Station;
+import fa25.group.evtrainticket.repository.ScheduleRepository;
 import fa25.group.evtrainticket.repository.StationRepository;
 import fa25.group.evtrainticket.service.StationService;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StationServiceImpl implements StationService {
     private final StationRepository stationRepository;
+    private final ScheduleRepository scheduleRepository;
 
     @Override
     public List<Station> getAllStations() {
@@ -47,5 +50,10 @@ public class StationServiceImpl implements StationService {
     public void deleteStation(Integer stationID) {
         Station stationToDelete = getStationsByID(stationID);
         stationRepository.delete(stationToDelete);
+    }
+
+    @Override
+    public List<Schedule> getSchedulesForStation(Integer stationID) {
+        return scheduleRepository.findSchedulesByStation(stationID);
     }
 }
