@@ -6,9 +6,16 @@
   <component name="ChangeListManager">
     <list default="true" id="16cecea9-2573-43d7-b3e2-546081883d27" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/entity/Train.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/entity/Train.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/config/DataInit.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/config/DataInit.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/controller/admin/AdminController.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/controller/admin/AdminController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/repository/ScheduleRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/repository/ScheduleRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/service/Impl/StationServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/service/Impl/StationServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/service/Impl/TrainServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/service/Impl/TrainServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/templates/admin/create-train.html" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/templates/admin/create-train.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/service/StationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/service/StationService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/service/TrainService.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/service/TrainService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/templates/admin/schedule/list.html" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/templates/admin/schedule/list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/templates/admin/stations.html" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/templates/admin/stations.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/templates/admin/train.html" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/templates/admin/train.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,7 +73,7 @@
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;Spring Boot.EvTrainTicketApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;fix-station-train-schedule&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;fix-station&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/Users/acer/Documents/Demo/FA25_HSF302_SE1817_Project&quot;,
@@ -125,7 +132,10 @@
       <workItem from="1762861145854" duration="1054000" />
       <workItem from="1762874241468" duration="2955000" />
       <workItem from="1762920960760" duration="10455000" />
-      <workItem from="1762936061965" duration="1859000" />
+      <workItem from="1762936061965" duration="2138000" />
+      <workItem from="1762950379794" duration="5143000" />
+      <workItem from="1762957368651" duration="19000" />
+      <workItem from="1762961843004" duration="3902000" />
     </task>
     <servers />
   </component>

@@ -1,0 +1,35 @@
+<section>
+    <div class="action-bar">
+        <h2><i class="fas fa-train"></i> Chi tiết ga: <span th:text="${station.name}"></span></h2>
+        <a th:href="@{/admin/stations}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Quay lại</a>
+    </div>
+
+    <h3><i class="fas fa-clock"></i> Lịch trình các tàu qua ga này</h3>
+    <div class="table-responsive" th:if="${not #lists.isEmpty(schedules)}">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Tên tàu</th>
+                <th>Ga khởi hành</th>
+                <th>Thời gian khởi hành</th>
+                <th>Ga đến</th>
+                <th>Thời gian đến</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="schedule : ${schedules}">
+                <td th:text="${schedule.train?.trainName} ?: '—'"></td>
+                <td th:text="${schedule.departureStation.name}"></td>
+                <td th:text="${#temporals.format(schedule.departureTime, 'dd/MM/yyyy HH:mm')}"></td>
+                <td th:text="${schedule.arrivalStation.name}"></td>
+                <td th:text="${#temporals.format(schedule.arrivalTime, 'dd/MM/yyyy HH:mm')}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:if="${#lists.isEmpty(schedules)}" class="empty-state">
+        <br>
+        <h2 style="color: #0056b3">Hiện chưa có tàu nào đi qua ga này</h2>
+    </div>
+</section>

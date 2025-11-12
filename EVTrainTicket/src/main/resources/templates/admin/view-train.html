@@ -1,0 +1,128 @@
+<style>
+    .train-details {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 25px;
+    }
+
+    .train-summary {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .summary-box {
+        flex: 1 1 30%;
+        background: #f8f9fa;
+        border-radius: 6px;
+        padding: 15px;
+        margin: 10px;
+        text-align: center;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .summary-box h4 {
+        font-size: 16px;
+        color: #333;
+        margin-bottom: 6px;
+    }
+
+    .summary-box p {
+        font-size: 18px;
+        font-weight: bold;
+        color: #007bff;
+        margin: 0;
+    }
+
+    .table thead {
+        font-weight: 600;
+    }
+
+    .action-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .action-bar h2 {
+        font-size: 22px;
+        color: #333;
+        display: flex;
+        align-items: center;
+    }
+
+    .action-bar h2 i {
+        margin-right: 10px;
+        color: #007bff;
+    }
+
+</style>
+
+<section>
+    <div class="action-bar">
+        <h2><i class="fas fa-eye"></i> Chi tiết Tàu</h2>
+        <a th:href="@{/admin/train}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Quay lại</a>
+    </div>
+
+    <div class="train-details">
+        <h3>
+            <i class="fas fa-train"></i>
+            <span th:text="${train.trainName}"></span>
+            (<span th:text="${train.trainNumber}"></span>)
+        </h3>
+        <p style="color:#555; margin-bottom:15px;">
+            Mã tàu: <strong th:text="${train.trainID}"></strong> |
+            Trạng thái:
+            <span class="badge"
+                  th:classappend="${train.status == 'Hoạt động' ? 'badge-success' : 'badge-danger'}"
+                  th:text="${train.status}"></span>
+        </p>
+
+        <div class="train-summary">
+            <div class="summary-box">
+                <h4>Tổng số ghế</h4>
+                <p th:text="${seatStats.totalSeats}"></p>
+            </div>
+            <div class="summary-box">
+                <h4>Ghế còn trống</h4>
+                <p style="color:#28a745;" th:text="${seatStats.availableSeats}"></p>
+            </div>
+            <div class="summary-box">
+                <h4>Ghế đã đặt</h4>
+                <p style="color:#dc3545;" th:text="${seatStats.bookedSeats}"></p>
+            </div>
+        </div>
+
+        <h4 style="margin-top:25px;">Chi tiết theo loại Toa</h4>
+        <div class="table-responsive">
+            <table class="table table-bordered mt-3">
+                <thead>
+                <tr>
+                    <th>Loại Toa</th>
+                    <th>Tổng số ghế</th>
+                    <th>Ghế trống</th>
+                    <th>Ghế đã đặt</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="typeStat : ${seatStats.carriageTypeStats}">
+                    <td>
+                        <span th:text="${typeStat.carriageType}"></span>
+                    </td>
+                    <td th:text="${typeStat.total}"></td>
+                    <td th:text="${typeStat.available}"></td>
+                    <td th:text="${typeStat.booked}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div th:if="${#lists.isEmpty(seatStats.carriageTypeStats)}" class="no-schedule mt-3">
+            Tàu chưa có thông tin toa hoặc ghế.
+        </div>
+    </div>
+</section>

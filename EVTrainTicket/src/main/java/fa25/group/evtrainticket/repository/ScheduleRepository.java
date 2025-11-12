@@ -4,6 +4,8 @@ import fa25.group.evtrainticket.entity.Schedule;
 import fa25.group.evtrainticket.entity.Station;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -20,4 +22,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
             LocalDateTime endTime,
             String status
     );
+
+    @Query("SELECT s FROM Schedule s WHERE s.departureStation.stationID = :stationId OR s.arrivalStation.stationID = :stationId")
+    List<Schedule> findSchedulesByStation(@Param("stationId") Integer stationId);
 }
