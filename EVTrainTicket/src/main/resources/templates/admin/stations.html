@@ -14,7 +14,6 @@
                     <th>Mã hiệu ga</th>
                     <th>Điạ chỉ</th>
                     <th>Thành phố</th>
-                    <th>Trạng thái</th>
                     <th>Hành động</th>
                 </tr>
                 </thead>
@@ -25,11 +24,6 @@
                     <td data-label="Mã hiệu" th:text="${station.code}"></td>
                     <td data-label="Địa chỉ" th:text="${station.address}"></td>
                     <td data-label="Thành phố" th:text="${station.city}"></td>
-                    <td data-label="Trạng thái">
-                        <span class="badge"
-                              th:classappend="${station.status == 'Hoạt động' ? 'badge-success' : 'badge-warning'}"
-                              th:text="${station.status}"></span>
-                    </td>
                     <td data-label="Hành động">
                         <div class="action-buttons">
                             <a th:href="@{'/admin/stations/edit/' + ${station.stationID}}" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Sửa</a>

@@ -35,17 +35,6 @@ public class DataInit implements CommandLineRunner {
     // Services
     RouteGeneratorService routeGeneratorService;
 
-    // Services
-    UserService userService;
-    TrainService trainService;
-    CarriageTypeService carriageTypeService;
-    CarriageService carriageService;
-    SeatTypeService seatTypeService;
-    SeatService seatService;
-    StationService stationService;
-    ScheduleService scheduleService;
-    ScheduleStopService scheduleStopService;
-
     // OTP
     OTPRepository otpRepository;
 
@@ -274,7 +263,6 @@ public class DataInit implements CommandLineRunner {
             hanoi.setAddress("Số 1 Lê Duẩn, Hoàn Kiếm");
             hanoi.setCity("Hà Nội");
             hanoi.setProvince("Hà Nội");
-            hanoi.setStatus("Hoạt động");
 
             Station danang = new Station();
             danang.setName("Ga Đà Nẵng");
@@ -282,7 +270,6 @@ public class DataInit implements CommandLineRunner {
             danang.setAddress("Số 200 Hải Phòng");
             danang.setCity("Đà Nẵng");
             danang.setProvince("Đà Nẵng");
-            danang.setStatus("Hoạt động");
 
             Station hcm = new Station();
             hcm.setName("Ga Sài Gòn");
@@ -290,7 +277,6 @@ public class DataInit implements CommandLineRunner {
             hcm.setAddress("Số 1 Nguyễn Thông, Quận 3");
             hcm.setCity("Hồ Chí Minh");
             hcm.setProvince("Hồ Chí Minh");
-            hcm.setStatus("Hoạt động");
 
             Station hue = new Station();
             hue.setName("Ga Huế");
@@ -298,7 +284,6 @@ public class DataInit implements CommandLineRunner {
             hue.setAddress("Số 2 Bùi Thị Xuân");
             hue.setCity("Huế");
             hue.setProvince("Thừa Thiên Huế");
-            hue.setStatus("Hoạt động");
 
             Station nhatrang = new Station();
             nhatrang.setName("Ga Nha Trang");
@@ -306,7 +291,6 @@ public class DataInit implements CommandLineRunner {
             nhatrang.setAddress("Số 26 Thái Nguyên");
             nhatrang.setCity("Nha Trang");
             nhatrang.setProvince("Khánh Hòa");
-            nhatrang.setStatus("Hoạt động");
 
             stationRepository.saveAll(Arrays.asList(hanoi, danang, hcm, hue, nhatrang));
             System.out.println("✅ Đã khởi tạo 5 ga tàu");

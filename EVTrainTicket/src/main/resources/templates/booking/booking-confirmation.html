@@ -213,7 +213,7 @@
             <ul>
                 <li><a th:href="@{/home}"><i class="fas fa-home"></i> Trang chủ</a></li>
                 <li><a th:href="@{/booking/history}"><i class="fas fa-history"></i> Vé của tôi</a></li>
-                <li th:if="${session.user != null AND session.user.role == 'ADMIN'}">
+                <li th:if="${session.user != null and session.user.role == 'ADMIN'}">
                     <a th:href="@{/admin}"><i class="fas fa-cogs"></i> Quản trị</a>
                 </li>
             </ul>

@@ -38,9 +38,6 @@ public class Station {
     @Column(name = "Province", nullable = true, length = 50, columnDefinition = "nvarchar(50)")
     private String province;
 
-    @Column(name = "Status", nullable = false, length = 50, columnDefinition = "nvarchar(50)")
-    private String status;
-
     @OneToMany(mappedBy = "station", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<ScheduleStop> scheduleStops = new ArrayList<>();

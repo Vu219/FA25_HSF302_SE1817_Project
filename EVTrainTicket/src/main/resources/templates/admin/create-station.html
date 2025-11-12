@@ -23,14 +23,6 @@
                 <label for="province">Tỉnh:</label>
                 <input type="text" id="province" th:field="*{province}">
             </div>
-            <div class="form-group">
-                <label for="status">Trạng thái:</label>
-                <select id="status" th:field="*{status}" class="form-control">
-                    <option value="Hoạt động">Hoạt động</option>
-                    <option value="Tạm dừng phục vụ">Tạm dừng phục vụ</option>
-                    <option value="Ngưng hoạt động">Ngưng hoạt động</option>
-                </select>
-            </div>
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Thêm ga tàu</button>
                 <a th:href="@{/admin/stations}" class="btn btn-secondary"><i class="fas fa-times"></i> Hủy</a>

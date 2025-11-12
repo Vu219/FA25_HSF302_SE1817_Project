@@ -42,7 +42,6 @@ public class StationServiceImpl implements StationService {
         stationToUpdate.setAddress(newStationData.getAddress());
         stationToUpdate.setCity(newStationData.getCity());
         stationToUpdate.setProvince(newStationData.getProvince());
-        stationToUpdate.setStatus(newStationData.getStatus());
         return stationRepository.save(stationToUpdate);
     }
 
