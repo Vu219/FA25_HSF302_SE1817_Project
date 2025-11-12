@@ -1,3 +1,37 @@
+<style>
+    .schedule-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .schedule-item {
+        padding: 5px 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 13px;
+    }
+    .schedule-item:last-child {
+        border-bottom: none;
+    }
+
+    .schedule-route {
+        color: #333;
+        font-weight: 500;
+        font-size: 15px;
+    }
+    .schedule-time {
+        color: #666;
+        font-size: 12px;
+        display: block;
+        margin-left: 28px;
+        margin-top: 2px;
+    }
+    .no-schedule {
+        color: #999;
+        font-style: italic;
+        font-size: 13px;
+    }
+</style>
+
 <section>
     <div class="action-bar">
         <h2><i class="fas fa-train-subway"></i> Quản lý Tàu</h2>
@@ -13,8 +47,8 @@
                     <th>Số hiệu tàu</th>
                     <th>Tên tàu</th>
                     <th>Sức chứa</th>
+                    <th>Lịch trình</th>
                     <th>Trạng thái</th>
-                    <th>Ghi chú</th>
                     <th>Hành động</th>
                 </tr>
                 </thead>
@@ -24,12 +58,28 @@
                     <td data-label="Số hiệu" th:text="${train.trainNumber}"></td>
                     <td data-label="Tên tàu" th:text="${train.trainName}"></td>
                     <td data-label="Sức chứa" th:text="${train.capacity}"></td>
+                    <td data-label="Lịch trình">
+                        <ul class="schedule-list" th:if="${train.schedules != null && !train.schedules.isEmpty()}">
+                            <li class="schedule-item" th:each="schedule, iterStat : ${train.schedules}">
+                                <span class="schedule-route"
+                                      th:text="${schedule.departureStation.name} + ' → ' + ${schedule.arrivalStation.name}">
+                                </span>
+                                <span class="schedule-time">
+                                    <i class="fas fa-clock"></i>
+                                    <span th:text="${#temporals.format(schedule.departureTime, 'dd/MM/yyyy HH:mm')}"></span>
+                                    →
+                                    <span th:text="${#temporals.format(schedule.arrivalTime, 'dd/MM/yyyy HH:mm')}"></span>
+                                </span>
+                            </li>
+                        </ul>
+                        <div class="no-schedule" th:if="${train.schedules == null || train.schedules.isEmpty()}">
+                            Chưa có lịch trình
+                        </div>
                     <td data-label="Trạng thái">
                         <span class="badge"
                               th:classappend="${train.status == 'Hoạt động' ? 'badge-success' : 'badge-danger'}"
                               th:text="${train.status}"></span>
                     </td>
-                    <td data-label="Ghi chú" th:text="${train.notes}"></td>
                     <td data-label="Hành động">
                         <div class="action-buttons">
                             <a th:href="@{'/admin/train/edit/' + ${train.trainID}}" class="btn btn-info btn-sm"><i class="fas fa-edit"></i> Sửa</a>

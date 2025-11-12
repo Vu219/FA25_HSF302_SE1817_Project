@@ -6,6 +6,19 @@
   <component name="ChangeListManager">
     <list default="true" id="16cecea9-2573-43d7-b3e2-546081883d27" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/controller/ScheduleController.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/controller/ScheduleController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/controller/admin/AdminController.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/controller/admin/AdminController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/entity/Schedule.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/entity/Schedule.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/repository/TrainRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/repository/TrainRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/service/Impl/TrainServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/service/Impl/TrainServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/service/TrainService.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/service/TrainService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/templates/admin/create-train.html" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/templates/admin/create-train.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/templates/admin/edit-train.html" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/templates/admin/edit-train.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/templates/admin/schedule/form.html" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/templates/admin/schedule/form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/templates/admin/schedule/list.html" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/templates/admin/schedule/list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/templates/admin/train.html" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/resources/templates/admin/train.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/repository/BookingRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/repository/BookingRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/repository/TicketRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/repository/TicketRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/service/Impl/SeatServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/EVTrainTicket/src/main/java/fa25/group/evtrainticket/service/Impl/SeatServiceImpl.java" afterDir="false" />
@@ -30,6 +43,12 @@
   &quot;lastFilter&quot;: {
     &quot;state&quot;: &quot;OPEN&quot;,
     &quot;assignee&quot;: &quot;lamphuoc-nguyen&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/lamphuoc-nguyen/FA25_HSF302_SE1817_Project.git&quot;,
+    &quot;accountId&quot;: &quot;755b3937-2cac-443c-8430-15ca59095a7b&quot;
   }
 }</component>
   <component name="GithubPullRequestsUISettings">{
@@ -80,6 +99,33 @@
     "project.structure.side.proportion": "0.2",
     "settings.editor.selected.configurable": "preferences.pluginManager",
     "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Maven.EVTrainTicket [clean].executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;Spring Boot.EvTrainTicketApplication.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;fix-station-train-schedule&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/acer/Documents/Demo/FA25_HSF302_SE1817_Project&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;SDKs&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;project.propVCSSupport.Mappings&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
   "keyToStringList": {
     "DatabaseDriversLRU": [
@@ -107,6 +153,8 @@
       <set>
         <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.27397.103" />
         <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-IU-252.27397.103" />
+        <option value="bundled-jdk-9823dce3aa75-fbdcb00ec9e3-intellij.indexing.shared.core-IU-251.26927.53" />
+        <option value="bundled-js-predefined-d6986cc7102b-09060db00ec0-JavaScript-IU-251.26927.53" />
       </set>
     </attachedChunks>
   </component>
@@ -122,6 +170,9 @@
       <workItem from="1761164950097" duration="996000" />
       <workItem from="1762330592134" duration="10191000" />
       <workItem from="1762348079742" duration="599000" />
+      <workItem from="1762861145854" duration="1054000" />
+      <workItem from="1762874241468" duration="2955000" />
+      <workItem from="1762920960760" duration="9269000" />
       <workItem from="1762741224903" duration="39000" />
       <workItem from="1762792358060" duration="3270000" />
       <workItem from="1762914442235" duration="3051000" />

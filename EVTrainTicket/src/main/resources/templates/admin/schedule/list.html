@@ -100,7 +100,7 @@
                         </td>
                         <td data-label="Train">
                             <i class="fas fa-train" style="color: var(--admin-secondary);"></i>
-                            <span th:text="${schedule.train.trainName}"></span>
+                            <span th:text="${schedule.train != null ? schedule.train.trainName : 'Chưa có tàu'}"></span>
                         </td>
                         <td data-label="Route">
                             <div style="display: flex; flex-direction: column; gap: 5px;">

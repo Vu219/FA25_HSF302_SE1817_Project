@@ -1,5 +1,6 @@
 package fa25.group.evtrainticket.service;
 
+import fa25.group.evtrainticket.entity.Schedule;
 import fa25.group.evtrainticket.entity.Train;
 
 import java.util.List;
@@ -12,4 +13,5 @@ public interface TrainService {
     Train updateTrain(Integer id, Train trainDetails);
     void deleteTrain(Integer id);
     Train findByTrainName(String trainName);
+    void checkSchedules(List<Schedule> schedules, Integer trainId);
 }

@@ -51,7 +51,7 @@ public class ScheduleController {
             // Create a simple response with basic schedule info
             var response = Map.of(
                     "scheduleId", schedule.getScheduleID(),
-                    "trainName", schedule.getTrain().getTrainName(),
+//                    "trainName", schedule.getTrain().getTrainName(),  QUÂN
                     "departureStation", schedule.getDepartureStation().getName(),
                     "arrivalStation", schedule.getArrivalStation().getName(),
                     "departureTime", schedule.getDepartureTime().toString(),

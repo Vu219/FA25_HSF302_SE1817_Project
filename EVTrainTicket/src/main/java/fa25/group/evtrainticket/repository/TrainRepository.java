@@ -4,10 +4,13 @@ import fa25.group.evtrainticket.entity.Train;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 
 @Repository
 public interface TrainRepository extends JpaRepository<Train,Integer> {
     boolean existsByTrainNumber(String trainNumber);
     Train findByTrainName(String trainName);
     Train findByTrainNumber(String trainNumber);
+    List<Train> findBySchedules_ScheduleID(Integer scheduleID);
 }
