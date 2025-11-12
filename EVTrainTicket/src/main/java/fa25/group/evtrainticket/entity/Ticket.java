@@ -44,4 +44,10 @@ public class Ticket {
     @Column(name = "Status", nullable = false, length = 50, columnDefinition = "nvarchar(50)")
     private String status;
 
+    // === thông tin hành khách đi cùng người đặt vé ===
+    @Column(name = "PassengerName", length = 100, columnDefinition = "nvarchar(100)")
+    private String passengerName;
+
+    @Column(name = "PassengerIDCard", length = 20)
+    private String passengerIDCard;
 }

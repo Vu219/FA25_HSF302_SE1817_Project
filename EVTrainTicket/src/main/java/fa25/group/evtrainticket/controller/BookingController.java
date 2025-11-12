@@ -2,7 +2,10 @@ package fa25.group.evtrainticket.controller;
 
 import fa25.group.evtrainticket.dto.CarriageLayoutDto;
 import fa25.group.evtrainticket.dto.seatDto;
+import fa25.group.evtrainticket.entity.Schedule;
+import fa25.group.evtrainticket.entity.Seat;
 import fa25.group.evtrainticket.entity.User;
+import fa25.group.evtrainticket.repository.ScheduleRepository;
 import fa25.group.evtrainticket.service.BookingService;
 import fa25.group.evtrainticket.dto.BookingRequestDto;
 import fa25.group.evtrainticket.dto.BookingResponseDto; // <--- ADDED THIS IMPORT
@@ -21,6 +24,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -32,6 +36,7 @@ public class BookingController {
     private final BookingMapper bookingMapper;
     private final ScheduleService scheduleService;
     private final SeatService seatService;
+    private final ScheduleRepository scheduleRepository;
 
     // Web pages
     @GetMapping("/booking")
@@ -178,19 +183,6 @@ public class BookingController {
         }
     }
 
-    // API endpoints
-    @PostMapping("/api/booking/create")
-    @ResponseBody
-    public ResponseEntity<?> createBooking(@RequestBody BookingRequestDto bookingRequest) {
-        try {
-            var booking = bookingService.createAnonymousBooking(bookingRequest);
-            var response = bookingMapper.toDto(booking);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Booking failed: " + e.getMessage());
-        }
-    }
-
     @PostMapping("/api/booking/create-pending")
     @ResponseBody
     public ResponseEntity<?> createPendingBooking(@RequestBody BookingRequestDto bookingRequest, HttpSession session) {
@@ -323,20 +315,20 @@ public class BookingController {
         }
     }
 
-    @PostMapping("/api/booking/check-price")
-    @ResponseBody
-    public ResponseEntity<?> checkPrice(@RequestBody BookingRequestDto bookingRequest) {
-        try { //NOSONAR
-            double price = bookingService.calculateBookingPrice(bookingRequest);
-            return ResponseEntity.ok(Map.of(
-                    "totalAmount", price
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "error", "Failed to calculate price: " + e.getMessage()
-            ));
-        }
-    }
+//    @PostMapping("/api/booking/check-price")
+//    @ResponseBody
+//    public ResponseEntity<?> checkPrice(@RequestBody BookingRequestDto bookingRequest) {
+//        try { //NOSONAR
+//            double price = bookingService.calculateBookingPrice(bookingRequest);
+//            return ResponseEntity.ok(Map.of(
+//                    "totalAmount", price
+//            ));
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body(Map.of(
+//                    "error", "Failed to calculate price: " + e.getMessage()
+//            ));
+//        }
+//    }
 
     @PostMapping("/booking/select-seats")
     public String passengerInfoPage(@RequestParam(name = "scheduleId") Integer scheduleId,
@@ -358,6 +350,36 @@ public class BookingController {
             return "passenger-info";
         } catch (Exception e) {
             return "redirect:/booking?error=" + e.getMessage();
+        }
+    }
+
+    // Api tính giá ghế theo loại ghế và toa
+    @GetMapping("/api/booking/seat-prices")
+    @ResponseBody
+    public ResponseEntity<?> getSeatPrices(@RequestParam List<Integer> seatIds,
+                                           @RequestParam Integer scheduleId) {
+        try {
+            Map<Integer, Double> prices = new HashMap<>();
+
+            Schedule schedule = scheduleRepository.findById(scheduleId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy lịch trình với ID: " + scheduleId));
+
+            for (Integer seatId : seatIds) {
+                Seat seat = seatService.getSeatById(seatId);
+
+                double price = schedule.getBasePrice().doubleValue() *
+                        seat.getSeatType().getPriceMultiplier().doubleValue() *
+                        seat.getCarriage().getCarriageType().getPriceMultiplier().doubleValue();
+
+                prices.put(seatId, price);
+            }
+
+            return ResponseEntity.ok(prices);
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Failed to get seat prices: " + e.getMessage()
+            ));
         }
     }
 }

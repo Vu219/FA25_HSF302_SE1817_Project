@@ -1,6 +1,8 @@
 package fa25.group.evtrainticket.service.Impl;
 
 import fa25.group.evtrainticket.dto.BookingResponseDto;
+import fa25.group.evtrainticket.dto.PassengerDto;
+import fa25.group.evtrainticket.dto.TicketType;
 import fa25.group.evtrainticket.mapper.BookingMapper;
 import fa25.group.evtrainticket.repository.*;
 import fa25.group.evtrainticket.dto.BookingRequestDto;
@@ -52,76 +54,90 @@ public class BookingServiceImpl implements BookingService {
         return bookingRepository.save(booking);
     }
 
-    @Override
-    @Transactional
-    public Booking createAnonymousBooking(BookingRequestDto bookingRequest) {
-        // Implementation details...
-        return null;
-    }
 
     @Override
     @Transactional
     public Booking createAnonymousPendingBooking(BookingRequestDto bookingRequest) {
         try {
-            // 1. Create or find anonymous user
-            User anonymousUser = createOrFindAnonymousUser(bookingRequest);
-
-            // 2. Get schedule
-            Schedule schedule = scheduleRepository.findById(bookingRequest.getScheduleId())
-                    .orElseThrow(() -> new RuntimeException("Schedule not found with ID: " + bookingRequest.getScheduleId()));
-
-            // 3. Validate seat availability (Physical check only)
-            List<Seat> selectedSeats = new ArrayList<>();
-            double totalAmount = 0.0;
-
-            for (Integer seatId : bookingRequest.getSelectedSeatIds()) {
-                Seat seat = seatRepository.findById(seatId)
-                        .orElseThrow(() -> new RuntimeException("Seat not found with ID: " + seatId));
-
-                // Check if seat is PHYSICALLY broken/unavailable
-                if (!seat.getIsAvailable()) {
-                    throw new RuntimeException("Seat " + seat.getSeatNumber() + " is currently under maintenance");
-                }
-
-                // TODO: Ideally, add a check here using TicketRepository to ensure
-                // the seat isn't already booked for this specific ScheduleID.
-
-                selectedSeats.add(seat);
-
-                // Calculate price
-                double seatPrice = schedule.getBasePrice().doubleValue() *
-                        seat.getSeatType().getPriceMultiplier().doubleValue() *
-                        seat.getCarriage().getCarriageType().getPriceMultiplier().doubleValue();
-                totalAmount += seatPrice;
+            // 1. Validate seats trước
+            if (!validateSeatAvailability(bookingRequest.getScheduleId(), bookingRequest.getSelectedSeatIds())) {
+                throw new RuntimeException("Một hoặc nhiều ghế không khả dụng hoặc không thuộc lịch trình này");
             }
 
-            // 4. Create booking
+            // 2. Tính giá sử dụng method riêng
+            double totalAmount = calculateBookingPrice(bookingRequest);
+
+            // 3. Tạo hoặc tìm người dùng liên hệ
+            User anonymousUser = createOrFindAnonymousUser(bookingRequest);
+
+            // 4. Lấy thông tin lịch trình
+            Schedule schedule = scheduleRepository.findById(bookingRequest.getScheduleId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy lịch trình với ID: " + bookingRequest.getScheduleId()));
+
+            // 5. Validate số lượng ghế và hành khách
+            List<Integer> seatIds = bookingRequest.getSelectedSeatIds();
+            List<PassengerDto> passengers = bookingRequest.getPassengers();
+
+            if (seatIds == null || passengers == null) {
+                throw new RuntimeException("Thiếu thông tin ghế hoặc hành khách.");
+            }
+            if (seatIds.size() != passengers.size()) {
+                throw new RuntimeException("Số lượng ghế (" + seatIds.size() + ") không khớp với số lượng hành khách (" + passengers.size() + ")");
+            }
+
+            // 6. Tạo Booking với tổng tiền ĐÃ TÍNH
             Booking booking = new Booking();
             booking.setBookingCode(generateBookingCode());
             booking.setUser(anonymousUser);
             booking.setBookingDate(LocalDateTime.now());
-            booking.setTotalAmount(totalAmount);
+            booking.setTotalAmount(totalAmount); // Sử dụng giá đã tính
             booking.setStatus("PENDING");
             booking.setNotes(bookingRequest.getNotes());
 
             booking = bookingRepository.save(booking);
 
-            // 5. Create tickets
+            // 7. Lấy danh sách ghế và tạo vé
+            List<Seat> selectedSeats = new ArrayList<>();
             List<Ticket> tickets = new ArrayList<>();
-            for (Seat seat : selectedSeats) {
+
+            for (int i = 0; i < seatIds.size(); i++) {
+                Integer seatId = seatIds.get(i);
+                PassengerDto passenger = passengers.get(i);
+
+                Seat seat = seatRepository.findById(seatId)
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy ghế với ID: " + seatId));
+                selectedSeats.add(seat);
+
+                TicketType ticketType;
+                try {
+                    ticketType = TicketType.valueOf(passenger.getTicketType());
+                } catch (Exception e) {
+                    ticketType = TicketType.ADULT;
+                }
+
+                // Tính giá cho từng vé (giống như trong calculateBookingPrice)
+                double baseSeatPrice = schedule.getBasePrice().doubleValue() *
+                        seat.getSeatType().getPriceMultiplier().doubleValue() *
+                        seat.getCarriage().getCarriageType().getPriceMultiplier().doubleValue();
+
+                double finalTicketPrice = baseSeatPrice * ticketType.getPriceMultiplier();
+
                 Ticket ticket = new Ticket();
                 ticket.setBooking(booking);
                 ticket.setSchedule(schedule);
                 ticket.setSeat(seat);
-                ticket.setPrice(schedule.getBasePrice().doubleValue() *
-                        seat.getSeatType().getPriceMultiplier().doubleValue() *
-                        seat.getCarriage().getCarriageType().getPriceMultiplier().doubleValue());
-                ticket.setTicketType(bookingRequest.getTicketType() != null ? bookingRequest.getTicketType() : "ONE_WAY");
+                ticket.setPassengerName(passenger.getFullName());
+                ticket.setPassengerIDCard(passenger.getIdCard());
+                ticket.setPrice(finalTicketPrice);
+                ticket.setTicketType(ticketType.name());
                 ticket.setTicketCode(generateTicketCode());
                 ticket.setStatus("PENDING");
 
                 tickets.add(ticket);
 
+                // Khóa ghế
+                seat.setIsAvailable(false);
+                seatRepository.save(seat);
             }
 
             ticketRepository.saveAll(tickets);
@@ -136,25 +152,24 @@ public class BookingServiceImpl implements BookingService {
 
     private User createOrFindAnonymousUser(BookingRequestDto bookingRequest) {
         // Try to find existing user by email
-        return userRepository.findByEmail(bookingRequest.getUserEmail())
-                .orElseGet(() -> {
-                    // Create new anonymous user
-                    User user = new User();
-                    user.setFullName(bookingRequest.getUserFullName());
-                    user.setEmail(bookingRequest.getUserEmail());
-                    user.setPhone(bookingRequest.getUserPhone());
+        return userRepository.findByEmail(bookingRequest.getUserEmail()).orElseGet(() -> {
+            // Create new anonymous user
+            User user = new User();
+            user.setFullName(bookingRequest.getUserFullName());
+            user.setEmail(bookingRequest.getUserEmail());
+            user.setPhone(bookingRequest.getUserPhone());
 
-                    // ===============================================
-                    // FIX: Đặt mật khẩu placeholder hợp lệ (thay vì "")
-                    // để qua mặt validation @Size(min=6)
-                    // ===============================================
-                    user.setPassword("guest_user");
+            // ===============================================
+            // FIX: Đặt mật khẩu placeholder hợp lệ (thay vì "")
+            // để qua mặt validation @Size(min=6)
+            // ===============================================
+            user.setPassword("guest_user");
 
-                    user.setRole("GUEST");
-                    user.setCreatedAt(LocalDateTime.now());
-                    user.setStatus("ACTIVE");
-                    return userRepository.save(user);
-                });
+            user.setRole("GUEST");
+            user.setCreatedAt(LocalDateTime.now());
+            user.setStatus("ACTIVE");
+            return userRepository.save(user);
+        });
     }
 
     private String generateBookingCode() {
@@ -211,8 +226,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public Booking cancelBooking(Integer bookingId) {
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy booking với ID: " + bookingId));
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new RuntimeException("Không tìm thấy booking với ID: " + bookingId));
 
         if ("CANCELLED".equals(booking.getStatus())) {
             throw new RuntimeException("Booking này đã bị hủy trước đó.");
@@ -228,6 +242,7 @@ public class BookingServiceImpl implements BookingService {
 
         return bookingRepository.save(booking);
     }
+
     @Override
     public List<BookingResponseDto> getUserBookingsWithFilter(Integer userId, String status, LocalDate fromDate, LocalDate toDate) {
         // 1. Convert LocalDate (from HTML) to LocalDateTime (for Database)
@@ -249,15 +264,76 @@ public class BookingServiceImpl implements BookingService {
         // Your BookingMapper has a method 'toDtoList' that returns List<BookingResponseDto>
         return bookingMapper.toDtoList(bookings);
     }
+
     @Override
     public boolean validateSeatAvailability(Integer scheduleId, List<Integer> seatIds) {
-        // Implementation details...
-        return false;
+        try {
+            for (Integer seatId : seatIds) {
+                Seat seat = seatRepository.findById(seatId).orElseThrow(() -> new RuntimeException("Không tìm thấy ghế: " + seatId));
+
+                if (!seat.getIsAvailable()) {
+                    return false; // Ghế không khả dụng
+                }
+
+                // Kiểm tra xem ghế có thuộc về lịch trình này không
+                // 2. Check ghế có thuộc về lịch trình này không - SỬA LẠI
+                boolean belongsToSchedule = seat.getCarriage().getTrain().getSchedules().stream()
+                        .anyMatch(s -> s.getScheduleID().equals(scheduleId));
+
+                if (!belongsToSchedule) {
+                    return false; // Ghế không thuộc lịch trình
+                }
+            }
+
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Override
     public double calculateBookingPrice(BookingRequestDto bookingRequest) {
-        // Implementation details...
-        return 0;
+        try {
+            Schedule schedule = scheduleRepository.findById(bookingRequest.getScheduleId())
+                    .orElseThrow(() -> new RuntimeException("Schedule not found"));
+
+            List<Integer> seatIds = bookingRequest.getSelectedSeatIds();
+            List<PassengerDto> passengers = bookingRequest.getPassengers();
+
+            if (seatIds == null || passengers == null || seatIds.size() != passengers.size()) {
+                throw new RuntimeException("Invalid seat or passenger data");
+            }
+
+            double totalAmount = 0.0;
+
+            for (int i = 0; i < seatIds.size(); i++) {
+                Integer seatId = seatIds.get(i);
+                PassengerDto passenger = passengers.get(i);
+
+                Seat seat = seatRepository.findById(seatId)
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy ghế: " + seatId));
+
+                // Tính giá gốc
+                double baseSeatPrice = schedule.getBasePrice().doubleValue() *
+                        seat.getSeatType().getPriceMultiplier().doubleValue() *
+                        seat.getCarriage().getCarriageType().getPriceMultiplier().doubleValue();
+
+                // Áp dụng giảm giá theo loại vé
+                TicketType ticketType;
+                try {
+                    ticketType = TicketType.valueOf(passenger.getTicketType());
+                } catch (Exception e) {
+                    ticketType = TicketType.ADULT;
+                }
+
+                double finalPrice = baseSeatPrice * ticketType.getPriceMultiplier();
+                totalAmount += finalPrice;
+            }
+
+            return totalAmount;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Không thể tính toán giá đặt vé: " + e.getMessage());
+        }
     }
 }

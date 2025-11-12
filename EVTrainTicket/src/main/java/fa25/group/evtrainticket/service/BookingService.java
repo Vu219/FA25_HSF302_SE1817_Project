@@ -29,9 +29,6 @@ public interface BookingService {
      */
     Booking updateBooking(Booking booking);
 
-
-    Booking createAnonymousBooking(BookingRequestDto bookingRequest);
-
     Booking createAnonymousPendingBooking(BookingRequestDto bookingRequest);
 
     Booking processPayment(String bookingCode, String paymentMethod);
