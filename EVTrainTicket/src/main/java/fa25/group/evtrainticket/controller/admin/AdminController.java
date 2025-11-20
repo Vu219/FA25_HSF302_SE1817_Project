@@ -38,20 +38,18 @@ public class AdminController {
     private final UserService userService;
     private final DashboardService dashboardService;
 
-    // Helper kiểm tra quyền
     private boolean isAdmin(HttpSession session) {
         User user = (User) session.getAttribute("user");
         return user != null && "ADMIN".equalsIgnoreCase(user.getRole());
     }
 
-    // Helper tạo view chung
     private ModelAndView createAdminView(String contentFragment, String currentPage, HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
             return new ModelAndView("redirect:/login");
         }
         if (!"ADMIN".equalsIgnoreCase(user.getRole())) {
-            return new ModelAndView("redirect:/error"); // Trang lỗi 403
+            return new ModelAndView("redirect:/error");
         }
 
         ModelAndView mav = new ModelAndView("admin/admin-layout");
@@ -74,7 +72,7 @@ public class AdminController {
         return mav;
     }
 
-    // ================================== SCHEDULE (ĐÃ GỘP) =====================================
+    // ================================== SCHEDULE  =====================================
 
     @GetMapping("/schedules")
     public ModelAndView listSchedules(HttpSession session, Model model) {

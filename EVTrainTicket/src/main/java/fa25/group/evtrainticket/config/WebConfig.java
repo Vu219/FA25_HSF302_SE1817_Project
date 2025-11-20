@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+// ... các import
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
@@ -14,23 +15,24 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(authInterceptor)
-                // 1. CHẶN TẤT CẢ MỌI NGÓC NGÁCH
+                // 1. CHẶN TẤT CẢ
                 .addPathPatterns("/**")
 
-                // 2. DANH SÁCH NGOẠI LỆ (Được phép vào không cần login)
+                // 2. DANH SÁCH NGOẠI LỆ (SỬA Ở ĐÂY)
                 .excludePathPatterns(
-                        "/",                // Root
-                        "/home",            // Trang chủ
-                        "/login",           // Trang đăng nhập (QUAN TRỌNG - Không chặn trang này sẽ bị lặp vô tận)
-                        "/register",        // Trang đăng ký
-                        "/forgot-password", // Quên mật khẩu
+                        "/",
+                        "/home",
+                        "/login",
+                        "/register",
+                        "/forgot-password",
+                        "/verify-otp",
+                        "/reset-password",
                         "/search/**",
                         "/css/**",
                         "/js/**",
                         "/images/**",
                         "/fonts/**",
                         "/webjars/**",
-
                         "/api/schedules/**"
                 );
     }
